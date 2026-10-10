@@ -61,7 +61,7 @@ alter table public.quiz_results enable row level security;
 
 -- Users see and touch only their own rows; the admin sees everything and manages grants.
 create policy "own profile" on public.profiles for select using (id = auth.uid() or public.is_admin());
-create policy "touch last_seen" on public.profiles for update using (id = auth.uid()) with check (id = auth.uid() and is_admin = (select is_admin from public.profiles where id = auth.uid()));
+create policy "update own profile" on public.profiles for update using (id = auth.uid()) with check (id = auth.uid());
 create policy "own grants" on public.grants for select using (user_id = auth.uid() or public.is_admin());
 create policy "admin grants" on public.grants for all using (public.is_admin()) with check (public.is_admin());
 create policy "own reads" on public.reads for all using (user_id = auth.uid() or public.is_admin()) with check (user_id = auth.uid());
@@ -70,7 +70,8 @@ create policy "own results write" on public.quiz_results for insert with check (
 
 -- New tables are not exposed automatically in this project, so grant access explicitly (RLS still decides rows).
 grant usage on schema public to anon, authenticated;
-grant select, update on public.profiles to authenticated;
+grant select on public.profiles to authenticated;
+grant update (full_name, last_seen) on public.profiles to authenticated;  -- is_admin stays out of reach
 grant select, insert, update, delete on public.grants to authenticated;
 grant select, insert, update, delete on public.reads to authenticated;
 grant select, insert on public.quiz_results to authenticated;
