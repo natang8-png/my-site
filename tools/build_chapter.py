@@ -25,14 +25,16 @@ for i, h in enumerate(heads, 1):
         body = '<p class="placeholder">הטקסט של הקטע הזה עוד לא נוסף.</p>'
         filled = False
     toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{i}</span>{html.escape(h)}</a></li>')
-    prev = f'<a class="pn prev" href="#s{i-1}"><small>הקודם</small>{html.escape(heads[i-2])}</a>' if i > 1 else '<span></span>'
-    nxt = f'<a class="pn next" href="#s{i+1}"><small>הבא</small>{html.escape(heads[i])}</a>' if i < n else ''
+    prev = (f'<a class="pn prev" href="#s{i-1}"><small>הקודם</small>{html.escape(heads[i-2])}</a>' if i > 1
+            else '<a class="pn prev" href="/halacha/"><small>חזרה</small>לתפריט הלכה</a>')
+    mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
+    nxt = f'<a class="pn next" href="#s{i+1}"><small>הבא</small>{html.escape(heads[i])}</a>' if i < n else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
     <div class="sec-head"><span class="eyebrow">קטע {i} מתוך {n}</span><h2 id="s{i}-h">{html.escape(h)}</h2></div>
     <div class="content">
 {body}
     </div>
-    <nav class="pager" aria-label="ניווט בין קטעים">{prev}{nxt}</nav>
+    <nav class="pager" aria-label="ניווט בין קטעים">{prev}{mid}{nxt}</nav>
   </section>''')
 
 page = f'''<!doctype html>
