@@ -1,0 +1,76 @@
+// Accounts: login state, per-user grants, and saving progress to Supabase.
+// The publishable key is meant to be public; row-level security in supabase/schema.sql guards the data.
+(function(){
+  var URL='https://pfoxbjttzfdhunkxhkvz.supabase.co', KEY='sb_publishable_-UFwu9rEcGomns606YfG7Q_ij2q_oQs';
+
+  // Content tree. A grant on a path opens it and everything under it.
+  var TREE=[
+    {path:'halacha', title:'הלכה'},
+    {path:'halacha/family', title:'טהרת המשפחה'},
+    {path:'halacha/family/harchakot', title:'הרחקות'},
+    {path:'halacha/family/tumat-betulim', title:'טומאת בתולים'}
+  ];
+
+  var sb=null;
+  try{ if(window.supabase) sb=window.supabase.createClient(URL,KEY) }catch(e){}
+
+  var state={user:null, profile:null, grants:[]};
+  var ready=(async function(){
+    if(!sb) return state;
+    try{
+      var s=(await sb.auth.getSession()).data.session;
+      if(!s) return state;
+      state.user=s.user;
+      var p=await sb.from('profiles').select('*').eq('id',s.user.id).maybeSingle();
+      state.profile=p.data||null;
+      var g=await sb.from('grants').select('path,mode').eq('user_id',s.user.id);
+      state.grants=g.data||[];
+      touch();
+    }catch(e){}
+    return state;
+  })();
+
+  function touch(){
+    try{
+      var k='seen:'+state.user.id, last=+sessionStorage.getItem(k)||0;
+      if(Date.now()-last<10*60e3) return;
+      sessionStorage.setItem(k,Date.now());
+    }catch(e){}
+    sb.from('profiles').update({last_seen:new Date().toISOString()}).eq('id',state.user.id).then(function(){});
+  }
+
+  // 'study' (text + quiz), 'quiz' (quiz only) or null.
+  function access(path){
+    if(state.profile&&state.profile.is_admin) return 'study';
+    var best=null;
+    state.grants.forEach(function(g){
+      if(path===g.path||path.indexOf(g.path+'/')===0){ if(g.mode==='study') best='study'; else if(!best) best='quiz' }
+    });
+    return best;
+  }
+
+  function name(){ return (state.profile&&state.profile.full_name)||(state.user&&state.user.email)||'' }
+
+  // Account link at the top of every page.
+  function paintBar(){
+    var main=document.querySelector('main'); if(!main) return;
+    var bar=document.createElement('div'); bar.className='acct';
+    var next=encodeURIComponent(location.pathname+location.hash);
+    if(state.user){
+      bar.innerHTML=(state.profile&&state.profile.is_admin?'<a href="/admin/">ניהול</a><span>·</span>':'')+
+        '<span class="who"></span><span>·</span><button type="button" class="link" data-out>יציאה</button>';
+      bar.querySelector('.who').textContent=name();
+      bar.querySelector('[data-out]').onclick=async function(){await sb.auth.signOut();location.reload()};
+    } else {
+      bar.innerHTML='<a href="/login/?next='+next+'">כניסה / הרשמה</a>';
+    }
+    main.insertBefore(bar,main.firstChild);
+  }
+  ready.then(function(){ if(location.pathname.indexOf('/login')!==0) paintBar() });
+
+  window.SITE={sb:sb, ready:ready, state:state, access:access, name:name, TREE:TREE,
+    loadReads:async function(ch){ if(!state.user) return null; var r=await sb.from('reads').select('section').eq('user_id',state.user.id).eq('chapter',ch); return r.error?null:(r.data||[]).map(function(x){return String(x.section)}) },
+    saveRead:function(ch,sec,on){ if(!state.user) return; var q=on?sb.from('reads').upsert({user_id:state.user.id,chapter:ch,section:+sec}):sb.from('reads').delete().eq('user_id',state.user.id).eq('chapter',ch).eq('section',+sec); q.then(function(){}) },
+    saveQuiz:function(ch,sec,score,total){ if(!state.user) return; sb.from('quiz_results').insert({user_id:state.user.id,chapter:ch,section:+sec,score:score,total:total}).then(function(){}) }
+  };
+})();

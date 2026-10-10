@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>כניסה · האתר של נתן</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head><body>
+<main dir="rtl" lang="he">
+  <header>
+    <a class="back" href="/">→ חזרה לדף הבית</a>
+    <h1>כניסה</h1>
+    <p class="lead">משתמשים רשומים רואים את התכנים שנפתחו להם, והאתר זוכר מה קראו ואת ציוני הבחינות.</p>
+  </header>
+
+  <section>
+    <div class="tabs" role="group" aria-label="סוג">
+      <button type="button" data-tab="in" aria-pressed="true">כניסה</button>
+      <button type="button" data-tab="up" aria-pressed="false">הרשמה</button>
+    </div>
+    <form class="form" id="f" style="margin-top:20px">
+      <label data-only="up" hidden>שם מלא<input name="name" autocomplete="name"></label>
+      <label>מייל<input name="email" type="email" required autocomplete="email" dir="ltr"></label>
+      <label>סיסמה<input name="password" type="password" required minlength="6" autocomplete="current-password" dir="ltr"></label>
+      <button class="primary" type="submit">כניסה</button>
+      <p class="msg" id="msg" role="status"></p>
+    </form>
+  </section>
+
+  <footer>
+    <span>נבנה בהדרגה, צעד אחר צעד.</span>
+    <button id="theme" type="button">מצב כהה</button>
+  </footer>
+</main>
+<script src="/site.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
+<script>
+(function(){
+  var mode='in', f=document.getElementById('f'), msg=document.getElementById('msg'), btn=f.querySelector('.primary');
+  var next=new URLSearchParams(location.search).get('next')||'/';
+  if(next.charAt(0)!=='/'||next.charAt(1)==='/')next='/';
+  function say(t,err){msg.textContent=t;msg.classList.toggle('err',!!err)}
+  [].forEach.call(document.querySelectorAll('[data-tab]'),function(b){b.onclick=function(){
+    mode=b.getAttribute('data-tab');
+    [].forEach.call(document.querySelectorAll('[data-tab]'),function(x){x.setAttribute('aria-pressed',x===b)});
+    f.querySelector('[data-only="up"]').hidden=mode!=='up';
+    f.password.autocomplete=mode==='up'?'new-password':'current-password';
+    btn.textContent=mode==='up'?'הרשמה':'כניסה';say('');
+  }});
+  SITE.ready.then(function(st){if(st.user)say('אתה כבר מחובר בתור '+SITE.name()+'.')});
+  f.onsubmit=async function(e){
+    e.preventDefault();
+    if(!SITE.sb){say('אין חיבור לשרת כרגע. נסה שוב מאוחר יותר.',true);return}
+    btn.disabled=true;say('רגע…');
+    var email=f.email.value.trim(), password=f.password.value, r;
+    if(mode==='up'){
+      r=await SITE.sb.auth.signUp({email:email,password:password,options:{data:{full_name:f.name.value.trim()}}});
+      if(!r.error&&!r.data.session){btn.disabled=false;say('נרשמת! שלחנו אליך מייל לאישור הכתובת. אחרי האישור אפשר להיכנס.');return}
+    } else {
+      r=await SITE.sb.auth.signInWithPassword({email:email,password:password});
+    }
+    btn.disabled=false;
+    if(r.error){
+      var m=r.error.message||'';
+      say(/Invalid login/i.test(m)?'המייל או הסיסמה לא נכונים.':/already registered/i.test(m)?'המייל הזה כבר רשום. נסה "כניסה".':/Email not confirmed/i.test(m)?'צריך קודם לאשר את המייל (בדוק את תיבת הדואר).':'משהו השתבש: '+m,true);
+      return;
+    }
+    location.href=next;
+  };
+})();
+</script>
+</body></html>

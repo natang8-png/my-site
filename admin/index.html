@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ניהול · האתר של נתן</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+<style>
+main{max-width:52rem}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{flex:1 1 9rem;border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+.stat b{display:block;font-family:var(--display);font-size:2rem;color:var(--accent);line-height:1.1}
+.stat span{color:var(--muted);font-size:.9rem}
+.users{display:grid;gap:14px}
+.user{border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
+.user.pending{border-color:var(--accent);background:var(--soft)}
+.u-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.u-head h3{margin:0;font-size:1.15rem}
+.u-head small{color:var(--muted);display:block}
+.meta{color:var(--muted);font-size:.9rem;text-align:left}
+.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:3px 6px 3px 12px;font-size:.9rem}
+.chip button{padding:0 7px;border-radius:999px;font-size:.8rem}
+.none{color:var(--muted);font-size:.9rem}
+.add{display:flex;gap:8px;flex-wrap:wrap}
+.add select{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
+.prog{display:grid;gap:6px;font-size:.92rem}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+table.q{width:100%;border-collapse:collapse;font-size:.9rem}
+table.q th,table.q td{text-align:start;padding:6px 8px;border-bottom:1px solid var(--line)}
+table.q th{color:var(--muted);font-weight:600}
+details summary{cursor:pointer;color:var(--accent)}
+</style>
+</head><body>
+<main dir="rtl" lang="he">
+  <header>
+    <a class="back" href="/">→ חזרה לדף הבית</a>
+    <h1>ניהול</h1>
+    <p class="lead">מי נרשם, מה למד, מה הציונים, ומה פתוח לכל אחד.</p>
+  </header>
+  <section id="app"><p class="msg">טוען…</p></section>
+  <footer>
+    <span>רק אתה רואה את הדף הזה.</span>
+    <button id="theme" type="button">מצב כהה</button>
+  </footer>
+</main>
+<script src="/site.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
+<script>
+(async function(){
+  var app=document.getElementById('app'), sb=SITE.sb;
+  var CHAPTERS={harchakot:{title:'הרחקות',total:25}};
+  function esc(t){var d=document.createElement('div');d.textContent=t==null?'':t;return d.innerHTML}
+  function when(t){if(!t)return'—';var d=new Date(t);return d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
+  function title(path){var n=SITE.TREE.find(function(x){return x.path===path});return n?n.title:path}
+  function depth(path){return path.split('/').length-1}
+  var st=await SITE.ready;
+  if(!st.user){app.innerHTML='<p>צריך <a href="/login/?next=/admin/">להיכנס</a> קודם.</p>';return}
+  if(!(st.profile&&st.profile.is_admin)){app.innerHTML='<p class="msg">הדף הזה פתוח רק למנהל.</p>';return}
+
+  async function load(){
+    var r=await Promise.all([
+      sb.from('profiles').select('*').order('created_at',{ascending:false}),
+      sb.from('grants').select('*'),
+      sb.from('reads').select('*'),
+      sb.from('quiz_results').select('*').order('taken_at',{ascending:false})
+    ]);
+    var err=r.find(function(x){return x.error});
+    if(err){app.innerHTML='<p class="msg err">שגיאה בטעינה: '+esc(err.error.message)+'</p>';return}
+    render(r[0].data,r[1].data,r[2].data,r[3].data);
+  }
+
+  function render(users,grants,reads,results){
+    var others=users.filter(function(u){return !u.is_admin});
+    var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id})});
+    var week=Date.now()-7*864e5;
+    var active=others.filter(function(u){return u.last_seen&&new Date(u.last_seen)>week});
+    var h='<div class="stats">'+
+      '<div class="stat"><b>'+others.length+'</b><span>משתמשים רשומים</span></div>'+
+      '<div class="stat"><b>'+pending.length+'</b><span>ממתינים לאישור</span></div>'+
+      '<div class="stat"><b>'+active.length+'</b><span>נכנסו השבוע</span></div>'+
+      '<div class="stat"><b>'+results.filter(function(x){return others.some(function(u){return u.id===x.user_id})}).length+'</b><span>בחינות שנעשו</span></div></div>';
+    h+='<h2 style="margin-top:32px">משתמשים</h2>';
+    if(!others.length)h+='<p class="none">עוד אין משתמשים רשומים. כשמישהו יירשם דרך "כניסה / הרשמה", הוא יופיע כאן.</p>';
+    h+='<div class="users">';
+    others.sort(function(a,b){return (pending.indexOf(b)>-1)-(pending.indexOf(a)>-1)});
+    others.forEach(function(u){
+      var ug=grants.filter(function(g){return g.user_id===u.id});
+      var ur=reads.filter(function(x){return x.user_id===u.id});
+      var uq=results.filter(function(x){return x.user_id===u.id});
+      h+='<article class="user'+(ug.length?'':' pending')+'" data-u="'+u.id+'">'+
+        '<div class="u-head"><div><h3>'+esc(u.full_name||'(ללא שם)')+'</h3><small dir="ltr">'+esc(u.email)+'</small></div>'+
+        '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
+      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){
+        return '<span class="chip">'+esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')+'<button type="button" data-del="'+g.id+'" aria-label="הסרה">✕</button></span>'}).join(''):'<span class="none">עוד לא נפתח כלום (ממתין לאישור)</span>')+'</div>';
+      h+='<div class="add"><select data-path>'+SITE.TREE.map(function(n){return '<option value="'+n.path+'">'+'  '.repeat(depth(n.path))+esc(n.title)+'</option>'}).join('')+
+        '</select><select data-mode><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select><button type="button" data-add>פתיחת גישה</button></div>';
+      Object.keys(CHAPTERS).forEach(function(c){
+        var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
+        var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
+        h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' קטעים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
+      });
+      if(uq.length){
+        h+='<details><summary>כל הבחינות ('+uq.length+')</summary><table class="q"><thead><tr><th>פרק</th><th>קטע</th><th>ציון</th><th>מתי</th></tr></thead><tbody>'+
+          uq.map(function(x){return '<tr><td>'+esc((CHAPTERS[x.chapter]||{}).title||x.chapter)+'</td><td>'+x.section+'</td><td>'+x.score+'/'+x.total+'</td><td>'+when(x.taken_at)+'</td></tr>'}).join('')+'</tbody></table></details>';
+      }
+      h+='</article>';
+    });
+    app.innerHTML=h+'</div>';
+  }
+
+  app.addEventListener('click',async function(e){
+    var del=e.target.closest('[data-del]'), add=e.target.closest('[data-add]');
+    if(del){del.disabled=true;var r=await sb.from('grants').delete().eq('id',+del.getAttribute('data-del'));if(r.error)alert(r.error.message);load()}
+    if(add){
+      var card=add.closest('[data-u]');add.disabled=true;
+      var r=await sb.from('grants').upsert({user_id:card.getAttribute('data-u'),path:card.querySelector('[data-path]').value,mode:card.querySelector('[data-mode]').value},{onConflict:'user_id,path'});
+      if(r.error)alert(r.error.message);load();
+    }
+  });
+  load();
+})();
+</script>
+</body></html>

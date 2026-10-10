@@ -6,7 +6,7 @@ A section file may end with <ol class="notes" start="N">…</ol> for its footnot
 import os, sys, html
 
 CHAPTERS = {
-    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2,
+    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
 }
 
@@ -48,7 +48,7 @@ page = f'''<!doctype html>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
 <link rel="stylesheet" href="/style.css">
 </head><body>
-<main dir="rtl" lang="he" class="chapter" data-chapter="{slug}">
+<main dir="rtl" lang="he" class="chapter" data-chapter="{slug}" data-path="{ch["path"]}">
   <header>
     <a class="back" href="/halacha/">→ חזרה להלכה</a>
     <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}</div>
@@ -72,6 +72,8 @@ page = f'''<!doctype html>
   </footer>
 </main>
 <script src="/site.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
 <script src="/chapter.js"></script>
 </body></html>
 '''

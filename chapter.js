@@ -17,23 +17,49 @@
   if(location.hash){var cur=document.querySelector('.sec:not([hidden])');if(cur)cur.scrollIntoView({block:'start'})}
 })();
 
-// "קראתי" marks, kept in this browser only (until there are user accounts)
+// "קראתי" marks: saved to the account when logged in, otherwise in this browser
 (function(){
   var main=document.querySelector('main[data-chapter]');
   if(!main)return;
-  var key='read:'+main.getAttribute('data-chapter'), read={};
+  var ch=main.getAttribute('data-chapter'), key='read:'+ch, read={};
   try{(JSON.parse(localStorage.getItem(key))||[]).forEach(function(n){read[n]=1})}catch(e){}
   var count=document.querySelector('.toc-count'), total=count&&+count.getAttribute('data-total');
-  function save(){try{localStorage.setItem(key,JSON.stringify(Object.keys(read)))}catch(e){}}
+  var online=false;
+  function save(){if(!online)try{localStorage.setItem(key,JSON.stringify(Object.keys(read)))}catch(e){}}
   function paint(){
     [].forEach.call(document.querySelectorAll('[data-read]'),function(b){b.checked=!!read[b.getAttribute('data-read')]});
     [].forEach.call(document.querySelectorAll('#toc a'),function(a){a.classList.toggle('done',!!read[a.getAttribute('href').slice(2)])});
     var n=Object.keys(read).length;
     if(count)count.textContent=n?n+' מתוך '+total+' נקראו':total+' קטעים';
   }
-  window.markRead=function(i,on){if(on)read[i]=1;else delete read[i];save();paint()};
+  window.markRead=function(i,on){i=String(i);if(on)read[i]=1;else delete read[i];save();if(online)SITE.saveRead(ch,i,on);paint()};
   document.addEventListener('change',function(e){var b=e.target.closest('[data-read]');if(b)markRead(b.getAttribute('data-read'),b.checked)});
   paint();
+  if(window.SITE)SITE.ready.then(function(){return SITE.loadReads(ch)}).then(function(list){
+    if(!list)return;
+    online=true;read={};list.forEach(function(n){read[n]=1});paint();
+  });
+})();
+
+// Access: guests and users without a grant see headings only; "quiz" grants see quizzes without the text
+(function(){
+  var main=document.querySelector('main[data-path]');
+  if(!main||!window.SITE)return;
+  main.classList.add('checking');
+  SITE.ready.then(function(st){
+    var a=SITE.access(main.getAttribute('data-path'));
+    main.classList.remove('checking');
+    if(a==='study')return;
+    main.classList.add(a==='quiz'?'quiz-only':'locked');
+    var next=encodeURIComponent(location.pathname+location.hash);
+    var msg=a==='quiz'?'בפרק הזה פתוחה לך הבחינה העצמית בלבד.'
+      :st.user?'החשבון שלך עוד לא קיבל גישה לפרק הזה. נתן יפתח אותה בקרוב.'
+      :'התוכן פתוח למשתמשים רשומים. <a href="/login/?next='+next+'">כניסה / הרשמה</a>';
+    [].forEach.call(document.querySelectorAll('.sec .content'),function(c){
+      var n=document.createElement('div');n.className='lock-note';n.innerHTML='<span aria-hidden="true">🔒</span> '+msg;
+      c.parentNode.insertBefore(n,c);
+    });
+  });
 })();
 
 // Self-quiz on the current section
@@ -72,6 +98,7 @@
             '<div class="end-btns"><button type="button" data-again>שוב</button>'+
             '<button type="button" data-mark>סמן כנקרא וסגור</button></div>';
           end.querySelector('[data-again]').onclick=function(){open(i);dlg.scrollTop=0};
+          if(window.SITE)SITE.saveQuiz(document.querySelector('main[data-chapter]').getAttribute('data-chapter'),i,right,qs.length);
           end.querySelector('[data-mark]').onclick=function(){if(window.markRead)markRead(String(i),true);dlg.close()};
         }
       });
