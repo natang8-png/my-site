@@ -35,7 +35,10 @@ for i, h in enumerate(heads, 1):
     <div class="content">
 {body}
     </div>
-    <nav class="pager" aria-label="ניווט בין קטעים">{prev}{mid}{nxt}</nav>
+    <div class="sec-foot">
+      <div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label><button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button></div>
+      <nav class="pager" aria-label="ניווט בין קטעים">{prev}{mid}{nxt}</nav>
+    </div>
   </section>''')
 
 page = f'''<!doctype html>
@@ -45,7 +48,7 @@ page = f'''<!doctype html>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
 <link rel="stylesheet" href="/style.css">
 </head><body>
-<main dir="rtl" lang="he" class="chapter">
+<main dir="rtl" lang="he" class="chapter" data-chapter="{slug}">
   <header>
     <a class="back" href="/halacha/">→ חזרה להלכה</a>
     <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}</div>
@@ -55,7 +58,7 @@ page = f'''<!doctype html>
   </header>
 
   <details class="toc" id="toc">
-    <summary><span>כל הכותרות</span><span class="toc-count">{n} קטעים</span></summary>
+    <summary><span>כל הכותרות</span><span class="toc-count" data-total="{n}">{n} קטעים</span></summary>
     <ol>
       {chr(10).join("      "+t for t in toc).strip()}
     </ol>
