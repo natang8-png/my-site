@@ -68,5 +68,14 @@ create policy "own reads" on public.reads for all using (user_id = auth.uid() or
 create policy "own results read" on public.quiz_results for select using (user_id = auth.uid() or public.is_admin());
 create policy "own results write" on public.quiz_results for insert with check (user_id = auth.uid());
 
+-- New tables are not exposed automatically in this project, so grant access explicitly (RLS still decides rows).
+grant usage on schema public to anon, authenticated;
+grant select, update on public.profiles to authenticated;
+grant select, insert, update, delete on public.grants to authenticated;
+grant select, insert, update, delete on public.reads to authenticated;
+grant select, insert on public.quiz_results to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+grant execute on function public.is_admin() to authenticated;
+
 -- After Natan signs up on the site once, make him admin:
 -- update public.profiles set is_admin = true where email = '<his email>';
