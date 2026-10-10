@@ -1,5 +1,11 @@
 -- Run once in Supabase: SQL Editor -> New query -> paste -> Run.
 -- Content is addressed by path: 'halacha', 'halacha/<topic>', 'halacha/<topic>/<chapter>'.
+-- Safe to re-run while the tables are empty: it clears any half-finished earlier run first.
+
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists public.handle_new_user() cascade;
+drop table if exists public.quiz_results, public.reads, public.grants, public.profiles cascade;
+drop function if exists public.is_admin() cascade;
 
 create table public.profiles (
   id uuid primary key references auth.users on delete cascade,
