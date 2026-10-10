@@ -81,3 +81,8 @@ sup.fn a{color:var(--accent);text-decoration:none;font-family:var(--body);font-s
 .pn{font:inherit;color:var(--fg);background:transparent;cursor:pointer;text-align:start}
 .pn.mid{background:var(--soft);text-align:center;justify-items:center}
 @media (max-width:520px){.pager{grid-template-columns:1fr 1fr}.pn.mid{grid-column:1/-1;grid-row:2}}
+.credit{font-size:.85rem;color:var(--muted);margin:8px 0 0}
+.credit a{color:var(--accent)}
+ol.notes li p{margin:0}
+ol.notes li p+p{margin-top:4px}
+a.nb{text-decoration:none;color:var(--accent);margin-inline-start:4px}

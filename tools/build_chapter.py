@@ -6,7 +6,8 @@ A section file may end with <ol class="notes" start="N">…</ol> for its footnot
 import os, sys, html
 
 CHAPTERS = {
-    "harchakot": dict(title="הרחקות", subtitle="האיסורים הנוהגים בזמן נדתה", num=1, of=2),
+    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2,
+         credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
 }
 
 slug = sys.argv[1]
@@ -50,6 +51,7 @@ page = f'''<!doctype html>
     <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}</div>
     <h1>{ch["title"]}</h1>
     <p class="lead">{ch["subtitle"]}</p>
+    {f'<p class="credit">{ch["credit"]}</p>' if ch.get("credit") else ""}
   </header>
 
   <details class="toc" id="toc">
