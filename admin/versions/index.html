@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>יומן גרסאות · הלכה בבית</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head><body>
+<main dir="rtl" lang="he">
+  <header>
+    <a class="back" href="/admin/">→ חזרה לניהול</a>
+    <h1>יומן הגדילה</h1>
+    <p class="lead">כל הגרסאות של האתר, מהראשונה ועד היום.</p>
+  </header>
+  <section id="app"><p class="msg">טוען…</p></section>
+  <template id="log">
+  <section aria-labelledby="age-h">
+    <h2 id="age-h">כמה זמן הוא קיים</h2>
+    <div class="age"><b id="days">0</b><span id="days-label">ימים מאז שנשתל, ב־10 באוקטובר 2026</span></div>
+  </section>
+  <section aria-labelledby="log-h">
+    <h2 id="log-h">גרסאות</h2>
+    <ol class="log">
+      <li><div class="ver"><strong>v1</strong>10.10.2026</div><div>העמוד נולד: כותרת, מונה ימים, יומן גרסאות, ומעבר בין מצב בהיר לכהה.</div></li>
+      <li><div class="ver"><strong>v1.1</strong>10.10.2026</div><div>האתר עלה לאינטרנט, בכתובת my-site-phi-lyart.vercel.app.</div></li>
+      <li><div class="ver"><strong>v2</strong>10.10.2026</div><div>האתר מתחלק לנושאים. הנושא הראשון: הלכה, עם עמוד משלו.</div></li>
+      <li><div class="ver"><strong>v3</strong>10.10.2026</div><div>ארבעה תתי־נושאים ראשונים בהלכה, כל אחד עם עמוד משלו.</div></li>
+      <li><div class="ver"><strong>v4</strong>10.10.2026</div><div>הפרק הראשון מלא: הרחקות, הקדמה, בניקוד מלא.</div></li>
+      <li><div class="ver"><strong>v5</strong>10.10.2026</div><div>פרק ההרחקות כולו בעמוד אחד: 25 קטעים, תפריט כותרות וניווט הקודם / הבא.</div></li>
+      <li><div class="ver"><strong>v6</strong>10.10.2026</div><div>פרק ההרחקות מלא: כל 25 הקטעים מנוקדים, עם 37 ההערות בתוך הקטעים וקרדיט למקור.</div></li>
+      <li><div class="ver"><strong>v7</strong>10.10.2026</div><div>בכל קטע: כפתורים דבוקים לתחתית המסך, סימון "קראתי" ובחינה עצמית.</div></li>
+      <li><div class="ver"><strong>v8</strong>11.10.2026</div><div>משתמשים: כניסה והרשמה, גישה לפי הרשאה, שמירת התקדמות וציונים, ודף ניהול.</div></li>
+      <li><div class="ver"><strong>v9</strong>11.10.2026</div><div>שם לאתר: הלכה בבית. מעבר לאחסון ב־Cloudflare (my-site-c18.pages.dev). יומן הגרסאות עבר לדף מנהל.</div></li>
+      <li class="next"><div class="ver"><strong>v10</strong>בקרוב</div><div>תיקונים אחרי הבדיקה עם הרב.</div></li>
+    </ol>
+  </section>
+  </template>
+  <footer>
+    <span>רק אתה רואה את הדף הזה.</span>
+    <button id="theme" type="button">מצב כהה</button>
+  </footer>
+</main>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
+<script>
+(async function(){
+  var app=document.getElementById('app');
+  var st=await SITE.ready;
+  if(!st.user){app.innerHTML='<p>צריך <a href="/login/?next=/admin/versions/">להיכנס</a> קודם.</p>';}
+  else if(!(st.profile&&st.profile.is_admin)){app.innerHTML='<p class="msg">הדף הזה פתוח רק למנהל.</p>';}
+  else{app.replaceWith(document.getElementById('log').content.cloneNode(true));}
+  var s=document.createElement('script');s.src='/site.js';document.body.appendChild(s);
+})();
+</script>
+</body></html>
