@@ -150,3 +150,24 @@
   }
   window.addEventListener('hashchange',function(){setTimeout(current,0)});current();
 })();
+
+// One heading size for every section of the chapter: the largest size at which the longest title still fits on one line.
+(function(){
+  var hs=[].slice.call(document.querySelectorAll('.sec-head h2'));if(!hs.length)return;
+  var probe=document.createElement('span');probe.style.cssText='position:absolute;visibility:hidden;white-space:nowrap';
+  function fit(){
+    var head=document.querySelector('.sec:not([hidden]) .sec-head')||hs[0].parentNode, num=head.querySelector('.sec-num');
+    var room=head.clientWidth-(num?num.offsetWidth+12:0); if(room<=0)return;
+    var cs=getComputedStyle(hs[0]);probe.style.fontFamily=cs.fontFamily;probe.style.fontWeight=cs.fontWeight;
+    document.body.appendChild(probe);
+    var rem=parseFloat(getComputedStyle(document.documentElement).fontSize), size=1.8;
+    for(;size>1.05;size-=0.05){
+      probe.style.fontSize=size+'rem';
+      if(hs.every(function(h){probe.textContent=h.textContent;return probe.offsetWidth<=room}))break;
+    }
+    probe.remove();var v=size.toFixed(2)+'rem',r=document.documentElement;if(r.style.getPropertyValue('--sec-h')!==v)r.style.setProperty('--sec-h',v);
+  }
+  fit();addEventListener('resize',fit);addEventListener('hashchange',fit);
+  if(document.fonts)document.fonts.ready.then(fit);
+  new MutationObserver(fit).observe(document.documentElement,{attributes:true,attributeFilter:['style','class']});
+})();

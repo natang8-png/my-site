@@ -77,8 +77,9 @@ ol.karet .mark{font-weight:700;color:var(--accent);margin-inline-end:.35em}
 .toc a.current{background:var(--bg);color:var(--accent);font-weight:600}
 .toc a.empty{color:var(--muted)}
 .sec{display:grid;gap:28px;scroll-margin-top:16px}
-.sec-head{display:grid;gap:4px}
-.sec-head h2{font-family:var(--display);font-weight:700;font-size:1.8rem;margin:0;color:var(--accent)}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.sec-head h2{font-family:var(--display);font-weight:700;font-size:var(--sec-h,1.8rem);margin:0;color:var(--accent);white-space:nowrap;min-width:0}
+.sec-num{color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums;flex:none;min-width:3.2em;text-align:left}
 ol.notes{margin:0;padding:16px 1.4em 0 0;border-top:1px solid var(--line);font-family:var(--body);font-size:.8em;line-height:1.8;color:var(--muted);display:grid;gap:6px}
 sup.fn a{color:var(--accent);text-decoration:none;font-family:var(--body);font-size:.7em}
 [hidden]{display:none!important}

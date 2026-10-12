@@ -31,7 +31,7 @@ for i, h in enumerate(heads, 1):
     mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
     nxt = f'<a class="pn next" href="#s{i+1}"><small>הבא</small>{html.escape(heads[i])}</a>' if i < n else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
-    <div class="sec-head"><span class="eyebrow">קטע {i} מתוך {n}</span><h2 id="s{i}-h">{html.escape(h)}</h2></div>
+    <div class="sec-head"><h2 id="s{i}-h">{html.escape(h)}</h2><span class="sec-num" aria-label="קטע {i} מתוך {n}">{i}/{n}</span></div>
     <div class="content">
 {body}
     </div>
