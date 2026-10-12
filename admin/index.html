@@ -37,6 +37,8 @@ details summary{cursor:pointer;color:var(--accent)}
 .form.invite{max-width:none}
 .add .close{border-color:#b4473a;color:#b4473a;background:none}
 .chip.plain{padding:3px 12px}
+.help{color:var(--muted);font-size:.92rem;margin:-4px 0 14px}
+.help .g{color:var(--accent)}.help .r{color:#b4473a}
 </style>
 </head><body>
 <main dir="rtl" lang="he">
@@ -90,7 +92,7 @@ details summary{cursor:pointer;color:var(--accent)}
       '<div class="stat"><b>'+active.length+'</b><span>נכנסו השבוע</span></div>'+
       '<div class="stat"><b>'+results.filter(function(x){return others.some(function(u){return u.id===x.user_id})}).length+'</b><span>בחינות שנעשו</span></div></div>';
     h+=inviteBlock(invites);
-    h+='<h2 style="margin-top:32px">משתמשים</h2>';
+    h+='<h2 style="margin-top:32px">משתמשים</h2><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
     if(!others.length)h+='<p class="none">עוד אין משתמשים רשומים. כשמישהו יירשם דרך "כניסה / הרשמה", הוא יופיע כאן.</p>';
     h+='<div class="users">';
     others.sort(function(a,b){return (pending.indexOf(b)>-1)-(pending.indexOf(a)>-1)});
@@ -106,7 +108,8 @@ details summary{cursor:pointer;color:var(--accent)}
       h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')+'</span>'}).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+'</div>';
       // One button: approve (with the chosen access) when closed, close (remove all access) when open.
       h+='<div class="add">'+(ug.length?'':'<select data-path>'+opts()+'</select><select data-mode><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select>')+
-        '<button type="button" class="'+(ug.length?'close':'primary')+'" data-toggle="'+(ug.length?'close':'open')+'">'+(ug.length?'סגירה':'אישור')+'</button></div>';
+        '<button type="button" class="'+(ug.length?'close':'primary')+'" data-toggle="'+(ug.length?'close':'open')+'" title="'+(ug.length?'חסימת כל הגישה של התלמיד (אפשר לפתוח שוב)':'פתיחת הגישה שבחרת ברשימות')+'">'+(ug.length?'סגירה':'אישור')+'</button>'+
+        '<span class="none">'+(ug.length?'סגירה חוסמת לו את כל הגישה':'בחר מה לפתוח ולחץ אישור')+'</span></div>';
       Object.keys(CHAPTERS).forEach(function(c){
         var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
         var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
@@ -139,7 +142,7 @@ details summary{cursor:pointer;color:var(--accent)}
       h+='<h3 style="margin-top:20px">הוזמנו ועוד לא נרשמו ('+open.length+')</h3><table class="q"><thead><tr><th>שם</th><th>מייל</th><th>גישה</th><th></th></tr></thead><tbody>'+
         open.map(function(i){return '<tr><td>'+esc([i.first_name,i.last_name].filter(Boolean).join(' '))+'</td><td dir="ltr">'+esc(i.email)+'</td><td>'+
           (i.grants||[]).map(function(g){return esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')}).join(', ')+
-          '</td><td><button type="button" data-uninv="'+esc(i.email)+'" aria-label="ביטול">✕</button></td></tr>'}).join('')+'</tbody></table>';
+          '</td><td><button type="button" class="close" data-uninv="'+esc(i.email)+'" title="ביטול ההזמנה (התלמיד לא יקבל גישה אוטומטית)">ביטול הזמנה</button></td></tr>'}).join('')+'</tbody></table>';
     }
     return h;
   }
@@ -187,10 +190,12 @@ details summary{cursor:pointer;color:var(--accent)}
     var tg=e.target.closest('[data-toggle]'), un=e.target.closest('[data-uninv]');
     if(tg){
       var card=tg.closest('[data-u]'), uid=card.getAttribute('data-u'), r;tg.disabled=true;
+      if(tg.getAttribute('data-toggle')==='close'&&!confirm('לסגור את כל הגישה של '+card.querySelector('h3').firstChild.textContent+'? אפשר לפתוח שוב אחר כך.')){tg.disabled=false;return}
       if(tg.getAttribute('data-toggle')==='open') r=await sb.from('grants').upsert({user_id:uid,path:card.querySelector('[data-path]').value,mode:card.querySelector('[data-mode]').value},{onConflict:'user_id,path'});
       else r=await sb.from('grants').delete().eq('user_id',uid);
       if(r.error)alert(r.error.message);load();return;
     }
+    if(un&&!confirm('לבטל את ההזמנה של '+un.getAttribute('data-uninv')+'?'))return;
     if(un){un.disabled=true;var r=await sb.from('invites').delete().eq('email',un.getAttribute('data-uninv'));if(r.error)alert(r.error.message);load()}
   });
   load();
