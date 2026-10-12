@@ -128,6 +128,7 @@ details summary{cursor:pointer;color:var(--accent)}
     if(invites===null)return '<p class="msg" style="margin-top:24px">כדי להוסיף אנשים מראש, צריך להריץ קודם את supabase/v2.sql.</p>';
     var open=invites.filter(function(i){return !i.used_at});
     var h='<h2 style="margin-top:32px">הוספת תלמיד</h2><form class="form invite" id="inv">'+
+      '<label>הדבקה מהירה (לא חובה)<textarea name="paste" rows="2" placeholder="שם: ...; משפחה: ...; טלפון: ...; אימייל: ..."></textarea></label>'+
       '<div class="row"><label>שם פרטי<input name="first" required></label><label>שם משפחה<input name="last"></label></div>'+
       '<div class="row"><label>מייל<input name="email" type="email" required dir="ltr"></label><label>טלפון<input name="phone" type="tel" dir="ltr"></label></div>'+
       '<div class="row"><label>הערה<input name="note"></label><label>סיסמה זמנית<input name="pw" value="123456" required minlength="6" dir="ltr"></label></div>'+
@@ -141,6 +142,27 @@ details summary{cursor:pointer;color:var(--accent)}
     }
     return h;
   }
+
+  // "שם: X; משפחה: Y; טלפון: Z; אימייל: W" -> fields. Email and phone are recognised by their content,
+  // so a swapped label still lands in the right place; missing parts are simply left empty.
+  function parseLine(t){
+    var out={};
+    t.split(/[;\n]+/).forEach(function(part){
+      var i=part.indexOf(':'), k=i>-1?part.slice(0,i).trim():'', v=(i>-1?part.slice(i+1):part).trim();
+      if(!v)return;
+      if(/@/.test(v)){out.email=v;return}
+      if(/^[+\d][\d\s\-()]{5,}$/.test(v)){out.phone=v;return}
+      if(/משפחה/.test(k))out.last=v;
+      else if(/שם|פרטי/.test(k))out.first=v;
+      else if(/הערה/.test(k))out.note=v;
+    });
+    return out;
+  }
+  app.addEventListener('input',function(e){
+    if(e.target.name!=='paste')return;
+    var f=e.target.form, d=parseLine(e.target.value);
+    ['first','last','phone','email','note'].forEach(function(k){if(d[k]!=null)f[k].value=d[k]});
+  });
 
   app.addEventListener('submit',async function(e){
     if(e.target.id!=='inv')return;
