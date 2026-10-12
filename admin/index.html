@@ -181,7 +181,7 @@ details summary{cursor:pointer;color:var(--accent)}
     var r=await sb.rpc('admin_create_user',{p_email:email,p_password:pw,p_first:f.first.value.trim(),p_last:f.last.value.trim()||null,
       p_phone:f.phone.value.trim()||null,p_note:f.note.value.trim()||null,p_path:f.path.value,p_mode:f.mode.value});
     var m=document.getElementById('invmsg');
-    if(r.error){m.textContent=/admin_create_user/.test(r.error.message)?'צריך קודם להריץ את supabase/v3.sql.':r.error.message;m.classList.add('err');b.disabled=false;return}
+    if(r.error){m.textContent=/admin_create_user/.test(r.error.message)?'צריך קודם להריץ ב־Supabase את הקוד של הוספת תלמידים (ראה בשיחה עם Claude).':r.error.message;m.classList.add('err');b.disabled=false;return}
     await load();
     var m2=document.getElementById('invmsg');
     if(m2)m2.textContent='נוסף ✓ שלח לו: כתובת '+location.origin+'/login/ · מייל '+email+' · סיסמה '+pw;
