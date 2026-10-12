@@ -35,6 +35,8 @@ details summary{cursor:pointer;color:var(--accent)}
 .tag{font-size:.75rem;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:1px 8px;vertical-align:middle}
 .u-head small a{color:inherit}
 .form.invite{max-width:none}
+.add .close{border-color:#b4473a;color:#b4473a;background:none}
+.chip.plain{padding:3px 12px}
 </style>
 </head><body>
 <main dir="rtl" lang="he">
@@ -101,11 +103,10 @@ details summary{cursor:pointer;color:var(--accent)}
         (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
       if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
-      if(!ug.length)h+='<div class="add"><button type="button" class="primary" data-ok>אישור: כל ההלכה, לימוד + מבחן</button><span class="none">או בחר למטה גישה מצומצמת</span></div>';
-      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){
-        return '<span class="chip">'+esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')+'<button type="button" data-del="'+g.id+'" aria-label="הסרה">✕</button></span>'}).join(''):'<span class="none">עוד לא נפתח כלום (ממתין לאישור)</span>')+'</div>';
-      h+='<div class="add"><select data-path>'+opts()+
-        '</select><select data-mode><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select><button type="button" data-add>פתיחת גישה</button></div>';
+      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')+'</span>'}).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+'</div>';
+      // One button: approve (with the chosen access) when closed, close (remove all access) when open.
+      h+='<div class="add">'+(ug.length?'':'<select data-path>'+opts()+'</select><select data-mode><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select>')+
+        '<button type="button" class="'+(ug.length?'close':'primary')+'" data-toggle="'+(ug.length?'close':'open')+'">'+(ug.length?'סגירה':'אישור')+'</button></div>';
       Object.keys(CHAPTERS).forEach(function(c){
         var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
         var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
@@ -178,15 +179,14 @@ details summary{cursor:pointer;color:var(--accent)}
   });
 
   app.addEventListener('click',async function(e){
-    var del=e.target.closest('[data-del]'), add=e.target.closest('[data-add]'), ok=e.target.closest('[data-ok]'), un=e.target.closest('[data-uninv]');
-    if(un){un.disabled=true;var r=await sb.from('invites').delete().eq('email',un.getAttribute('data-uninv'));if(r.error)alert(r.error.message);load()}
-    if(ok){ok.disabled=true;var r=await sb.from('grants').upsert({user_id:ok.closest('[data-u]').getAttribute('data-u'),path:'halacha',mode:'study'},{onConflict:'user_id,path'});if(r.error)alert(r.error.message);load()}
-    if(del){del.disabled=true;var r=await sb.from('grants').delete().eq('id',+del.getAttribute('data-del'));if(r.error)alert(r.error.message);load()}
-    if(add){
-      var card=add.closest('[data-u]');add.disabled=true;
-      var r=await sb.from('grants').upsert({user_id:card.getAttribute('data-u'),path:card.querySelector('[data-path]').value,mode:card.querySelector('[data-mode]').value},{onConflict:'user_id,path'});
-      if(r.error)alert(r.error.message);load();
+    var tg=e.target.closest('[data-toggle]'), un=e.target.closest('[data-uninv]');
+    if(tg){
+      var card=tg.closest('[data-u]'), uid=card.getAttribute('data-u'), r;tg.disabled=true;
+      if(tg.getAttribute('data-toggle')==='open') r=await sb.from('grants').upsert({user_id:uid,path:card.querySelector('[data-path]').value,mode:card.querySelector('[data-mode]').value},{onConflict:'user_id,path'});
+      else r=await sb.from('grants').delete().eq('user_id',uid);
+      if(r.error)alert(r.error.message);load();return;
     }
+    if(un){un.disabled=true;var r=await sb.from('invites').delete().eq('email',un.getAttribute('data-uninv'));if(r.error)alert(r.error.message);load()}
   });
   load();
 })();
