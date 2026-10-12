@@ -147,16 +147,21 @@ details summary{cursor:pointer;color:var(--accent)}
   // "שם: X; משפחה: Y; טלפון: Z; אימייל: W" -> fields. Email and phone are recognised by their content,
   // so a swapped label still lands in the right place; missing parts are simply left empty.
   function parseLine(t){
-    var out={};
-    t.split(/[;\n]+/).forEach(function(part){
+    var out={}, free=[];
+    // Parts are separated by ; , tab, new line, or a dash with spaces around it (a phone's own dashes stay).
+    t.split(/\s+[-–]\s+|[;,\t\n]+/).forEach(function(part){
       var i=part.indexOf(':'), k=i>-1?part.slice(0,i).trim():'', v=(i>-1?part.slice(i+1):part).trim();
       if(!v)return;
-      if(/@/.test(v)){out.email=v;return}
+      var m=v.match(/[^\s<>]+@[^\s<>]+\.[^\s<>]+/);
+      if(m){out.email=m[0];return}
       if(/^[+\d][\d\s\-()]{5,}$/.test(v)){out.phone=v;return}
       if(/משפחה/.test(k))out.last=v;
       else if(/שם|פרטי/.test(k))out.first=v;
       else if(/הערה/.test(k))out.note=v;
+      else free.push(v);
     });
+    // Unlabelled words fill first name, then family name, then the note.
+    free.forEach(function(v){ if(out.first==null)out.first=v; else if(out.last==null)out.last=v; else out.note=(out.note?out.note+' ':'')+v });
     return out;
   }
   app.addEventListener('input',function(e){
