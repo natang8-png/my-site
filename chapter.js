@@ -134,7 +134,7 @@
   function setOpen(on){panel.hidden=!on;menu.setAttribute('aria-expanded',on);bar.classList.toggle('open',on)}
   menu.addEventListener('click',function(){setOpen(panel.hidden)});
   panel.addEventListener('click',function(e){if(e.target.closest('a'))setOpen(false)});
-  document.addEventListener('click',function(e){if(!bar.contains(e.target))setOpen(false)});
+  document.addEventListener('click',function(e){if(e.target===bar||!bar.contains(e.target))setOpen(false)});
   // Row 1 appears once the chapter header is gone.
   new IntersectionObserver(function(es){var on=!es[0].isIntersecting;bar.classList.toggle('show',on);bar.setAttribute('aria-hidden',!on);if(!on)setOpen(false)}).observe(head);
   // Row 2: the visible section's title, once its own heading has scrolled under the bar.

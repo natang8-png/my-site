@@ -210,5 +210,11 @@ main.home{padding-top:32px}
 .cb-panel a.current{background:var(--soft);color:var(--accent);font-weight:600}
 .cb-panel a.done::after{content:"✓";margin-inline-start:auto;color:var(--accent)}
 .cb-panel .num{color:var(--muted);min-width:1.6em}
+/* "חלון מלמטה" menu style, chosen in the עיצוב panel */
+:root[data-menu=sheet] .chbar.open{z-index:40}
+:root[data-menu=sheet] .chbar.open::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:-1}
+:root[data-menu=sheet] .cb-panel{position:fixed;left:0;right:0;bottom:0;height:auto;max-height:62dvh;background:var(--bg);border:1px solid var(--line);border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25);padding:8px 14px 20px}
+:root[data-menu=sheet] .cb-panel::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
+:root[data-menu=sheet] .cb-panel ol{padding-bottom:10px}
 @media (prefers-reduced-motion:reduce){.chbar,.cb-sec{transition:none}}
 .sec{scroll-margin-top:60px}
