@@ -40,6 +40,20 @@ details summary{cursor:pointer;color:var(--accent)}
 .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .help{color:var(--muted);font-size:.92rem;margin:-4px 0 14px}
 .help .g{color:var(--accent)}.help .r{color:#b4473a}
+.pick{display:flex;gap:8px;align-items:flex-start}
+.pick input{width:20px;height:20px;margin-top:4px;accent-color:var(--accent)}
+.user.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.selbar{position:fixed;inset:auto 0 64px 0;z-index:31;display:flex;justify-content:center;pointer-events:none}
+.selbar div{pointer-events:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;background:var(--bg);border:1px solid var(--accent);border-radius:999px;padding:8px 10px 8px 16px;box-shadow:0 6px 20px rgb(0 0 0/.18)}
+dialog.bulk{border:1px solid var(--line);border-radius:16px;background:var(--bg);color:var(--fg);padding:18px 20px;width:min(30rem,calc(100vw - 32px));max-height:85vh;overflow:auto}
+dialog.bulk::backdrop{background:rgb(0 0 0/.45)}
+.bulk h3{margin:0 0 4px}.bulk .rowp{display:grid;gap:6px;padding:10px 0;border-bottom:1px solid var(--line)}
+.bulk .opts{display:flex;gap:6px;flex-wrap:wrap}
+.bulk .opts label{display:inline-flex;gap:4px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:.9rem;cursor:pointer}
+.bulk .opts label:has(input:checked){border-color:var(--accent);color:var(--accent);background:var(--soft);font-weight:600}
+.bulk .opts input{margin:0}
+.bulk .acts{margin-top:14px}
+body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 </style>
 </head><body>
 <main dir="rtl" lang="he">
@@ -97,15 +111,16 @@ details summary{cursor:pointer;color:var(--accent)}
     h+=inviteBlock(invites);
     h+='<h2 style="margin-top:32px">משתמשים</h2><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
     if(!others.length)h+='<p class="none">עוד אין משתמשים רשומים. כשמישהו יירשם דרך "כניסה / הרשמה", הוא יופיע כאן.</p>';
+    if(others.length)h+='<p class="help">כדי לקבוע הרשאות לכמה תלמידים ביחד: סמן אותם בתיבה שליד השם, ולחץ <b class="g">הרשאות</b> בחלונית שתופיע למטה. · <button type="button" class="link" data-selall>בחירת כולם</button></p>';
     h+='<div class="users">';
     others.sort(function(a,b){return (pending.indexOf(b)>-1)-(pending.indexOf(a)>-1)});
     others.forEach(function(u){
       var all=grants.filter(function(g){return g.user_id===u.id}), ug=all.filter(function(g){return !isOwn(g.path)});
       var ur=reads.filter(function(x){return x.user_id===u.id});
       var uq=results.filter(function(x){return x.user_id===u.id});
-      h+='<article class="user'+(ug.length?'':' pending')+'" data-u="'+u.id+'">'+
-        '<div class="u-head"><div><h3>'+esc(uname(u))+(u.invited?' <span class="tag">נוסף ע״י המנהל</span>':'')+(u.must_change_pw?' <span class="tag">עוד לא נכנס</span>':'')+'</h3><small dir="ltr">'+esc(u.email)+'</small>'+
-        (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div>'+
+      h+='<article class="user'+(ug.length?'':' pending')+(sel.has(u.id)?' sel':'')+'" data-u="'+u.id+'">'+
+        '<div class="u-head"><label class="pick"><input type="checkbox" data-sel="'+u.id+'"'+(sel.has(u.id)?' checked':'')+' aria-label="בחירה"><div><h3>'+esc(uname(u))+(u.invited?' <span class="tag">נוסף ע״י המנהל</span>':'')+(u.must_change_pw?' <span class="tag">עוד לא נכנס</span>':'')+'</h3><small dir="ltr">'+esc(u.email)+'</small>'+
+        (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div></label>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
       if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
       h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')+'</span>'}).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+
@@ -129,6 +144,64 @@ details summary{cursor:pointer;color:var(--accent)}
       h+='</article>';
     });
     app.innerHTML=h+'</div>';
+    window.__users=others;window.__grants=grants;
+    sel.forEach(function(id){if(!others.some(function(u){return u.id===id}))sel.delete(id)});
+    selBar();
+  }
+
+  // Several students at once: tick them, then set their permissions in one floating window.
+  var sel=new Set(), bar=document.createElement('div');bar.className='selbar';bar.hidden=true;document.body.appendChild(bar);
+  function selBar(){
+    bar.hidden=!sel.size;
+    bar.innerHTML='<div><span>נבחרו '+sel.size+'</span><button type="button" class="primary" data-bulk>הרשאות</button><button type="button" data-unsel>ביטול הבחירה</button></div>';
+  }
+  bar.addEventListener('click',function(e){
+    if(e.target.closest('[data-unsel]')){sel.clear();document.querySelectorAll('[data-sel]').forEach(function(c){c.checked=false;c.closest('.user').classList.remove('sel')});selBar()}
+    if(e.target.closest('[data-bulk]'))bulk();
+  });
+  app.addEventListener('change',function(e){
+    var c=e.target.closest('[data-sel]');if(!c)return;
+    if(c.checked)sel.add(c.getAttribute('data-sel'));else sel.delete(c.getAttribute('data-sel'));
+    c.closest('.user').classList.toggle('sel',c.checked);selBar();
+  });
+
+  function bulk(){
+    var users=(window.__users||[]).filter(function(u){return sel.has(u.id)});
+    var d=document.createElement('dialog');d.className='bulk';
+    var h='<h3>הרשאות ל־'+users.length+' תלמידים</h3><p class="none">'+esc(users.map(uname).join(', '))+'</p>';
+    h+='<p class="help" style="margin:8px 0 0">מה שמסומן "בלי שינוי" נשאר לכל אחד כמו שהוא היה.</p>';
+    SITE.TREE.forEach(function(n,i){
+      var o=n.own?[['keep','בלי שינוי'],['week','פתיחה ל־'+n.days+' ימים'],['off','סגירה']]
+                 :[['keep','בלי שינוי'],['study','לימוד + מבחן'],['quiz','רק מבחן'],['off','סגירה']];
+      h+='<div class="rowp"><b>'+'\u00a0\u00a0'.repeat(n.own?0:depth(n.path))+esc(n.title)+'</b><div class="opts">'+
+        o.map(function(x,j){return '<label><input type="radio" name="p'+i+'" value="'+x[0]+'"'+(j?'':' checked')+'>'+x[1]+'</label>'}).join('')+'</div></div>';
+    });
+    h+='<div class="add acts"><button type="button" class="primary" data-apply>שמירה</button><button type="button" data-x>ביטול</button></div><p class="msg" role="status"></p>';
+    d.innerHTML=h;document.body.appendChild(d);
+    d.addEventListener('close',function(){d.remove()});
+    d.addEventListener('click',async function(e){
+      if(e.target===d||e.target.closest('[data-x]')){d.close();return}
+      var ap=e.target.closest('[data-apply]');if(!ap)return;
+      var ids=users.map(function(u){return u.id}), ups=[], dels=[];
+      SITE.TREE.forEach(function(n,i){
+        var v=d.querySelector('input[name="p'+i+'"]:checked').value;
+        if(v==='keep')return;
+        if(v==='off'){dels.push(n.path);return}
+        ids.forEach(function(id){ups.push(n.own?{user_id:id,path:n.path,mode:'study',expires_at:new Date(Date.now()+n.days*864e5).toISOString()}:{user_id:id,path:n.path,mode:v})});
+      });
+      if(!ups.length&&!dels.length){d.close();return}
+      ap.disabled=true;var m=d.querySelector('.msg'),err=null;
+      if(dels.length){var r=await sb.from('grants').delete().in('user_id',ids).in('path',dels);err=r.error}
+      if(!err&&ups.length){var r2=await sb.from('grants').upsert(ups,{onConflict:'user_id,path'});err=r2.error}
+      // Opening a time-limited chapter also answers the students' waiting requests for it.
+      SITE.TREE.forEach(function(n,i){
+        if(!err&&n.own&&d.querySelector('input[name="p'+i+'"]:checked').value==='week')
+          sb.from('access_requests').update({handled_at:new Date().toISOString(),approved:true}).in('user_id',ids).eq('path',n.path).is('handled_at',null).then(function(){});
+      });
+      if(err){m.classList.add('err');m.textContent=/expires_at/.test(err.message)?'צריך קודם להריץ ב־Supabase את supabase/v4.sql.':err.message;ap.disabled=false;return}
+      d.close();sel.clear();load();
+    });
+    d.showModal();
   }
 
   function uname(u){return (u.first_name||u.last_name?[u.first_name,u.last_name].filter(Boolean).join(' '):u.full_name)||'(ללא שם)'}
@@ -213,6 +286,7 @@ details summary{cursor:pointer;color:var(--accent)}
   });
 
   app.addEventListener('click',async function(e){
+    if(e.target.closest('[data-selall]')){(window.__users||[]).forEach(function(u){sel.add(u.id)});document.querySelectorAll('[data-sel]').forEach(function(c){c.checked=true;c.closest('.user').classList.add('sel')});selBar();return}
     var tg=e.target.closest('[data-toggle]'), un=e.target.closest('[data-uninv]'), rq=e.target.closest('[data-rq]'), wk=e.target.closest('[data-week]');
     if(rq){
       rq.disabled=true;
