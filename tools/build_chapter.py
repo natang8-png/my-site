@@ -2,7 +2,10 @@
 
 Usage: python3 tools/build_chapter.py harchakot
 A section file may end with <ol class="notes" start="N">…</ol> for its footnotes.
-A "private" chapter opens only with its own time-limited permission (see private.js): no quiz, no "קראתי",
+A "private" chapter keeps its text out of the site and the (public) repository: its sources live in
+/mnt/project-files/private/<slug>/, the build writes content.sql there, and the admin runs that file in Supabase once.
+The page then loads each section's text from the chapter_text table, which only readers with a live permission can read.
+It opens only with its own time-limited permission (see private.js): no quiz, no "קראתי",
 and reading is recorded automatically for the admin when the reader reaches the end of a section.
 """
 import os, sys, html
@@ -10,19 +13,19 @@ import os, sys, html
 CHAPTERS = {
     "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
-    "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="", num=3, of=3, path="leil-hachatuna", private=True),
+    "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=3, of=3, path="leil-hachatuna", private=True),
 }
 
 slug = sys.argv[1]
 ch = CHAPTERS[slug]
 private = ch.get("private", False)
-src = f"_src/{slug}"
+src = f"/mnt/project-files/private/{slug}" if private else f"_src/{slug}"
 heads = [h.strip() for h in open(f"{src}/headings.txt", encoding="utf-8") if h.strip()]
 n = len(heads)
 
 # Private chapters: hidden until the reader's permission is confirmed; reading is tracked quietly for the admin.
 PRIVATE_HEAD = """<meta name="robots" content="noindex">
-<style>main.checking .sec,main.checking .toc,main.priv-locked .sec,main.priv-locked .toc{display:none}.read-end{display:block;height:1px}</style>
+<style>main.checking .sec,main.checking .toc,main.priv-locked .sec,main.priv-locked .toc{display:none}.read-end{display:block;height:1px}html:has(main[data-track]) .cb-read{display:none}.content ul.dots,.content ol.nums{margin:0;padding-inline-start:1.4em;display:grid;gap:.55em}.content ul.dots li::marker{color:var(--accent)}</style>
 </head><body>
 """
 PRIVATE_TAIL = f"""<script src="/private.js"></script>
@@ -34,6 +37,11 @@ PRIVATE_TAIL = f"""<script src="/private.js"></script>
   if(!open){{main.classList.add('priv-locked');gate.hidden=false;return}}
   var g=LOCK.grantOf('{ch["path"]}'), u=document.getElementById('until'), st=SITE.state;
   if(g&&g.expires_at&&!st.profile.is_admin){{u.textContent='הפרק פתוח לך עד '+LOCK.day(g.expires_at)+'.';u.hidden=false}}
+  // The text itself comes from Supabase, and only to readers whose permission is live.
+  var t=await SITE.sb.from('chapter_text').select('section,html').eq('chapter',ch);
+  (t.data||[]).forEach(function(r){{var c=document.querySelector('#s'+r.section+' .content');if(c)c.innerHTML=r.html}});
+  if(t.error||!(t.data||[]).length) [].forEach.call(document.querySelectorAll('.sec .content'),function(c){{
+    c.innerHTML='<p class="placeholder">'+(st.profile&&st.profile.is_admin?'הטקסט עוד לא הועלה ל־Supabase. צריך להריץ שם את v5.sql ואת קובץ התוכן של הפרק.':'הטקסט לא נטען. נסה לרענן את הדף.')+'</p>'}});
   if(!st.user||st.profile&&st.profile.is_admin) return;
   // A section counts as read when its end comes into view after at least 15 seconds on it. Only the admin sees this.
   var done={{}}, since={{}};
@@ -51,12 +59,15 @@ PRIVATE_TAIL = f"""<script src="/private.js"></script>
 </script>
 """
 
-toc, secs = [], []
+toc, secs, private_rows = [], [], []
 for i, h in enumerate(heads, 1):
     path = f"{src}/{i:02d}.html"
     if os.path.exists(path):
         body = open(path, encoding="utf-8").read().strip()
         filled = True
+        if private:
+            private_rows.append((i, body))
+            body = '<p class="msg">טוען…</p>'
     else:
         body = '<p class="placeholder">הטקסט של הקטע הזה עוד לא נוסף.</p>'
         filled = False
@@ -113,6 +124,14 @@ page = f'''<!doctype html>
 <script src="/chapter.js"></script>
 {PRIVATE_TAIL if private else ""}</body></html>
 '''
+if private:
+    sql = ["-- Text of the chapter. Supabase: SQL Editor -> New query -> paste -> Run. Safe to run again (replaces the text).",
+           f"delete from public.chapter_text where chapter = '{slug}';"]
+    for i, body in private_rows:
+        assert "$t$" not in body
+        sql.append(f"insert into public.chapter_text (chapter, section, html) values ('{slug}', {i}, $t${body}$t$);")
+    open(f"{src}/content.sql", "w", encoding="utf-8").write("\n".join(sql) + "\n")
+    print(f"wrote {src}/content.sql ({len(private_rows)} sections)")
 os.makedirs(f"halacha/{slug}", exist_ok=True)
 open(f"halacha/{slug}/index.html", "w", encoding="utf-8").write(page)
 print(f"built halacha/{slug}/ with {n} sections")

@@ -251,3 +251,21 @@ revoke execute on function public.notify_request() from public, anon, authentica
 drop trigger if exists on_access_request on public.access_requests;
 create trigger on_access_request after insert on public.access_requests
   for each row execute function public.notify_request();
+
+-- v5: text of private chapters.
+
+create table if not exists public.chapter_text (
+  chapter text not null,
+  section int not null,
+  html text not null,
+  primary key (chapter, section)
+);
+alter table public.chapter_text enable row level security;
+drop policy if exists "read with permission" on public.chapter_text;
+create policy "read with permission" on public.chapter_text for select using (
+  public.is_admin() or exists (
+    select 1 from public.grants g
+    where g.user_id = auth.uid() and g.path = chapter_text.chapter
+      and (g.expires_at is null or g.expires_at > now())));
+revoke all on public.chapter_text from anon, authenticated;
+grant select on public.chapter_text to authenticated;
