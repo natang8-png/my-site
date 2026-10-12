@@ -13,16 +13,36 @@
   </header>
 
   <section>
-    <div class="tabs" role="group" aria-label="סוג">
-      <button type="button" data-tab="in" aria-pressed="true">כניסה</button>
-      <button type="button" data-tab="up" aria-pressed="false">הרשמה</button>
+    <div id="auth">
+      <div class="tabs" role="group" aria-label="סוג">
+        <button type="button" data-tab="in" aria-pressed="true">כניסה</button>
+        <button type="button" data-tab="up" aria-pressed="false">הרשמה</button>
+      </div>
+      <button type="button" class="google" id="google" hidden><span aria-hidden="true">G</span> המשך עם חשבון גוגל</button>
+      <form class="form" id="f" style="margin-top:20px">
+        <div class="row" data-only="up" hidden>
+          <label>שם פרטי<input name="first" autocomplete="given-name"></label>
+          <label>שם משפחה<input name="last" autocomplete="family-name"></label>
+        </div>
+        <label data-only="up" hidden>טלפון<input name="phone" type="tel" autocomplete="tel" dir="ltr" inputmode="tel"></label>
+        <label>מייל<input name="email" type="email" required autocomplete="email" dir="ltr"></label>
+        <label>סיסמה<input name="password" type="password" required minlength="6" autocomplete="current-password" dir="ltr"></label>
+        <label data-only="up" hidden>הערה (לא חובה)<textarea name="note" rows="3" placeholder="למשל: מי הפנה אותך, או מה תרצה ללמוד"></textarea></label>
+        <button class="primary" type="submit">כניסה</button>
+        <p class="msg" id="msg" role="status"></p>
+      </form>
     </div>
-    <form class="form" id="f" style="margin-top:20px">
-      <label data-only="up" hidden>שם מלא<input name="name" autocomplete="name"></label>
-      <label>מייל<input name="email" type="email" required autocomplete="email" dir="ltr"></label>
-      <label>סיסמה<input name="password" type="password" required minlength="6" autocomplete="current-password" dir="ltr"></label>
-      <button class="primary" type="submit">כניסה</button>
-      <p class="msg" id="msg" role="status"></p>
+    <form class="form" id="c" hidden>
+      <h2>השלמת פרטים</h2>
+      <p class="lead">עוד כמה פרטים, ואתה בפנים.</p>
+      <div class="row">
+        <label>שם פרטי<input name="first" required autocomplete="given-name"></label>
+        <label>שם משפחה<input name="last" required autocomplete="family-name"></label>
+      </div>
+      <label>טלפון<input name="phone" type="tel" required autocomplete="tel" dir="ltr" inputmode="tel"></label>
+      <label>הערה (לא חובה)<textarea name="note" rows="3"></textarea></label>
+      <button class="primary" type="submit">שמירה</button>
+      <p class="msg" id="cmsg" role="status"></p>
     </form>
   </section>
 
@@ -36,33 +56,64 @@
 <script src="/auth.js"></script>
 <script>
 (function(){
-  var mode='in', f=document.getElementById('f'), msg=document.getElementById('msg'), btn=f.querySelector('.primary');
-  var next=new URLSearchParams(location.search).get('next')||'/';
+  var mode='in', f=document.getElementById('f'), c=document.getElementById('c'), msg=document.getElementById('msg'), btn=f.querySelector('.primary');
+  var q=new URLSearchParams(location.search), next=q.get('next')||'/';
   if(next.charAt(0)!=='/'||next.charAt(1)==='/')next='/';
-  function say(t,err){msg.textContent=t;msg.classList.toggle('err',!!err)}
-  [].forEach.call(document.querySelectorAll('[data-tab]'),function(b){b.onclick=function(){
-    mode=b.getAttribute('data-tab');
-    [].forEach.call(document.querySelectorAll('[data-tab]'),function(x){x.setAttribute('aria-pressed',x===b)});
-    f.querySelector('[data-only="up"]').hidden=mode!=='up';
-    f.password.autocomplete=mode==='up'?'new-password':'current-password';
-    btn.textContent=mode==='up'?'הרשמה':'כניסה';say('');
-  }});
-  SITE.ready.then(function(st){if(st.user)say('אתה כבר מחובר בתור '+SITE.name()+'.')});
+  var back=location.origin+'/login/?next='+encodeURIComponent(next);
+  function say(el,t,err){el.textContent=t;el.classList.toggle('err',!!err)}
+  function setMode(m){
+    mode=m;
+    [].forEach.call(document.querySelectorAll('[data-tab]'),function(x){x.setAttribute('aria-pressed',x.getAttribute('data-tab')===m)});
+    [].forEach.call(f.querySelectorAll('[data-only="up"]'),function(x){x.hidden=m!=='up'});
+    f.first.required=f.last.required=f.phone.required=m==='up';
+    f.password.autocomplete=m==='up'?'new-password':'current-password';
+    btn.textContent=m==='up'?'הרשמה':'כניסה';say(msg,'');
+  }
+  [].forEach.call(document.querySelectorAll('[data-tab]'),function(b){b.onclick=function(){setMode(b.getAttribute('data-tab'))}});
+  if(q.get('up'))setMode('up');
+
+  var g=document.getElementById('google');
+  if(SITE.GOOGLE){g.hidden=false;g.onclick=function(){SITE.sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:back}})}}
+
+  // Logged in already: either finish the details or move on.
+  function showComplete(){
+    var p=SITE.state.profile||{};
+    document.getElementById('auth').hidden=true;c.hidden=false;
+    c.first.value=p.first_name||'';c.last.value=p.last_name||'';c.phone.value=p.phone||'';c.note.value=p.note||'';
+  }
+  SITE.ready.then(function(st){
+    if(!st.user)return;
+    if(SITE.incomplete())showComplete();
+    else if(q.get('complete')||location.hash.indexOf('access_token')>-1||q.get('code'))location.replace(next);
+    else say(msg,'אתה כבר מחובר בתור '+SITE.name()+'.');
+  });
+
+  c.onsubmit=async function(e){
+    e.preventDefault();var m=document.getElementById('cmsg');say(m,'רגע…');
+    var d={first_name:c.first.value.trim(),last_name:c.last.value.trim(),phone:c.phone.value.trim(),note:c.note.value.trim()||null};
+    d.full_name=d.first_name+' '+d.last_name;
+    var r=await SITE.sb.from('profiles').update(d).eq('id',SITE.state.user.id);
+    if(r.error){say(m,'משהו השתבש: '+r.error.message,true);return}
+    location.replace(next);
+  };
+
   f.onsubmit=async function(e){
     e.preventDefault();
-    if(!SITE.sb){say('אין חיבור לשרת כרגע. נסה שוב מאוחר יותר.',true);return}
-    btn.disabled=true;say('רגע…');
+    if(!SITE.sb){say(msg,'אין חיבור לשרת כרגע. נסה שוב מאוחר יותר.',true);return}
+    btn.disabled=true;say(msg,'רגע…');
     var email=f.email.value.trim(), password=f.password.value, r;
     if(mode==='up'){
-      r=await SITE.sb.auth.signUp({email:email,password:password,options:{data:{full_name:f.name.value.trim()}}});
-      if(!r.error&&!r.data.session){btn.disabled=false;say('נרשמת! שלחנו אליך מייל לאישור הכתובת. אחרי האישור אפשר להיכנס.');return}
+      var d={first_name:f.first.value.trim(),last_name:f.last.value.trim(),phone:f.phone.value.trim(),note:f.note.value.trim()};
+      d.full_name=d.first_name+' '+d.last_name;
+      r=await SITE.sb.auth.signUp({email:email,password:password,options:{data:d,emailRedirectTo:back}});
+      if(!r.error&&!r.data.session){btn.disabled=false;say(msg,'נרשמת! שלחנו אליך מייל עם קישור הפעלה. אחרי הלחיצה עליו אפשר להיכנס.');return}
     } else {
       r=await SITE.sb.auth.signInWithPassword({email:email,password:password});
     }
     btn.disabled=false;
     if(r.error){
-      var m=r.error.message||'';
-      say(/Invalid login/i.test(m)?'המייל או הסיסמה לא נכונים.':/already registered/i.test(m)?'המייל הזה כבר רשום. נסה "כניסה".':/Email not confirmed/i.test(m)?'צריך קודם לאשר את המייל (בדוק את תיבת הדואר).':'משהו השתבש: '+m,true);
+      var t=r.error.message||'';
+      say(msg,/Invalid login/i.test(t)?'המייל או הסיסמה לא נכונים.':/already registered/i.test(t)?'המייל הזה כבר רשום. נסה "כניסה".':/Email not confirmed/i.test(t)?'צריך קודם להפעיל את החשבון דרך הקישור שנשלח למייל.':/rate limit/i.test(t)?'יותר מדי ניסיונות כרגע. נסה שוב בעוד כמה דקות.':'משהו השתבש: '+t,true);
       return;
     }
     location.href=next;

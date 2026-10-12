@@ -2,6 +2,8 @@
 // The publishable key is meant to be public; row-level security in supabase/schema.sql guards the data.
 (function(){
   var URL='https://pfoxbjttzfdhunkxhkvz.supabase.co', KEY='sb_publishable_-UFwu9rEcGomns606YfG7Q_ij2q_oQs';
+  // Turn on once the Google provider is set up in Supabase (Authentication -> Sign In / Providers).
+  var GOOGLE=false;
 
   // Content tree. A grant on a path opens it and everything under it.
   var TREE=[
@@ -49,7 +51,12 @@
     return best;
   }
 
-  function name(){ return (state.profile&&state.profile.full_name)||(state.user&&state.user.email)||'' }
+  function name(){
+    var p=state.profile||{};
+    return (p.first_name||p.last_name?[p.first_name,p.last_name].filter(Boolean).join(' '):p.full_name)||(state.user&&state.user.email)||'';
+  }
+  // Google sign-ups arrive without a phone number; ask them to complete their details.
+  function incomplete(){ return !!(state.profile&&!state.profile.is_admin&&!state.profile.phone) }
 
   // Account link at the top of every page.
   function paintBar(){
@@ -58,7 +65,7 @@
     var next=encodeURIComponent(location.pathname+location.hash);
     if(state.user){
       bar.innerHTML=(state.profile&&state.profile.is_admin?'<a href="/admin/">ניהול</a><span>·</span>':'')+
-        '<span class="who"></span><span>·</span><button type="button" class="link" data-out>יציאה</button>';
+        '<span class="who"></span>'+(incomplete()?'<span>·</span><a href="/login/?complete=1&next='+next+'">השלמת פרטים</a>':'')+'<span>·</span><button type="button" class="link" data-out>יציאה</button>';
       bar.querySelector('.who').textContent=name();
       bar.querySelector('[data-out]').onclick=async function(){await sb.auth.signOut();location.reload()};
     } else {
@@ -68,7 +75,7 @@
   }
   ready.then(function(){ if(location.pathname.indexOf('/login')!==0) paintBar() });
 
-  window.SITE={sb:sb, ready:ready, state:state, access:access, name:name, TREE:TREE,
+  window.SITE={sb:sb, ready:ready, state:state, access:access, name:name, incomplete:incomplete, GOOGLE:GOOGLE, TREE:TREE,
     loadReads:async function(ch){ if(!state.user) return null; var r=await sb.from('reads').select('section').eq('user_id',state.user.id).eq('chapter',ch); return r.error?null:(r.data||[]).map(function(x){return String(x.section)}) },
     saveRead:function(ch,sec,on){ if(!state.user) return; var q=on?sb.from('reads').upsert({user_id:state.user.id,chapter:ch,section:+sec}):sb.from('reads').delete().eq('user_id',state.user.id).eq('chapter',ch).eq('section',+sec); q.then(function(){}) },
     saveQuiz:function(ch,sec,score,total){ if(!state.user) return; sb.from('quiz_results').insert({user_id:state.user.id,chapter:ch,section:+sec,score:score,total:total}).then(function(){}) }

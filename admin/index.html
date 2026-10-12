@@ -31,6 +31,10 @@ table.q{width:100%;border-collapse:collapse;font-size:.9rem}
 table.q th,table.q td{text-align:start;padding:6px 8px;border-bottom:1px solid var(--line)}
 table.q th{color:var(--muted);font-weight:600}
 details summary{cursor:pointer;color:var(--accent)}
+.note{margin:0;font-size:.95rem;background:var(--soft);border-radius:10px;padding:8px 12px}
+.tag{font-size:.75rem;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:1px 8px;vertical-align:middle}
+.u-head small a{color:inherit}
+.form.invite{max-width:none}
 </style>
 </head><body>
 <main dir="rtl" lang="he">
@@ -65,14 +69,15 @@ details summary{cursor:pointer;color:var(--accent)}
       sb.from('profiles').select('*').order('created_at',{ascending:false}),
       sb.from('grants').select('*'),
       sb.from('reads').select('*'),
-      sb.from('quiz_results').select('*').order('taken_at',{ascending:false})
+      sb.from('quiz_results').select('*').order('taken_at',{ascending:false}),
+      sb.from('invites').select('*').order('created_at',{ascending:false})
     ]);
-    var err=r.find(function(x){return x.error});
+    var err=r.slice(0,4).find(function(x){return x.error});
     if(err){app.innerHTML='<p class="msg err">שגיאה בטעינה: '+esc(err.error.message)+'</p>';return}
-    render(r[0].data,r[1].data,r[2].data,r[3].data);
+    render(r[0].data,r[1].data,r[2].data,r[3].data,r[4].error?null:r[4].data);
   }
 
-  function render(users,grants,reads,results){
+  function render(users,grants,reads,results,invites){
     var others=users.filter(function(u){return !u.is_admin});
     var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id})});
     var week=Date.now()-7*864e5;
@@ -82,6 +87,7 @@ details summary{cursor:pointer;color:var(--accent)}
       '<div class="stat"><b>'+pending.length+'</b><span>ממתינים לאישור</span></div>'+
       '<div class="stat"><b>'+active.length+'</b><span>נכנסו השבוע</span></div>'+
       '<div class="stat"><b>'+results.filter(function(x){return others.some(function(u){return u.id===x.user_id})}).length+'</b><span>בחינות שנעשו</span></div></div>';
+    h+=inviteBlock(invites);
     h+='<h2 style="margin-top:32px">משתמשים</h2>';
     if(!others.length)h+='<p class="none">עוד אין משתמשים רשומים. כשמישהו יירשם דרך "כניסה / הרשמה", הוא יופיע כאן.</p>';
     h+='<div class="users">';
@@ -91,11 +97,14 @@ details summary{cursor:pointer;color:var(--accent)}
       var ur=reads.filter(function(x){return x.user_id===u.id});
       var uq=results.filter(function(x){return x.user_id===u.id});
       h+='<article class="user'+(ug.length?'':' pending')+'" data-u="'+u.id+'">'+
-        '<div class="u-head"><div><h3>'+esc(u.full_name||'(ללא שם)')+'</h3><small dir="ltr">'+esc(u.email)+'</small></div>'+
+        '<div class="u-head"><div><h3>'+esc(uname(u))+(u.invited?' <span class="tag">נרשם מראש</span>':'')+'</h3><small dir="ltr">'+esc(u.email)+'</small>'+
+        (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
+      if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
+      if(!ug.length)h+='<div class="add"><button type="button" class="primary" data-ok>אישור: כל ההלכה, לימוד + מבחן</button><span class="none">או בחר למטה גישה מצומצמת</span></div>';
       h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){
         return '<span class="chip">'+esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')+'<button type="button" data-del="'+g.id+'" aria-label="הסרה">✕</button></span>'}).join(''):'<span class="none">עוד לא נפתח כלום (ממתין לאישור)</span>')+'</div>';
-      h+='<div class="add"><select data-path>'+SITE.TREE.map(function(n){return '<option value="'+n.path+'">'+'  '.repeat(depth(n.path))+esc(n.title)+'</option>'}).join('')+
+      h+='<div class="add"><select data-path>'+opts()+
         '</select><select data-mode><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select><button type="button" data-add>פתיחת גישה</button></div>';
       Object.keys(CHAPTERS).forEach(function(c){
         var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
@@ -111,8 +120,41 @@ details summary{cursor:pointer;color:var(--accent)}
     app.innerHTML=h+'</div>';
   }
 
+  function uname(u){return (u.first_name||u.last_name?[u.first_name,u.last_name].filter(Boolean).join(' '):u.full_name)||'(ללא שם)'}
+  function opts(){return SITE.TREE.map(function(n){return '<option value="'+n.path+'">'+'\u00a0\u00a0'.repeat(depth(n.path))+esc(n.title)+'</option>'}).join('')}
+
+  // Pre-registration: whoever signs up later with this email gets the access right away.
+  function inviteBlock(invites){
+    if(invites===null)return '<p class="msg" style="margin-top:24px">כדי להוסיף אנשים מראש, צריך להריץ קודם את supabase/v2.sql.</p>';
+    var open=invites.filter(function(i){return !i.used_at});
+    var h='<h2 style="margin-top:32px">הוספה מראש</h2><form class="form invite" id="inv">'+
+      '<div class="row"><label>שם פרטי<input name="first" required></label><label>שם משפחה<input name="last"></label></div>'+
+      '<div class="row"><label>מייל<input name="email" type="email" required dir="ltr"></label><label>טלפון<input name="phone" type="tel" dir="ltr"></label></div>'+
+      '<label>הערה<input name="note"></label>'+
+      '<div class="row"><label>מה נפתח לו<select name="path">'+opts()+'</select></label><label>סוג<select name="mode"><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select></label></div>'+
+      '<button class="primary" type="submit">הוספה</button><p class="none">כשהוא יירשם עם המייל הזה (בסיסמה או בגוגל), הגישה תיפתח לו לבד, בלי לחכות לאישור.</p></form>';
+    if(open.length){
+      h+='<h3 style="margin-top:20px">הוזמנו ועוד לא נרשמו ('+open.length+')</h3><table class="q"><thead><tr><th>שם</th><th>מייל</th><th>גישה</th><th></th></tr></thead><tbody>'+
+        open.map(function(i){return '<tr><td>'+esc([i.first_name,i.last_name].filter(Boolean).join(' '))+'</td><td dir="ltr">'+esc(i.email)+'</td><td>'+
+          (i.grants||[]).map(function(g){return esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')}).join(', ')+
+          '</td><td><button type="button" data-uninv="'+esc(i.email)+'" aria-label="ביטול">✕</button></td></tr>'}).join('')+'</tbody></table>';
+    }
+    return h;
+  }
+
+  app.addEventListener('submit',async function(e){
+    if(e.target.id!=='inv')return;
+    e.preventDefault();var f=e.target,b=f.querySelector('.primary');b.disabled=true;
+    var r=await sb.from('invites').upsert({email:f.email.value.trim().toLowerCase(),first_name:f.first.value.trim(),last_name:f.last.value.trim()||null,
+      phone:f.phone.value.trim()||null,note:f.note.value.trim()||null,grants:[{path:f.path.value,mode:f.mode.value}],used_at:null});
+    if(r.error){alert(r.error.message);b.disabled=false;return}
+    load();
+  });
+
   app.addEventListener('click',async function(e){
-    var del=e.target.closest('[data-del]'), add=e.target.closest('[data-add]');
+    var del=e.target.closest('[data-del]'), add=e.target.closest('[data-add]'), ok=e.target.closest('[data-ok]'), un=e.target.closest('[data-uninv]');
+    if(un){un.disabled=true;var r=await sb.from('invites').delete().eq('email',un.getAttribute('data-uninv'));if(r.error)alert(r.error.message);load()}
+    if(ok){ok.disabled=true;var r=await sb.from('grants').upsert({user_id:ok.closest('[data-u]').getAttribute('data-u'),path:'halacha',mode:'study'},{onConflict:'user_id,path'});if(r.error)alert(r.error.message);load()}
     if(del){del.disabled=true;var r=await sb.from('grants').delete().eq('id',+del.getAttribute('data-del'));if(r.error)alert(r.error.message);load()}
     if(add){
       var card=add.closest('[data-u]');add.disabled=true;

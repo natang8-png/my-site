@@ -1,4 +1,4 @@
--- Run once in Supabase: SQL Editor -> New query -> paste -> Run.
+-- Run once in Supabase: SQL Editor -> New query -> paste -> Run. Then run v2.sql.
 -- Content is addressed by path: 'halacha', 'halacha/<topic>', 'halacha/<topic>/<chapter>'.
 -- Safe to re-run while the tables are empty: it clears any half-finished earlier run first.
 
