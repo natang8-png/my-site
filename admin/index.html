@@ -37,6 +37,7 @@ details summary{cursor:pointer;color:var(--accent)}
 .form.invite{max-width:none}
 .add .close{border-color:#b4473a;color:#b4473a;background:none}
 .chip.plain{padding:3px 12px}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .help{color:var(--muted);font-size:.92rem;margin:-4px 0 14px}
 .help .g{color:var(--accent)}.help .r{color:#b4473a}
 </style>
@@ -130,7 +131,7 @@ details summary{cursor:pointer;color:var(--accent)}
   // Pre-registration: whoever signs up later with this email gets the access right away.
   function inviteBlock(invites){
     if(invites===null)return '<p class="msg" style="margin-top:24px">כדי להוסיף אנשים מראש, צריך להריץ קודם את supabase/v2.sql.</p>';
-    var open=invites.filter(function(i){return !i.used_at});
+    var open=invites.filter(function(i){return !i.used_at});window.__invites=open;
     var h='<h2 style="margin-top:32px">הוספת תלמיד</h2><form class="form invite" id="inv">'+
       '<label>הדבקה מהירה (לא חובה)<textarea name="paste" rows="2" placeholder="שם: ...; משפחה: ...; טלפון: ...; אימייל: ..."></textarea></label>'+
       '<div class="row"><label>שם פרטי<input name="first" required></label><label>שם משפחה<input name="last"></label></div>'+
@@ -139,10 +140,10 @@ details summary{cursor:pointer;color:var(--accent)}
       '<div class="row"><label>מה נפתח לו<select name="path">'+opts()+'</select></label><label>סוג<select name="mode"><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select></label></div>'+
       '<button class="primary" type="submit">הוספה</button><p class="none">התלמיד נכנס עם המייל והסיסמה הזמנית, ובכניסה הראשונה חייב לבחור סיסמה חדשה. הגישה שבחרת פתוחה לו מיד.</p><p class="msg" id="invmsg" role="status"></p></form>';
     if(open.length){
-      h+='<h3 style="margin-top:20px">הוזמנו ועוד לא נרשמו ('+open.length+')</h3><table class="q"><thead><tr><th>שם</th><th>מייל</th><th>גישה</th><th></th></tr></thead><tbody>'+
+      h+='<h3 style="margin-top:20px">הוזמנו ועוד לא נרשמו ('+open.length+')</h3><p class="help">הגישה שלהם כבר מאושרת (בעמודה "גישה") ותיפתח ברגע שיירשמו. <b class="g">פתיחת חשבון</b> יוצר להם חשבון כבר עכשיו עם סיסמה זמנית 123456. <b class="r">ביטול הזמנה</b> מבטל את האישור.</p><table class="q"><thead><tr><th>שם</th><th>מייל</th><th>גישה</th><th></th></tr></thead><tbody>'+
         open.map(function(i){return '<tr><td>'+esc([i.first_name,i.last_name].filter(Boolean).join(' '))+'</td><td dir="ltr">'+esc(i.email)+'</td><td>'+
           (i.grants||[]).map(function(g){return esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')}).join(', ')+
-          '</td><td><button type="button" class="close" data-uninv="'+esc(i.email)+'" title="ביטול ההזמנה (התלמיד לא יקבל גישה אוטומטית)">ביטול הזמנה</button></td></tr>'}).join('')+'</tbody></table>';
+          '</td><td class="acts"><button type="button" class="primary" data-mkacc="'+esc(i.email)+'" title="פותח לו חשבון עכשיו עם סיסמה זמנית 123456, עם הגישה שבעמודה גישה">פתיחת חשבון</button><button type="button" class="close" data-uninv="'+esc(i.email)+'" title="ביטול ההזמנה (התלמיד לא יקבל גישה אוטומטית)">ביטול הזמנה</button></td></tr>'}).join('')+'</tbody></table>';
     }
     return h;
   }
@@ -194,6 +195,16 @@ details summary{cursor:pointer;color:var(--accent)}
       if(tg.getAttribute('data-toggle')==='open') r=await sb.from('grants').upsert({user_id:uid,path:card.querySelector('[data-path]').value,mode:card.querySelector('[data-mode]').value},{onConflict:'user_id,path'});
       else r=await sb.from('grants').delete().eq('user_id',uid);
       if(r.error)alert(r.error.message);load();return;
+    }
+    var mk=e.target.closest('[data-mkacc]');
+    if(mk){
+      var inv=(window.__invites||[]).find(function(i){return i.email===mk.getAttribute('data-mkacc')})||{}, g=(inv.grants||[])[0]||{};
+      mk.disabled=true;
+      var r=await sb.rpc('admin_create_user',{p_email:inv.email,p_password:'123456',p_first:inv.first_name||null,p_last:inv.last_name||null,
+        p_phone:inv.phone||null,p_note:inv.note||null,p_path:g.path||null,p_mode:g.mode||null});
+      if(r.error){alert(/admin_create_user/.test(r.error.message)?'צריך קודם להריץ ב־Supabase את הקוד של הוספת תלמידים (v3).':r.error.message);mk.disabled=false;return}
+      alert('נפתח חשבון ✓\nשלח לו: '+location.origin+'/login/\nמייל: '+inv.email+'\nסיסמה: 123456 (יחליף בכניסה הראשונה)');
+      load();return;
     }
     if(un&&!confirm('לבטל את ההזמנה של '+un.getAttribute('data-uninv')+'?'))return;
     if(un){un.disabled=true;var r=await sb.from('invites').delete().eq('email',un.getAttribute('data-uninv'));if(r.error)alert(r.error.message);load()}
