@@ -135,12 +135,12 @@
   menu.addEventListener('click',function(){setOpen(panel.hidden)});
   panel.addEventListener('click',function(e){if(e.target.closest('a'))setOpen(false)});
   document.addEventListener('click',function(e){if(e.target===bar||!bar.contains(e.target))setOpen(false)});
-  // Row 1 appears once the chapter header is gone.
-  new IntersectionObserver(function(es){var on=!es[0].isIntersecting;bar.classList.toggle('show',on);bar.setAttribute('aria-hidden',!on);if(!on)setOpen(false)}).observe(head);
+  // Row 1 appears as soon as the chapter title slides under it.
+  new IntersectionObserver(function(es){var on=!es[0].isIntersecting&&es[0].boundingClientRect.top<60;bar.classList.toggle('show',on);bar.setAttribute('aria-hidden',!on);if(!on)setOpen(false)},{rootMargin:'-49px 0px 0px 0px'}).observe(head.querySelector('h1'));
   // Row 2: the visible section's title, once its own heading has scrolled under the bar.
   var hio=new IntersectionObserver(function(es){es.forEach(function(e){
     var sec=e.target.closest('.sec');if(!sec||sec.hidden)return;
-    bar.classList.toggle('sec-on',!e.isIntersecting&&e.boundingClientRect.top<0);
+    bar.classList.toggle('sec-on',!e.isIntersecting&&e.boundingClientRect.top<60);
   })},{rootMargin:'-60px 0px 0px 0px'});
   function current(){
     var sec=document.querySelector('.sec:not([hidden])');if(!sec)return;

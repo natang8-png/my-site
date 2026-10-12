@@ -30,7 +30,7 @@ li.next .ver strong{color:var(--muted)}
 /* Bottom bar on every page */
 footer{position:fixed;inset:auto 0 0 0;z-index:30;display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--muted);font-size:.85rem;
   background:var(--bg);border-top:1px solid var(--line);padding:8px max(20px,calc((100vw - 40rem)/2)) calc(8px + env(safe-area-inset-bottom))}
-body{padding-bottom:64px}
+body{padding-bottom:var(--foot-h,56px);margin-bottom:0}
 footer #theme{font-weight:600}
 button{font:inherit;color:var(--fg);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
 button:hover{border-color:var(--accent)}
@@ -158,7 +158,7 @@ main.quiz-only .sec-tools{justify-content:flex-end}
 .form .row>label{min-width:0}
 
 /* Chapter bar sits above the page bar */
-.sec-foot{bottom:56px}
+.sec-foot{bottom:var(--foot-h,56px)}
 /* Reading preferences */
 :root.a-bright{filter:brightness(var(--bright,1))}
 :root:not([data-theme="dark"])[data-bg="white"]{--bg:#ffffff;--soft:#f1f4f2}
@@ -210,11 +210,17 @@ main.home{padding-top:32px}
 .cb-panel a.current{background:var(--soft);color:var(--accent);font-weight:600}
 .cb-panel a.done::after{content:"✓";margin-inline-start:auto;color:var(--accent)}
 .cb-panel .num{color:var(--muted);min-width:1.6em}
-/* "חלון מלמטה" menu style, chosen in the עיצוב panel */
-:root[data-menu=sheet] .chbar.open{z-index:40}
-:root[data-menu=sheet] .chbar.open::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:-1}
-:root[data-menu=sheet] .cb-panel{position:fixed;left:0;right:0;bottom:0;height:auto;max-height:62dvh;background:var(--bg);border:1px solid var(--line);border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25);padding:8px 14px 20px}
-:root[data-menu=sheet] .cb-panel::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
-:root[data-menu=sheet] .cb-panel ol{padding-bottom:10px}
+/* Default chapter menu is a bottom sheet; "מסך מלא" in the עיצוב panel sets data-menu=full */
+:root:not([data-menu=full]) .chbar.open{z-index:40}
+:root:not([data-menu=full]) .chbar.open::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:-1}
+:root:not([data-menu=full]) .cb-panel{position:fixed;left:0;right:0;bottom:0;height:auto;max-height:62dvh;background:var(--bg);border:1px solid var(--line);border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25);padding:8px 14px 20px}
+:root:not([data-menu=full]) .cb-panel::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
+:root:not([data-menu=full]) .cb-panel ol{padding-bottom:10px}
 @media (prefers-reduced-motion:reduce){.chbar,.cb-sec{transition:none}}
 .sec{scroll-margin-top:60px}
+/* Magnet: near a section's start the page settles with its heading tucked into the top bar */
+html:has(main.chapter){scroll-snap-type:y proximity}
+.sec-head+.content{scroll-snap-align:start;scroll-margin-top:84px}
+/* The section bar sits right on the bottom bar, also at the very end of the page; no rubber-band stretch */
+main.chapter{padding-bottom:0}
+html{overscroll-behavior-y:none}

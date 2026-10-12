@@ -6,6 +6,10 @@
   document.getElementById('days-label').textContent=(d===1?'יום':'ימים')+' מאז שנשתל, ב־10 באוקטובר 2026';}
   // "עיצוב": reading preferences kept on this device (font size, background, dark mode, accessibility).
   var root=document.documentElement, btn=document.getElementById('theme');
+  // Height of the bottom bar, so the section bar above it never leaves a gap.
+  var foot=document.querySelector('footer');
+  function footH(){if(foot)root.style.setProperty('--foot-h',foot.offsetHeight+'px')}
+  footH();addEventListener('resize',footH);addEventListener('load',footH);
   var DEF={size:100,bg:'',theme:'',contrast:false,bright:100,plain:false,spacing:false,links:false,motion:false,menu:''};
   var P=Object.assign({},DEF);
   try{Object.assign(P,JSON.parse(localStorage.getItem('prefs')||'{}'));var old=localStorage.getItem('theme');if(old&&!P.theme)P.theme=old}catch(e){}
@@ -29,7 +33,7 @@
     '<h3>גודל אותיות</h3><div class="size"><button type="button" data-size="-10" aria-label="הקטנה">א־</button><output id="p-size"></output><button type="button" data-size="10" aria-label="הגדלה">א+</button></div>'+
     '<h3>צבע רקע</h3>'+seg('bg',[['','רגיל'],['white','לבן'],['cream','שמנת'],['gray','אפור']])+
     '<h3>מצב תצוגה</h3>'+seg('theme',[['','אוטומטי'],['light','בהיר'],['dark','כהה']])+
-    '<h3>תפריט הכותרות בפרק</h3>'+seg('menu',[['','מסך מלא'],['sheet','חלון מלמטה']])+
+    '<h3>תפריט הכותרות בפרק</h3>'+seg('menu',[['','חלון מלמטה'],['full','מסך מלא']])+
     '<details><summary>נגישות</summary>'+
       '<h3>בהירות</h3><input type="range" min="70" max="130" step="5" data-bright aria-label="בהירות">'+
       tog('contrast','ניגודיות גבוהה','טקסט כהה יותר וקווים בולטים')+
