@@ -75,16 +75,17 @@ details summary{cursor:pointer;color:var(--accent)}
       sb.from('grants').select('*'),
       sb.from('reads').select('*'),
       sb.from('quiz_results').select('*').order('taken_at',{ascending:false}),
-      sb.from('invites').select('*').order('created_at',{ascending:false})
+      sb.from('invites').select('*').order('created_at',{ascending:false}),
+      sb.from('access_requests').select('*').is('handled_at',null).order('created_at')
     ]);
     var err=r.slice(0,4).find(function(x){return x.error});
     if(err){app.innerHTML='<p class="msg err">שגיאה בטעינה: '+esc(err.error.message)+'</p>';return}
-    render(r[0].data,r[1].data,r[2].data,r[3].data,r[4].error?null:r[4].data);
+    render(r[0].data,r[1].data,r[2].data,r[3].data,r[4].error?null:r[4].data,r[5].error?null:r[5].data);
   }
 
-  function render(users,grants,reads,results,invites){
+  function render(users,grants,reads,results,invites,requests){
     var others=users.filter(function(u){return !u.is_admin});
-    var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id})});
+    var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id&&!isOwn(g.path)})});
     var week=Date.now()-7*864e5;
     var active=others.filter(function(u){return u.last_seen&&new Date(u.last_seen)>week});
     var h='<div class="stats">'+
@@ -92,13 +93,14 @@ details summary{cursor:pointer;color:var(--accent)}
       '<div class="stat"><b>'+pending.length+'</b><span>ממתינים לאישור</span></div>'+
       '<div class="stat"><b>'+active.length+'</b><span>נכנסו השבוע</span></div>'+
       '<div class="stat"><b>'+results.filter(function(x){return others.some(function(u){return u.id===x.user_id})}).length+'</b><span>בחינות שנעשו</span></div></div>';
+    h+=requestBlock(requests,users);
     h+=inviteBlock(invites);
     h+='<h2 style="margin-top:32px">משתמשים</h2><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
     if(!others.length)h+='<p class="none">עוד אין משתמשים רשומים. כשמישהו יירשם דרך "כניסה / הרשמה", הוא יופיע כאן.</p>';
     h+='<div class="users">';
     others.sort(function(a,b){return (pending.indexOf(b)>-1)-(pending.indexOf(a)>-1)});
     others.forEach(function(u){
-      var ug=grants.filter(function(g){return g.user_id===u.id});
+      var all=grants.filter(function(g){return g.user_id===u.id}), ug=all.filter(function(g){return !isOwn(g.path)});
       var ur=reads.filter(function(x){return x.user_id===u.id});
       var uq=results.filter(function(x){return x.user_id===u.id});
       h+='<article class="user'+(ug.length?'':' pending')+'" data-u="'+u.id+'">'+
@@ -106,7 +108,11 @@ details summary{cursor:pointer;color:var(--accent)}
         (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
       if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
-      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')+'</span>'}).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+'</div>';
+      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')+'</span>'}).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+
+        all.filter(function(g){return isOwn(g.path)}).map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+(SITE.live(g)?'עד '+day(g.expires_at):'הסתיים '+day(g.expires_at))+'</span>'}).join('')+'</div>';
+      // Chapters with their own permission: open for a week from here too, without waiting for a request.
+      h+=SITE.TREE.filter(function(n){return n.own}).map(function(n){var g=all.find(function(x){return x.path===n.path&&SITE.live(x)});
+        return '<div class="add"><button type="button" data-week="'+n.path+'">'+(g?'הארכה':'פתיחה')+' של '+esc(n.title)+' ל־'+n.days+' ימים</button></div>'}).join('');
       // One button: approve (with the chosen access) when closed, close (remove all access) when open.
       h+='<div class="add">'+(ug.length?'':'<select data-path>'+opts()+'</select><select data-mode><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select>')+
         '<button type="button" class="'+(ug.length?'close':'primary')+'" data-toggle="'+(ug.length?'close':'open')+'" title="'+(ug.length?'חסימת כל הגישה של התלמיד (אפשר לפתוח שוב)':'פתיחת הגישה שבחרת ברשימות')+'">'+(ug.length?'סגירה':'אישור')+'</button>'+
@@ -126,7 +132,26 @@ details summary{cursor:pointer;color:var(--accent)}
   }
 
   function uname(u){return (u.first_name||u.last_name?[u.first_name,u.last_name].filter(Boolean).join(' '):u.full_name)||'(ללא שם)'}
-  function opts(){return SITE.TREE.map(function(n){return '<option value="'+n.path+'">'+'\u00a0\u00a0'.repeat(depth(n.path))+esc(n.title)+'</option>'}).join('')}
+  function isOwn(path){return SITE.TREE.some(function(n){return n.path===path&&n.own})}
+  function day(t){return t?new Date(t).toLocaleDateString('he-IL',{day:'numeric',month:'long'}):''}
+  // Opens a time-limited chapter for its number of days, counted from now.
+  function openFor(uid,path){
+    var n=SITE.TREE.find(function(x){return x.path===path});
+    return sb.from('grants').upsert({user_id:uid,path:path,mode:'study',expires_at:new Date(Date.now()+n.days*864e5).toISOString()},{onConflict:'user_id,path'});
+  }
+
+  // Requests from students for chapters that need their own permission.
+  function requestBlock(requests,users){
+    if(requests===null)return '<p class="msg" style="margin-top:24px">כדי לקבל בקשות גישה (סדר ליל החתונה), צריך להריץ קודם את supabase/v4.sql.</p>';
+    var h='<h2 style="margin-top:32px">בקשות גישה'+(requests.length?' ('+requests.length+')':'')+'</h2>';
+    if(!requests.length)return h+'<p class="none">אין בקשות שממתינות.</p>';
+    h+='<p class="help"><b class="g">אישור</b> פותח את הפרק לתלמיד לשבוע מהיום, ואחר כך הוא נסגר מעצמו. <b class="r">דחייה</b> סוגרת את הבקשה, והתלמיד יכול לבקש שוב.</p><div class="users">';
+    return h+requests.map(function(q){var u=users.find(function(x){return x.id===q.user_id})||{};
+      return '<article class="user pending"><div class="u-head"><div><h3>'+esc(uname(u))+'</h3><small dir="ltr">'+esc(u.email)+'</small></div><div class="meta">ביקש: '+esc(title(q.path))+'<br>'+when(q.created_at)+'</div></div>'+
+        '<div class="add"><button type="button" class="primary" data-rq="'+q.id+'" data-ok="1">אישור לשבוע</button><button type="button" class="close" data-rq="'+q.id+'">דחייה</button></div></article>'}).join('')+'</div>';
+  }
+
+  function opts(){return SITE.TREE.filter(function(n){return !n.own}).map(function(n){return '<option value="'+n.path+'">'+'\u00a0\u00a0'.repeat(depth(n.path))+esc(n.title)+'</option>'}).join('')}
 
   // Pre-registration: whoever signs up later with this email gets the access right away.
   function inviteBlock(invites){
@@ -188,7 +213,23 @@ details summary{cursor:pointer;color:var(--accent)}
   });
 
   app.addEventListener('click',async function(e){
-    var tg=e.target.closest('[data-toggle]'), un=e.target.closest('[data-uninv]');
+    var tg=e.target.closest('[data-toggle]'), un=e.target.closest('[data-uninv]'), rq=e.target.closest('[data-rq]'), wk=e.target.closest('[data-week]');
+    if(rq){
+      rq.disabled=true;
+      var q=(await sb.from('access_requests').select('*').eq('id',rq.getAttribute('data-rq')).single()).data, ok=rq.hasAttribute('data-ok'), r1={};
+      if(ok) r1=await openFor(q.user_id,q.path);
+      if(r1.error){alert(r1.error.message);rq.disabled=false;return}
+      var r2=await sb.from('access_requests').update({handled_at:new Date().toISOString(),approved:ok}).eq('id',q.id);
+      if(r2.error)alert(r2.error.message);load();return;
+    }
+    if(wk){
+      wk.disabled=true;
+      var uid2=wk.closest('[data-u]').getAttribute('data-u'), r3=await openFor(uid2,wk.getAttribute('data-week'));
+      if(r3.error){alert(/expires_at/.test(r3.error.message)?'צריך קודם להריץ ב־Supabase את supabase/v4.sql.':r3.error.message);wk.disabled=false;return}
+      // A request that was waiting is answered by this too.
+      await sb.from('access_requests').update({handled_at:new Date().toISOString(),approved:true}).eq('user_id',uid2).eq('path',wk.getAttribute('data-week')).is('handled_at',null);
+      load();return;
+    }
     if(tg){
       var card=tg.closest('[data-u]'), uid=card.getAttribute('data-u'), r;tg.disabled=true;
       if(tg.getAttribute('data-toggle')==='close'&&!confirm('לסגור את כל הגישה של '+card.querySelector('h3').firstChild.textContent+'? אפשר לפתוח שוב אחר כך.')){tg.disabled=false;return}

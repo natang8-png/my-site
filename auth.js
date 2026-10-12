@@ -10,7 +10,9 @@
     {path:'halacha', title:'הלכה'},
     {path:'halacha/family', title:'טהרת המשפחה'},
     {path:'halacha/family/harchakot', title:'הרחקות'},
-    {path:'halacha/family/tumat-betulim', title:'טומאת בתולים'}
+    {path:'halacha/family/tumat-betulim', title:'טומאת בתולים'},
+    // Opens only with its own grant (a wider grant does not cover it), for one week at a time.
+    {path:'leil-hachatuna', title:'סדר ליל החתונה', own:true, days:7}
   ];
 
   var sb=null;
@@ -25,7 +27,7 @@
       state.user=s.user;
       var p=await sb.from('profiles').select('*').eq('id',s.user.id).maybeSingle();
       state.profile=p.data||null;
-      var g=await sb.from('grants').select('path,mode').eq('user_id',s.user.id);
+      var g=await sb.from('grants').select('*').eq('user_id',s.user.id);
       state.grants=g.data||[];
       touch();
     }catch(e){}
@@ -42,11 +44,13 @@
   }
 
   // 'study' (text + quiz), 'quiz' (quiz only) or null.
+  function live(g){ return !g.expires_at||new Date(g.expires_at)>new Date() }
   function access(path){
     if(state.profile&&state.profile.is_admin) return 'study';
-    var best=null;
+    var best=null, own=TREE.some(function(n){return n.path===path&&n.own});
     state.grants.forEach(function(g){
-      if(path===g.path||path.indexOf(g.path+'/')===0){ if(g.mode==='study') best='study'; else if(!best) best='quiz' }
+      if(!live(g)) return;
+      if(path===g.path||(!own&&path.indexOf(g.path+'/')===0)){ if(g.mode==='study') best='study'; else if(!best) best='quiz' }
     });
     return best;
   }
@@ -80,7 +84,7 @@
     paintBar();
   });
 
-  window.SITE={sb:sb, ready:ready, state:state, access:access, name:name, incomplete:incomplete, GOOGLE:GOOGLE, TREE:TREE,
+  window.SITE={sb:sb, ready:ready, state:state, access:access, live:live, name:name, incomplete:incomplete, GOOGLE:GOOGLE, TREE:TREE,
     loadReads:async function(ch){ if(!state.user) return null; var r=await sb.from('reads').select('section').eq('user_id',state.user.id).eq('chapter',ch); return r.error?null:(r.data||[]).map(function(x){return String(x.section)}) },
     saveRead:function(ch,sec,on){ if(!state.user) return; var q=on?sb.from('reads').upsert({user_id:state.user.id,chapter:ch,section:+sec}):sb.from('reads').delete().eq('user_id',state.user.id).eq('chapter',ch).eq('section',+sec); q.then(function(){}) },
     saveQuiz:function(ch,sec,score,total){ if(!state.user) return; sb.from('quiz_results').insert({user_id:state.user.id,chapter:ch,section:+sec,score:score,total:total}).then(function(){}) }
