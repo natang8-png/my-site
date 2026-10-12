@@ -83,6 +83,7 @@ begin
     end loop;
     update public.invites set used_at = now() where email = inv.email;
   end if;
+  if m ? 'created_by_admin' then return new; end if;  -- the admin added this person; no alert needed
   begin
     perform public.notify_admin(
       case when inv.email is not null then 'נרשם/ה (הוזמן/ה מראש)' else 'הרשמה חדשה ממתינה לאישור' end,

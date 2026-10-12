@@ -32,6 +32,14 @@
         <p class="msg" id="msg" role="status"></p>
       </form>
     </div>
+    <form class="form" id="pwf" hidden>
+      <h2>בחירת סיסמה חדשה</h2>
+      <p class="lead">זו הכניסה הראשונה שלך. בחר סיסמה משלך במקום הסיסמה הזמנית.</p>
+      <label>סיסמה חדשה<span class="pw"><input name="p1" type="password" required minlength="6" autocomplete="new-password" dir="ltr"><button type="button" class="eye" aria-label="הצגת הסיסמה" aria-pressed="false">👁</button></span></label>
+      <label>שוב, לאימות<span class="pw"><input name="p2" type="password" required minlength="6" autocomplete="new-password" dir="ltr"><button type="button" class="eye" aria-label="הצגת הסיסמה" aria-pressed="false">👁</button></span></label>
+      <button class="primary" type="submit">שמירה והמשך</button>
+      <p class="msg" id="pmsg" role="status"></p>
+    </form>
     <form class="form" id="c" hidden>
       <h2>השלמת פרטים</h2>
       <p class="lead">עוד כמה פרטים, ואתה בפנים.</p>
@@ -72,8 +80,10 @@
   [].forEach.call(document.querySelectorAll('[data-tab]'),function(b){b.onclick=function(){setMode(b.getAttribute('data-tab'))}});
   if(q.get('up'))setMode('up');
 
-  var eye=f.querySelector('.eye');
-  eye.onclick=function(){var show=f.password.type==='password';f.password.type=show?'text':'password';eye.setAttribute('aria-pressed',show);eye.setAttribute('aria-label',show?'הסתרת הסיסמה':'הצגת הסיסמה');eye.textContent=show?'🙈':'👁';f.password.focus()};
+  [].forEach.call(document.querySelectorAll('.eye'),function(eye){
+    var inp=eye.previousElementSibling;
+    eye.onclick=function(){var show=inp.type==='password';inp.type=show?'text':'password';eye.setAttribute('aria-pressed',show);eye.setAttribute('aria-label',show?'הסתרת הסיסמה':'הצגת הסיסמה');eye.textContent=show?'🙈':'👁';inp.focus()};
+  });
   var g=document.getElementById('google');
   if(SITE.GOOGLE){g.hidden=false;g.onclick=function(){SITE.sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:back}})}}
 
@@ -85,10 +95,24 @@
   }
   SITE.ready.then(function(st){
     if(!st.user)return;
+    if(st.profile&&st.profile.must_change_pw){document.getElementById('auth').hidden=true;pwf.hidden=false;return}
     if(SITE.incomplete())showComplete();
-    else if(q.get('complete')||location.hash.indexOf('access_token')>-1||q.get('code'))location.replace(next);
+    else if(q.get('complete')||q.get('change')||location.hash.indexOf('access_token')>-1||q.get('code'))location.replace(next);
     else say(msg,'אתה כבר מחובר בתור '+SITE.name()+'.');
   });
+
+  var pwf=document.getElementById('pwf');
+  pwf.onsubmit=async function(e){
+    e.preventDefault();var m=document.getElementById('pmsg');
+    if(pwf.p1.value!==pwf.p2.value){say(m,'שתי הסיסמאות לא זהות.',true);return}
+    if(pwf.p1.value==='123456'){say(m,'בחר סיסמה אחרת מהזמנית.',true);return}
+    say(m,'רגע…');
+    var r=await SITE.sb.auth.updateUser({password:pwf.p1.value});
+    if(r.error){say(m,/different from the old/i.test(r.error.message)?'בחר סיסמה אחרת מהקודמת.':'משהו השתבש: '+r.error.message,true);return}
+    await SITE.sb.from('profiles').update({must_change_pw:false}).eq('id',SITE.state.user.id);
+    SITE.state.profile.must_change_pw=false;
+    if(SITE.incomplete()){pwf.hidden=true;showComplete()}else location.replace(next);
+  };
 
   c.onsubmit=async function(e){
     e.preventDefault();var m=document.getElementById('cmsg');say(m,'רגע…');
@@ -118,6 +142,8 @@
       say(msg,/Invalid login/i.test(t)?'המייל או הסיסמה לא נכונים.':/already registered/i.test(t)?'המייל הזה כבר רשום. נסה "כניסה".':/Email not confirmed/i.test(t)?'צריך קודם להפעיל את החשבון דרך הקישור שנשלח למייל.':/rate limit/i.test(t)?'יותר מדי ניסיונות כרגע. נסה שוב בעוד כמה דקות.':'משהו השתבש: '+t,true);
       return;
     }
+    var p=await SITE.sb.from('profiles').select('must_change_pw').eq('id',r.data.user.id).maybeSingle();
+    if(p.data&&p.data.must_change_pw){location.replace('/login/?change=1&next='+encodeURIComponent(next));return}
     location.href=next;
   };
 })();

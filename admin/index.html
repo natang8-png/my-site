@@ -97,7 +97,7 @@ details summary{cursor:pointer;color:var(--accent)}
       var ur=reads.filter(function(x){return x.user_id===u.id});
       var uq=results.filter(function(x){return x.user_id===u.id});
       h+='<article class="user'+(ug.length?'':' pending')+'" data-u="'+u.id+'">'+
-        '<div class="u-head"><div><h3>'+esc(uname(u))+(u.invited?' <span class="tag">נרשם מראש</span>':'')+'</h3><small dir="ltr">'+esc(u.email)+'</small>'+
+        '<div class="u-head"><div><h3>'+esc(uname(u))+(u.invited?' <span class="tag">נוסף ע״י המנהל</span>':'')+(u.must_change_pw?' <span class="tag">עוד לא נכנס</span>':'')+'</h3><small dir="ltr">'+esc(u.email)+'</small>'+
         (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
       if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
@@ -127,12 +127,12 @@ details summary{cursor:pointer;color:var(--accent)}
   function inviteBlock(invites){
     if(invites===null)return '<p class="msg" style="margin-top:24px">כדי להוסיף אנשים מראש, צריך להריץ קודם את supabase/v2.sql.</p>';
     var open=invites.filter(function(i){return !i.used_at});
-    var h='<h2 style="margin-top:32px">הוספה מראש</h2><form class="form invite" id="inv">'+
+    var h='<h2 style="margin-top:32px">הוספת תלמיד</h2><form class="form invite" id="inv">'+
       '<div class="row"><label>שם פרטי<input name="first" required></label><label>שם משפחה<input name="last"></label></div>'+
       '<div class="row"><label>מייל<input name="email" type="email" required dir="ltr"></label><label>טלפון<input name="phone" type="tel" dir="ltr"></label></div>'+
-      '<label>הערה<input name="note"></label>'+
+      '<div class="row"><label>הערה<input name="note"></label><label>סיסמה זמנית<input name="pw" value="123456" required minlength="6" dir="ltr"></label></div>'+
       '<div class="row"><label>מה נפתח לו<select name="path">'+opts()+'</select></label><label>סוג<select name="mode"><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select></label></div>'+
-      '<button class="primary" type="submit">הוספה</button><p class="none">כשהוא יירשם עם המייל הזה (בסיסמה או בגוגל), הגישה תיפתח לו לבד, בלי לחכות לאישור.</p></form>';
+      '<button class="primary" type="submit">הוספה</button><p class="none">התלמיד נכנס עם המייל והסיסמה הזמנית, ובכניסה הראשונה חייב לבחור סיסמה חדשה. הגישה שבחרת פתוחה לו מיד.</p><p class="msg" id="invmsg" role="status"></p></form>';
     if(open.length){
       h+='<h3 style="margin-top:20px">הוזמנו ועוד לא נרשמו ('+open.length+')</h3><table class="q"><thead><tr><th>שם</th><th>מייל</th><th>גישה</th><th></th></tr></thead><tbody>'+
         open.map(function(i){return '<tr><td>'+esc([i.first_name,i.last_name].filter(Boolean).join(' '))+'</td><td dir="ltr">'+esc(i.email)+'</td><td>'+
@@ -145,10 +145,14 @@ details summary{cursor:pointer;color:var(--accent)}
   app.addEventListener('submit',async function(e){
     if(e.target.id!=='inv')return;
     e.preventDefault();var f=e.target,b=f.querySelector('.primary');b.disabled=true;
-    var r=await sb.from('invites').upsert({email:f.email.value.trim().toLowerCase(),first_name:f.first.value.trim(),last_name:f.last.value.trim()||null,
-      phone:f.phone.value.trim()||null,note:f.note.value.trim()||null,grants:[{path:f.path.value,mode:f.mode.value}],used_at:null});
-    if(r.error){alert(r.error.message);b.disabled=false;return}
-    load();
+    var email=f.email.value.trim().toLowerCase(), pw=f.pw.value;
+    var r=await sb.rpc('admin_create_user',{p_email:email,p_password:pw,p_first:f.first.value.trim(),p_last:f.last.value.trim()||null,
+      p_phone:f.phone.value.trim()||null,p_note:f.note.value.trim()||null,p_path:f.path.value,p_mode:f.mode.value});
+    var m=document.getElementById('invmsg');
+    if(r.error){m.textContent=/admin_create_user/.test(r.error.message)?'צריך קודם להריץ את supabase/v3.sql.':r.error.message;m.classList.add('err');b.disabled=false;return}
+    await load();
+    var m2=document.getElementById('invmsg');
+    if(m2)m2.textContent='נוסף ✓ שלח לו: כתובת '+location.origin+'/login/ · מייל '+email+' · סיסמה '+pw;
   });
 
   app.addEventListener('click',async function(e){

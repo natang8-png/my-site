@@ -73,7 +73,12 @@
     }
     main.insertBefore(bar,main.firstChild);
   }
-  ready.then(function(){ if(location.pathname.indexOf('/login')!==0) paintBar() });
+  ready.then(function(){
+    if(location.pathname.indexOf('/login')===0) return;
+    // A student the admin added still has the default password: change it before anything else.
+    if(state.profile&&state.profile.must_change_pw){ location.replace('/login/?change=1&next='+encodeURIComponent(location.pathname+location.hash)); return }
+    paintBar();
+  });
 
   window.SITE={sb:sb, ready:ready, state:state, access:access, name:name, incomplete:incomplete, GOOGLE:GOOGLE, TREE:TREE,
     loadReads:async function(ch){ if(!state.user) return null; var r=await sb.from('reads').select('section').eq('user_id',state.user.id).eq('chapter',ch); return r.error?null:(r.data||[]).map(function(x){return String(x.section)}) },
