@@ -204,8 +204,8 @@ main.home{padding-top:32px}
 .chbar.sec-on .cb-sec{max-height:30px;opacity:1;padding-bottom:6px}
 .cb-sname{color:var(--accent);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cb-snum{font-variant-numeric:tabular-nums}
-.cb-panel{border-top:1px solid var(--line);padding:6px 0 10px}
-.cb-panel ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;max-height:60vh;overflow:auto}
+.cb-panel{border-top:1px solid var(--line);padding:6px 0 10px;height:calc(100dvh - 49px);overflow:auto;overscroll-behavior:contain}
+.cb-panel ol{list-style:none;margin:0;padding:0 0 70px;display:grid;gap:2px}
 .cb-panel a{display:flex;gap:8px;padding:6px 8px;border-radius:8px;text-decoration:none}
 .cb-panel a.current{background:var(--soft);color:var(--accent);font-weight:600}
 .cb-panel a.done::after{content:"✓";margin-inline-start:auto;color:var(--accent)}
