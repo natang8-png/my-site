@@ -5,7 +5,7 @@
     '.req-box p{margin:0}.req-box .acts{display:flex;gap:8px;flex-wrap:wrap}'+
     'dialog.req{border:1px solid var(--line);border-radius:16px;padding:0;background:var(--bg);color:var(--fg);width:min(26rem,calc(100vw - 32px))}'+
     'dialog.req::backdrop{background:rgb(0 0 0/.45)}dialog.req .req-box{border:0;background:none}'+
-    '.topic .lock{font-size:.85em;margin-inline-start:6px}.until{color:var(--muted);font-size:.92rem;margin:0}';
+    '.topic[data-lock],.pn[data-lock],dialog.req{--accent:#2d5f93}:root[data-theme="dark"] .topic[data-lock],:root[data-theme="dark"] .pn[data-lock]{--accent:#8fbbe8}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .topic[data-lock],:root:not([data-theme="light"]) .pn[data-lock]{--accent:#8fbbe8}}.topic .lock{font-size:.85em;margin-inline-start:6px}.until{color:var(--muted);font-size:.92rem;margin:0}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   function day(t){return new Date(t).toLocaleDateString('he-IL',{day:'numeric',month:'long'})}

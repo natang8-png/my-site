@@ -25,7 +25,7 @@ n = len(heads)
 
 # Private chapters: hidden until the reader's permission is confirmed; reading is tracked quietly for the admin.
 PRIVATE_HEAD = """<meta name="robots" content="noindex">
-<style>main.checking .sec,main.checking .toc,main.priv-locked .sec,main.priv-locked .toc{display:none}.read-end{display:block;height:1px}html:has(main[data-track]) .cb-read{display:none}.content ul.dots,.content ol.nums{margin:0;padding-inline-start:1.4em;display:grid;gap:.55em}.content ul.dots li::marker{color:var(--accent)}</style>
+<style>main.checking .sec,main.checking .toc,main.priv-locked .sec,main.priv-locked .toc{display:none}.read-end{display:block;height:1px}html:has(main[data-track]) .cb-read{display:none}html:has(main[data-track]){--accent:#2d5f93 !important;--soft:#e8eff8}@media (prefers-color-scheme:dark){html:not([data-theme="light"]):has(main[data-track]){--accent:#8fbbe8 !important;--soft:#18212c}}html[data-theme="dark"]:has(main[data-track]){--accent:#8fbbe8 !important;--soft:#18212c}.content ul.dots,.content ol.nums{margin:0;padding-inline-start:1.4em;display:grid;gap:.55em}.content ul.dots li::marker{color:var(--accent)}</style>
 </head><body>
 """
 PRIVATE_TAIL = f"""<script src="/private.js"></script>
