@@ -2,19 +2,54 @@
 
 Usage: python3 tools/build_chapter.py harchakot
 A section file may end with <ol class="notes" start="N">…</ol> for its footnotes.
+A "private" chapter opens only with its own time-limited permission (see private.js): no quiz, no "קראתי",
+and reading is recorded automatically for the admin when the reader reaches the end of a section.
 """
 import os, sys, html
 
 CHAPTERS = {
     "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
+    "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="", num=3, of=3, path="leil-hachatuna", private=True),
 }
 
 slug = sys.argv[1]
 ch = CHAPTERS[slug]
+private = ch.get("private", False)
 src = f"_src/{slug}"
 heads = [h.strip() for h in open(f"{src}/headings.txt", encoding="utf-8") if h.strip()]
 n = len(heads)
+
+# Private chapters: hidden until the reader's permission is confirmed; reading is tracked quietly for the admin.
+PRIVATE_HEAD = """<meta name="robots" content="noindex">
+<style>main.checking .sec,main.checking .toc,main.priv-locked .sec,main.priv-locked .toc{display:none}.read-end{display:block;height:1px}</style>
+</head><body>
+"""
+PRIVATE_TAIL = f"""<script src="/private.js"></script>
+<script>
+(async function(){{
+  var main=document.querySelector('main[data-track]'), ch=main.getAttribute('data-track'), gate=document.getElementById('gate');
+  var open=await LOCK.paint(gate,'{ch["path"]}');
+  main.classList.remove('checking');
+  if(!open){{main.classList.add('priv-locked');gate.hidden=false;return}}
+  var g=LOCK.grantOf('{ch["path"]}'), u=document.getElementById('until'), st=SITE.state;
+  if(g&&g.expires_at&&!st.profile.is_admin){{u.textContent='הפרק פתוח לך עד '+LOCK.day(g.expires_at)+'.';u.hidden=false}}
+  if(!st.user||st.profile&&st.profile.is_admin) return;
+  // A section counts as read when its end comes into view after at least 15 seconds on it. Only the admin sees this.
+  var done={{}}, since={{}};
+  try{{(await SITE.loadReads(ch)||[]).forEach(function(n){{done[n]=1}})}}catch(e){{}}
+  var io=new IntersectionObserver(function(es){{es.forEach(function(e){{
+    var n=e.target.getAttribute('data-end'), sec=e.target.closest('.sec');
+    if(!e.isIntersecting||done[n]||sec.hidden) return;
+    var wait=15000-(Date.now()-(since[n]||Date.now()));
+    setTimeout(function(){{ if(!done[n]&&!sec.hidden){{done[n]=1;SITE.saveRead(ch,n,true)}} }},Math.max(0,wait));
+  }})}},{{rootMargin:'0px 0px 30% 0px'}});
+  [].forEach.call(document.querySelectorAll('.read-end'),function(el){{io.observe(el)}});
+  function seen(){{var s=document.querySelector('.sec:not([hidden])');if(s){{var n=s.id.slice(1);if(!since[n])since[n]=Date.now()}}}}
+  seen();window.addEventListener('hashchange',seen);
+}})();
+</script>
+"""
 
 toc, secs = [], []
 for i, h in enumerate(heads, 1):
@@ -34,9 +69,9 @@ for i, h in enumerate(heads, 1):
     <div class="sec-head"><h2 id="s{i}-h">{html.escape(h)}</h2><span class="sec-num" aria-label="קטע {i} מתוך {n}">{i}/{n}</span></div>
     <div class="content">
 {body}
-    </div>
+    </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}
     <div class="sec-foot">
-      <div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label><button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button></div>
+      {"" if private else f'<div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label><button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button></div>'}
       <nav class="pager" aria-label="ניווט בין קטעים">{prev}{mid}{nxt}</nav>
     </div>
   </section>''')
@@ -47,16 +82,17 @@ page = f'''<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
 <link rel="stylesheet" href="/style.css">
-</head><body>
-<main dir="rtl" lang="he" class="chapter" data-chapter="{slug}" data-path="{ch["path"]}">
+{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{slug}" data-path="{ch["path"]}"'}>
   <header>
     <a class="back" href="/halacha/">→ חזרה להלכה</a>
     <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}</div>
     <h1>{ch["title"]}</h1>
-    <p class="lead">{ch["subtitle"]}</p>
+    {f'<p class="lead">{ch["subtitle"]}</p>' if ch.get("subtitle") else ""}
+    {'<p class="until" id="until" hidden></p>' if private else ""}
     {f'<p class="credit">{ch["credit"]}</p>' if ch.get("credit") else ""}
   </header>
 
+  {'<div id="gate" hidden></div>' if private else ""}
   <details class="toc" id="toc">
     <summary><span>כל הכותרות</span><span class="toc-count" data-total="{n}">{n} קטעים</span></summary>
     <ol>
@@ -75,7 +111,7 @@ page = f'''<!doctype html>
 <script src="/vendor/supabase.js"></script>
 <script src="/auth.js"></script>
 <script src="/chapter.js"></script>
-</body></html>
+{PRIVATE_TAIL if private else ""}</body></html>
 '''
 os.makedirs(f"halacha/{slug}", exist_ok=True)
 open(f"halacha/{slug}/index.html", "w", encoding="utf-8").write(page)
