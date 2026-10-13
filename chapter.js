@@ -128,7 +128,7 @@
   var back=head.querySelector('.back'), title=head.querySelector('h1').textContent;
   var bar=document.createElement('header');bar.className='chbar';bar.dir='rtl';
   bar.innerHTML='<div class="cb-row"><a class="cb-back" href="'+(back?back.getAttribute('href'):'/')+'" aria-label="חזרה לרשימת הפרקים">→</a>'+
-    '<div class="cb-mid"><span class="cb-title"></span><span class="cb-sname"></span></div>'+
+    '<span class="cb-ico" aria-hidden="true" hidden></span><div class="cb-mid"><span class="cb-title"></span><span class="cb-sname"></span></div>'+
     '<span class="cb-snum"></span></div>'+
     '<div class="cb-panel" hidden></div>';
   bar.querySelector('.cb-title').textContent=title;
@@ -148,6 +148,9 @@
   document.addEventListener('keydown',function(e){if(e.key==='Escape')setOpen(false)});
   function current(){
     var sec=document.querySelector('.sec:not([hidden])'), num=bar.querySelector('.cb-snum');
+    // Graphic chapters: the section's icon sits between the back arrow and the two title lines.
+    var ico=bar.querySelector('.cb-ico'), si=sec&&sec.querySelector('.sec-ico');
+    ico.innerHTML=si?si.innerHTML:'';ico.hidden=!si;
     num.hidden=!sec;
     if(!sec){bar.querySelector('.cb-sname').textContent='תוכן עניינים';return}
     var i=sec.id.slice(1);
