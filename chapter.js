@@ -175,7 +175,7 @@
   new MutationObserver(fit).observe(document.documentElement,{attributes:true,attributeFilter:['style','class']});
 })();
 
-// Reading bar fixed to the screen bottom: previous / menu (read count) / quiz / design / next / "קראתי" (marks and moves on).
+// Reading bar fixed to the screen bottom: previous / menu (read count) / quiz / accessibility / next / "קראתי" (marks and moves on).
 // It replaces each section's own bar and the page footer. Private chapters (data-track) get it without "קראתי" and the quiz.
 (function(){
   var main=document.querySelector('main.chapter'), toc=document.getElementById('toc');
@@ -189,7 +189,7 @@
     '<button type="button" class="rb-b" data-go="-1"><i>→</i><span>הקודם</span></button>'+
     '<button type="button" class="rb-b" data-rb="menu"><i>☰</i><span class="rb-count"></span></button>'+
     (quizzes?'<button type="button" class="rb-b rb-quiz" data-rb="quiz"><i>?</i><span>שאלון</span></button>':'')+
-    '<button type="button" class="rb-b" data-rb="design"><i>Aa</i><span>עיצוב</span></button>'+
+    '<button type="button" class="rb-b" data-rb="design"><i>♿</i><span>נגישות</span></button>'+
     '<button type="button" class="rb-b" data-go="1"><i>←</i><span>הבא</span></button>'+
     (priv?'':'<button type="button" class="rb-read" data-rb="read"></button>')+
     '</div><div class="rb-toast" role="status" hidden></div>';

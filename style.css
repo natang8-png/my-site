@@ -246,3 +246,7 @@ main.locked ~ .rbar .rb-read,main.locked ~ .rbar .rb-quiz,main.quiz-only ~ .rbar
 main.checking ~ .rbar .rb-read{visibility:hidden}
 main.priv-locked ~ .rbar,main[data-track].checking ~ .rbar{display:none}
 @media (prefers-reduced-motion:reduce){.rb-prog i{transition:none}}
+.prefs .grp{font-family:var(--display);font-size:1.1rem;color:var(--accent);margin:18px 0 2px;padding-top:12px;border-top:1px solid var(--line)}
+.prefs .p-head+.grp{border-top:0;padding-top:0;margin-top:4px}
+.prefs .a11y{margin-top:6px}
+.rb-b i{font-family:system-ui,sans-serif}
