@@ -11,7 +11,7 @@ and reading is recorded automatically for the admin when the reader reaches the 
 import os, sys, html
 
 CHAPTERS = {
-    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
+    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot", graphic=True,
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
     # Same text, sources and progress as "harchakot" (shared "קראתי" and quiz results), plus graphics. Opens with its own
     # permission, so Natan can proofread the graphics while students keep the plain chapter. Icons: tools/icons.py.
