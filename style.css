@@ -222,6 +222,8 @@ html.has-tbar main.chapter{padding-top:20px}
 .sec{scroll-margin-top:70px}
 /* Magnet: near a section's start the page settles with its heading in view, just under the top bar */
 html:has(main.chapter){scroll-snap-type:y proximity}
+/* The first section opens at the very top of the page (chapter title and headings list), so no magnet there */
+html.one-sec:not(.later-sec){scroll-snap-type:none}
 .sec-head{scroll-snap-align:start;scroll-margin-top:70px}
 /* The section bar sits right on the bottom bar, also at the very end of the page; no rubber-band stretch */
 main.chapter{padding-bottom:0}
