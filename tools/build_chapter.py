@@ -105,7 +105,7 @@ page = f'''<!doctype html>
 
   {'<div id="gate" hidden></div>' if private else ""}
   <details class="toc" id="toc">
-    <summary><span>כל הכותרות</span><span class="toc-count" data-total="{n}">{n} קטעים</span></summary>
+    <summary><span>תוכן עניינים</span><span class="toc-count" data-total="{n}">{n} קטעים</span></summary>
     <ol>
       {chr(10).join("      "+t for t in toc).strip()}
     </ol>

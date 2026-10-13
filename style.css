@@ -220,11 +220,7 @@ html.has-tbar main.chapter{padding-top:20px}
 :root:not([data-menu=full]) .cb-panel::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
 :root:not([data-menu=full]) .cb-panel ol{padding-bottom:10px}
 .sec{scroll-margin-top:70px}
-/* Magnet: near a section's start the page settles with its heading in view, just under the top bar */
-html:has(main.chapter){scroll-snap-type:y proximity}
-/* The first section opens at the very top of the page (chapter title and headings list), so no magnet there */
-html.one-sec:not(.later-sec){scroll-snap-type:none}
-.sec-head{scroll-snap-align:start;scroll-margin-top:70px}
+/* No scroll magnet: it pulled the page back to the heading when reading a section's end (the footnotes) */
 /* The section bar sits right on the bottom bar, also at the very end of the page; no rubber-band stretch */
 main.chapter{padding-bottom:0}
 html{overscroll-behavior-y:none}

@@ -8,19 +8,20 @@
     var el=id&&document.getElementById(id), host=el&&el.closest&&el.closest('.sec');
     if(host)id=host.id;
     secs.forEach(function(s){var on=s.id===id;s.hidden=!on;if(on)found=true});
-    if(!found){secs[0].hidden=false;id=secs[0].id}
-    // The chapter's opening (title, credit and the full headings list) belongs to the first section only.
-    document.documentElement.classList.toggle('later-sec',id!==secs[0].id);
+    // No section in the address: the chapter's own opening page, "תוכן עניינים" (title, credit and the headings list).
+    // Each section, from 1 (הקדמה) on, is a page of its own without that opening.
+    document.documentElement.classList.toggle('later-sec',found);
     [].forEach.call(toc.querySelectorAll('a'),function(a){a.classList.toggle('current',a.getAttribute('href')==='#'+id)});
   }
   // The headings list stays open: it is a plain list, not a button.
   toc.open=true;toc.querySelector('summary').addEventListener('click',function(e){e.preventDefault()});
+  toc.querySelector('summary span').textContent='תוכן עניינים';
   window.addEventListener('hashchange',function(){show();var t=document.getElementById(location.hash.slice(1));var cur=document.querySelector('.sec:not([hidden])');
-    if(cur===secs[0]&&(!t||t===cur)){scrollTo(0,0);return}
+    if(!cur){scrollTo(0,0);return}
     ((t&&t.closest('.sec'))?t:cur).scrollIntoView({block:'start'})});
   [].forEach.call(document.querySelectorAll('[data-open-toc]'),function(b){b.addEventListener('click',function(){toc.open=true;toc.scrollIntoView({block:'start'});var c=toc.querySelector('a.current');if(c)c.focus()})});
   show();
-  if(location.hash){var cur=document.querySelector('.sec:not([hidden])');if(cur&&cur!==secs[0])cur.scrollIntoView({block:'start'})}
+  if(location.hash){var cur=document.querySelector('.sec:not([hidden])');if(cur)cur.scrollIntoView({block:'start'})}
 })();
 
 // "קראתי" marks: saved to the account when logged in, otherwise in this browser
@@ -146,10 +147,12 @@
   document.addEventListener('click',function(e){if(e.target===bar||!bar.contains(e.target))setOpen(false)});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')setOpen(false)});
   function current(){
-    var sec=document.querySelector('.sec:not([hidden])');if(!sec)return;
+    var sec=document.querySelector('.sec:not([hidden])'), num=bar.querySelector('.cb-snum');
+    num.hidden=!sec;
+    if(!sec){bar.querySelector('.cb-sname').textContent='תוכן עניינים';return}
     var i=sec.id.slice(1);
     bar.querySelector('.cb-sname').textContent=sec.querySelector('h2').textContent;
-    var num=bar.querySelector('.cb-snum');num.textContent='קטע '+i+'/'+total;num.setAttribute('aria-label','קטע '+i+' מתוך '+total);
+    num.textContent='קטע '+i+'/'+total;num.setAttribute('aria-label','קטע '+i+' מתוך '+total);
   }
   window.addEventListener('hashchange',function(){setTimeout(current,0)});current();
 })();
@@ -197,22 +200,23 @@
   document.documentElement.classList.add('has-rbar');
   var prog=document.createElement('div');prog.className='rb-prog';prog.innerHTML='<i></i>';
   (document.querySelector('.chbar')||bar).appendChild(prog);
-  function cur(){var s=document.querySelector('.sec:not([hidden])')||secs[0];return +s.id.slice(1)}
+  function cur(){var s=document.querySelector('.sec:not([hidden])');return s?+s.id.slice(1):0} // 0 = תוכן עניינים
   function isRead(i){var a=toc.querySelector('a[href="#s'+i+'"]');return !!(a&&a.classList.contains('done'))}
-  function go(i){var back=main.querySelector('header .back');if(i<1){location.href=back?back.getAttribute('href'):'/';return}if(i<=n)location.hash='#s'+i}
+  function go(i){var back=main.querySelector('header .back');if(i<0){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}if(i<=n)location.hash='#s'+i}
   function paint(){
     var i=cur(), done=toc.querySelectorAll('a.done').length;
-    bar.querySelector('[data-go="-1"] span').textContent=i>1?'הקודם':'חזרה';
+    bar.querySelector('[data-go="-1"] span').textContent=i>1?'הקודם':i===1?'תוכן':'חזרה';
     bar.querySelector('[data-go="1"]').disabled=i>=n;
     bar.querySelector('.rb-count').textContent=priv?'כותרות':'✓ '+done+'/'+n;
     prog.firstChild.style.width=(100*(priv?i:done)/n)+'%';
     var r=bar.querySelector('.rb-read');
-    if(r){var rd=isRead(i);r.classList.toggle('done',rd);
+    if(r)r.hidden=!i;
+    if(r&&i){var rd=isRead(i);r.classList.toggle('done',rd);
       r.textContent=rd?'נקרא ✓':(i>=n?'סיימתי ✓':'קראתי ✓');
       r.title=rd?'לחיצה מבטלת את הסימון':(i>=n?'סימון הקטע האחרון כנקרא':'סימון כנקרא ומעבר לקטע הבא')}
     var q=bar.querySelector('.rb-quiz');
     if(q){var sc=scores[i], has=!qdata||(qdata[i]||[]).length>0;
-      q.disabled=!has;q.classList.toggle('todo',has&&!sc);
+      q.disabled=!has||!i;q.classList.toggle('todo',has&&!sc);
       q.querySelector('span').textContent=sc?sc:'שאלון'}
   }
   function toast(t){var el=bar.querySelector('.rb-toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},3500)}
@@ -248,7 +252,7 @@
     if(sx===null)return;var t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;sx=null;
     if(Math.abs(dx)<70||Math.abs(dy)>Math.abs(dx)*0.6)return;
     if(String(window.getSelection&&getSelection())!=='')return;
-    var i=cur();if(dx>0&&i<n)go(i+1);else if(dx<0&&i>1)go(i-1);
+    var i=cur();if(dx>0&&i<n)go(i+1);else if(dx<0&&i>=1)go(i-1);
   },{passive:true});
   new MutationObserver(paint).observe(toc,{subtree:true,attributes:true,attributeFilter:['class']});
   window.addEventListener('hashchange',function(){setTimeout(paint,0)});
