@@ -110,46 +110,51 @@
   dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close()});
 })();
 
-// Compact top bar while reading: back arrow, chapter name and the headings menu (with read count);
-// a second, smaller row with the current section's title once its heading scrolls away.
+// Slim top bar, always on while reading: back to the chapter list, chapter name over the current heading,
+// and a round account button (name, details, sign out). The headings menu itself opens from the bottom bar.
 (function(){
   var main=document.querySelector('main.chapter'), head=main&&main.querySelector('header'), toc=document.getElementById('toc');
   if(!main||!head||!toc) return;
   var total=+(toc.querySelector('[data-total]')||{}).getAttribute('data-total')||toc.querySelectorAll('a').length;
   var back=head.querySelector('.back'), title=head.querySelector('h1').textContent;
-  var bar=document.createElement('div');bar.className='chbar';bar.setAttribute('aria-hidden','true');
-  bar.innerHTML='<div class="cb-row"><a class="cb-back" href="'+(back?back.getAttribute('href'):'/')+'" aria-label="חזרה">→</a>'+
-    '<span class="cb-title"></span><button type="button" class="cb-menu" aria-expanded="false" aria-label="תפריט כותרות"><span class="cb-ico">☰</span><span class="cb-read"></span></button></div>'+
-    '<div class="cb-sec"><span class="cb-sname"></span><span class="cb-snum"></span></div>'+
+  var bar=document.createElement('header');bar.className='chbar show';bar.dir='rtl';
+  bar.innerHTML='<div class="cb-row"><a class="cb-back" href="'+(back?back.getAttribute('href'):'/')+'" aria-label="חזרה לרשימת הפרקים">→</a>'+
+    '<div class="cb-mid"><span class="cb-title"></span><span class="cb-sname"></span></div>'+
+    '<div class="cb-me"><button type="button" class="cb-av" aria-expanded="false" aria-label="החשבון שלי">👤</button><div class="cb-pop" hidden></div></div></div>'+
     '<div class="cb-panel" hidden></div>';
   bar.querySelector('.cb-title').textContent=title;
   document.body.appendChild(bar);
-  var panel=bar.querySelector('.cb-panel'), menu=bar.querySelector('.cb-menu');
+  document.documentElement.classList.add('has-tbar');
+  var panel=bar.querySelector('.cb-panel');
   panel.appendChild(toc.querySelector('ol').cloneNode(true));
   function sync(){ // read marks and current section mirror the main menu
     var src=toc.querySelectorAll('a'), dst=panel.querySelectorAll('a');
     [].forEach.call(src,function(a,i){if(dst[i])dst[i].className=a.className});
-    bar.querySelector('.cb-read').textContent=toc.querySelectorAll('a.done').length+'/'+total;
   }
   new MutationObserver(sync).observe(toc,{subtree:true,attributes:true,attributeFilter:['class']});sync();
-  var topOn=false;
-  function setOpen(on){panel.hidden=!on;menu.setAttribute('aria-expanded',on);bar.classList.toggle('open',on);bar.classList.toggle('show',on||topOn)}
+  function setOpen(on){panel.hidden=!on;bar.classList.toggle('open',on)}
   window.openChapterMenu=function(){setOpen(true);var c=panel.querySelector('a.current');if(c)c.scrollIntoView({block:'center'})};
-  menu.addEventListener('click',function(){setOpen(panel.hidden)});
   panel.addEventListener('click',function(e){if(e.target.closest('a'))setOpen(false)});
-  document.addEventListener('click',function(e){if(e.target===bar||!bar.contains(e.target))setOpen(false)});
-  // Row 1 appears as soon as the chapter title slides under it.
-  new IntersectionObserver(function(es){var on=!es[0].isIntersecting&&es[0].boundingClientRect.top<60;topOn=on;bar.classList.toggle('show',on);bar.setAttribute('aria-hidden',!on);if(!on)setOpen(false)},{rootMargin:'-49px 0px 0px 0px'}).observe(head.querySelector('h1'));
-  // Row 2: the visible section's title, once its own heading has scrolled under the bar.
-  var hio=new IntersectionObserver(function(es){es.forEach(function(e){
-    var sec=e.target.closest('.sec');if(!sec||sec.hidden)return;
-    bar.classList.toggle('sec-on',!e.isIntersecting&&e.boundingClientRect.top<60);
-  })},{rootMargin:'-60px 0px 0px 0px'});
+  // Account: the page's own account line moves into a small window under the round button.
+  var av=bar.querySelector('.cb-av'), pop=bar.querySelector('.cb-pop');
+  function setPop(on){pop.hidden=!on;av.setAttribute('aria-expanded',on)}
+  av.addEventListener('click',function(){setPop(pop.hidden)});
+  document.addEventListener('click',function(e){
+    if(e.target===bar||!bar.contains(e.target))setOpen(false);
+    if(!e.target.closest('.cb-me'))setPop(false);
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){setOpen(false);setPop(false)}});
+  if(window.SITE)SITE.ready.then(function(){setTimeout(function(){
+    var acct=main.querySelector('.acct');if(!acct)return;
+    var nm=SITE.state.user&&SITE.name();
+    if(nm){av.textContent=nm.trim().charAt(0);av.title=nm;
+      var who=acct.querySelector('.who');if(who){var b=document.createElement('b');b.textContent=nm;who.remove();acct.insertBefore(b,acct.firstChild)}}
+    [].forEach.call(acct.querySelectorAll('span'),function(x){if(x.textContent==='·')x.remove()});
+    pop.appendChild(acct);
+  },0)});
   function current(){
     var sec=document.querySelector('.sec:not([hidden])');if(!sec)return;
-    var h=sec.querySelector('h2');bar.querySelector('.cb-sname').textContent=h.textContent;
-    bar.querySelector('.cb-snum').textContent=sec.id.slice(1)+'/'+total;
-    hio.disconnect();hio.observe(h);bar.classList.remove('sec-on');
+    var h=sec.querySelector('h2');bar.querySelector('.cb-sname').textContent=sec.id.slice(1)+'. '+h.textContent;
   }
   window.addEventListener('hashchange',function(){setTimeout(current,0)});current();
 })();
@@ -185,7 +190,7 @@
   var quizzes=!priv&&!!document.querySelector('[data-quiz]'), scores={}, qdata=null;
   try{scores=JSON.parse(localStorage.getItem('quiz:'+ch))||{}}catch(e){}
   var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט בפרק');
-  bar.innerHTML='<div class="rb-prog"><i></i></div><div class="rb-row">'+
+  bar.innerHTML='<div class="rb-row">'+
     '<button type="button" class="rb-b" data-go="-1"><i>→</i><span>הקודם</span></button>'+
     '<button type="button" class="rb-b" data-rb="menu"><i>☰</i><span class="rb-count"></span></button>'+
     (quizzes?'<button type="button" class="rb-b rb-quiz" data-rb="quiz"><i>?</i><span>שאלון</span></button>':'')+
@@ -195,6 +200,8 @@
     '</div><div class="rb-toast" role="status" hidden></div>';
   document.body.appendChild(bar);
   document.documentElement.classList.add('has-rbar');
+  var prog=document.createElement('div');prog.className='rb-prog';prog.innerHTML='<i></i>';
+  (document.querySelector('.chbar')||bar).appendChild(prog);
   function cur(){var s=document.querySelector('.sec:not([hidden])')||secs[0];return +s.id.slice(1)}
   function isRead(i){var a=toc.querySelector('a[href="#s'+i+'"]');return !!(a&&a.classList.contains('done'))}
   function go(i){var back=main.querySelector('header .back');if(i<1){location.href=back?back.getAttribute('href'):'/';return}if(i<=n)location.hash='#s'+i}
@@ -203,7 +210,7 @@
     bar.querySelector('[data-go="-1"] span').textContent=i>1?'הקודם':'חזרה';
     bar.querySelector('[data-go="1"]').disabled=i>=n;
     bar.querySelector('.rb-count').textContent=priv?i+'/'+n:done+'/'+n;
-    bar.querySelector('.rb-prog i').style.width=(100*(priv?i:done)/n)+'%';
+    prog.firstChild.style.width=(100*(priv?i:done)/n)+'%';
     var r=bar.querySelector('.rb-read');
     if(r){var rd=isRead(i);r.classList.toggle('done',rd);
       r.textContent=rd?'נקרא ✓':(i>=n?'סיימתי ✓':'קראתי ✓');
