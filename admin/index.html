@@ -117,8 +117,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       '<div class="stat"><b>'+pending.length+'</b><span>ממתינים לאישור</span></div>'+
       '<div class="stat"><b>'+active.length+'</b><span>נכנסו השבוע</span></div>'+
       '<div class="stat"><b>'+results.filter(function(x){return others.some(function(u){return u.id===x.user_id})}).length+'</b><span>בחינות שנעשו</span></div></div>';
+    // Adding a student lives at the bottom; up here only a button that scrolls down to it.
+    h+='<div class="add" style="margin-top:16px"><button type="button" class="primary" data-goinv>+ הוספת תלמיד</button></div>';
     h+=requestBlock(requests,users);
-    h+=inviteBlock(invites);
     h+='<h2 style="margin-top:32px">משתמשים</h2><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
     if(!others.length)h+='<p class="none">עוד אין משתמשים רשומים. כשמישהו יירשם דרך "כניסה / הרשמה", הוא יופיע כאן.</p>';
     if(others.length)h+='<p class="help">כדי לקבוע הרשאות לכמה תלמידים ביחד: סמן אותם בתיבה שליד השם, ולחץ <b class="g">הרשאות</b> בחלונית שתופיע למטה. · <button type="button" class="link" data-selall>בחירת כולם</button></p>';
@@ -159,7 +160,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       }
       h+='</article>';
     });
-    app.innerHTML=h+'</div>';
+    app.innerHTML=h+'</div>'+inviteBlock(invites);
     window.__users=others;window.__grants=grants;
     sel.forEach(function(id){if(!others.some(function(u){return u.id===id}))sel.delete(id)});
     selBar();
@@ -294,7 +295,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   function inviteBlock(invites){
     if(invites===null)return '<p class="msg" style="margin-top:24px">כדי להוסיף אנשים מראש, צריך להריץ קודם את supabase/v2.sql.</p>';
     var open=invites.filter(function(i){return !i.used_at});window.__invites=open;
-    var h='<h2 style="margin-top:32px">הוספת תלמיד</h2><form class="form invite" id="inv">'+
+    var h='<h2 style="margin-top:40px;scroll-margin-top:16px" id="addst">הוספת תלמיד</h2><form class="form invite" id="inv">'+
       '<label>הדבקה מהירה (לא חובה)<textarea name="paste" rows="2" placeholder="שם: ...; משפחה: ...; טלפון: ...; אימייל: ..."></textarea></label>'+
       '<div class="row"><label>שם פרטי<input name="first" required></label><label>שם משפחה<input name="last"></label></div>'+
       '<div class="row"><label>מייל<input name="email" type="email" required dir="ltr"></label><label>טלפון<input name="phone" type="tel" dir="ltr"></label></div>'+
@@ -351,6 +352,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 
   app.addEventListener('click',async function(e){
     if(e.target.closest('[data-selall]')){(window.__users||[]).forEach(function(u){sel.add(u.id)});document.querySelectorAll('[data-sel]').forEach(function(c){c.checked=true;c.closest('.user').classList.add('sel')});selBar();return}
+    if(e.target.closest('[data-goinv]')){var t=document.getElementById('addst');if(t){t.scrollIntoView({behavior:'smooth',block:'start'});var f=document.querySelector('#inv [name=first]');if(f)setTimeout(function(){f.focus({preventScroll:true})},500)}return}
     var gc=e.target.closest('[data-gid]');
     if(gc){var g=(window.__grants||[]).find(function(x){return String(x.id)===gc.getAttribute('data-gid')}), u=(window.__users||[]).find(function(x){return x.id===g.user_id});
       gmenu(g,u?uname(u):'');return}
