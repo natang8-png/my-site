@@ -8,8 +8,8 @@ def svg(body):
             'stroke-linecap="round" stroke-linejoin="round">' + body + '</svg>')
 
 ICONS = {"harchakot": {i: svg(b) for i, b in {
-    # 1 הקדמה: a stop sign with a hand
-    1: '<path d="M8.2 2h7.6L22 8.2v7.6L15.8 22H8.2L2 15.8V8.2z"/><path d="M9.5 15.5v-5a1 1 0 0 1 2 0v-2a1 1 0 0 1 2 0v2.5a1 1 0 0 1 2 0v3.5a3 3 0 0 1-3 3h-.5a3 3 0 0 1-2.5-1.3L8 14.5"/>',
+    # 1 הקדמה: a starting flag
+    1: '<path d="M12 22V3"/><path d="M12 4h7l-2 3 2 3h-7"/><path d="M8 22h8"/>',
     # 2 האיסור הכללי: a shield
     2: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M8.5 12h7"/>',
     # 3 איסור נגיעה: a hand, crossed out
