@@ -78,7 +78,7 @@
   var data=null, dlg=document.createElement('dialog');
   dlg.className='quiz';dlg.setAttribute('dir','rtl');
   document.body.appendChild(dlg);
-  function load(cb){if(data)return cb();fetch('quiz.json').then(function(r){return r.json()}).then(function(d){data=d;cb()}).catch(function(){data={};cb()})}
+  function load(cb){if(data)return cb();fetch(document.querySelector('main').getAttribute('data-quiz')||'quiz.json').then(function(r){return r.json()}).then(function(d){data=d;cb()}).catch(function(){data={};cb()})}
   function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
   function open(i){
     var qs=data[i]||[], title=document.getElementById('s'+i+'-h').textContent, right=0, answered=0;
@@ -163,7 +163,7 @@
   var probe=document.createElement('span');probe.style.cssText='position:absolute;visibility:hidden;white-space:nowrap';
   function fit(){
     var head=document.querySelector('.sec:not([hidden]) .sec-head')||hs[0].parentNode, num=head.querySelector('.sec-num');
-    var room=head.clientWidth-(num?num.offsetWidth+12:0); if(room<=0)return;
+    var ico=head.querySelector('.sec-ico'), room=head.clientWidth-(num?num.offsetWidth+12:0)-(ico?ico.offsetWidth+12:0); if(room<=0)return;
     var cs=getComputedStyle(hs[0]);probe.style.fontFamily=cs.fontFamily;probe.style.fontWeight=cs.fontWeight;
     document.body.appendChild(probe);
     var rem=parseFloat(getComputedStyle(document.documentElement).fontSize), size=1.8;
@@ -237,7 +237,7 @@
   // Quiz results: this device right away; the account's results when logged in.
   window.quizDone=function(i,right,total){scores[i]=right+'/'+total;try{localStorage.setItem('quiz:'+ch,JSON.stringify(scores))}catch(e){}paint()};
   if(quizzes){
-    fetch('quiz.json').then(function(r){return r.json()}).then(function(d){qdata=d;paint()}).catch(function(){});
+    fetch(document.querySelector('main').getAttribute('data-quiz')||'quiz.json').then(function(r){return r.json()}).then(function(d){qdata=d;paint()}).catch(function(){});
     if(window.SITE)SITE.ready.then(function(st){
       if(!st.user)return;
       return SITE.sb.from('quiz_results').select('section,score,total,taken_at').eq('user_id',st.user.id).eq('chapter',ch).order('taken_at').then(function(r){

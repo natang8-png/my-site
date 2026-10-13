@@ -13,13 +13,27 @@ import os, sys, html
 CHAPTERS = {
     "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
+    # Same text, sources and progress as "harchakot" (shared "קראתי" and quiz results), plus graphics. Opens with its own
+    # permission, so Natan can proofread the graphics while students keep the plain chapter. Icons: tools/icons.py.
+    "harchakot-graphic": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="harchakot-graphic",
+         src="harchakot", key="harchakot", quiz="/halacha/harchakot/quiz.json", graphic=True, note="גרסה גרפית",
+         credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=3, of=3, path="leil-hachatuna", private=True),
 }
 
 slug = sys.argv[1]
 ch = CHAPTERS[slug]
 private = ch.get("private", False)
-src = f"/mnt/project-files/private/{slug}" if private else f"_src/{slug}"
+src = f"/mnt/project-files/private/{slug}" if private else f"_src/{ch.get('src', slug)}"
+key = ch.get("key", slug)
+icons = {}
+if ch.get("graphic"):
+    sys.dont_write_bytecode = True
+    sys.path.insert(0, os.path.dirname(__file__))
+    from icons import ICONS
+    icons = ICONS[ch.get("src", slug)]
+def ico(i, cls):
+    return f'<span class="{cls}" aria-hidden="true">{icons[i]}</span>' if i in icons else ""
 heads = [h.strip() for h in open(f"{src}/headings.txt", encoding="utf-8") if h.strip()]
 n = len(heads)
 
@@ -71,13 +85,13 @@ for i, h in enumerate(heads, 1):
     else:
         body = '<p class="placeholder">הטקסט של הקטע הזה עוד לא נוסף.</p>'
         filled = False
-    toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{i}</span>{html.escape(h)}</a></li>')
+    toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{i}</span>{ico(i, "ico")}{html.escape(h)}</a></li>')
     prev = (f'<a class="pn prev" href="#s{i-1}"><small>הקודם</small>{html.escape(heads[i-2])}</a>' if i > 1
             else '<a class="pn prev" href="/halacha/"><small>חזרה</small>לתפריט הלכה</a>')
     mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
     nxt = f'<a class="pn next" href="#s{i+1}"><small>הבא</small>{html.escape(heads[i])}</a>' if i < n else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
-    <div class="sec-head"><h2 id="s{i}-h">{html.escape(h)}</h2><span class="sec-num" aria-label="קטע {i} מתוך {n}">{i}/{n}</span></div>
+    <div class="sec-head">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}</h2><span class="sec-num" aria-label="קטע {i} מתוך {n}">{i}/{n}</span></div>
     <div class="content">
 {body}
     </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}
@@ -93,10 +107,10 @@ page = f'''<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
 <link rel="stylesheet" href="/style.css">
-{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{slug}" data-path="{ch["path"]}"'}>
+{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}>
   <header>
     <a class="back" href="/halacha/">→ חזרה להלכה</a>
-    <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}</div>
+    <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>
     <h1>{ch["title"]}</h1>
     {f'<p class="lead">{ch["subtitle"]}</p>' if ch.get("subtitle") else ""}
     {'<p class="until" id="until" hidden></p>' if private else ""}
