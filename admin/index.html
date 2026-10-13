@@ -37,6 +37,16 @@ details summary{cursor:pointer;color:var(--accent)}
 .form.invite{max-width:none}
 .add .close{border-color:#b4473a;color:#b4473a;background:none}
 .chip.plain{padding:3px 12px}
+.chip.gch{padding:3px 12px;background:none;cursor:pointer;font:inherit;font-size:.9rem}
+.chip.gch:hover{background:var(--soft)}
+.chip.gch.off{border-color:var(--line);color:var(--muted)}
+.gmenu .gm{display:grid;gap:8px;margin-top:12px}
+.gmenu .gm > button{text-align:start}
+.gmenu .gm > button.close{border-color:#b4473a;color:#b4473a;background:none}
+.gmenu .gm > button.on{border-color:var(--accent);color:var(--accent);background:var(--soft);font-weight:600}
+.gmenu .when{display:grid;gap:4px;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.gmenu .when .add{margin:4px 0 0}
+.gmenu input[type=datetime-local]{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
 .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .help{color:var(--muted);font-size:.92rem;margin:-4px 0 14px}
 .help .g{color:var(--accent)}.help .r{color:#b4473a}
@@ -123,8 +133,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div></label>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
       if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
-      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+modeName(g.mode)+'</span>'}).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+
-        all.filter(function(g){return isOwn(g.path)}).map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+(SITE.live(g)?'עד '+day(g.expires_at):'הסתיים '+day(g.expires_at))+'</span>'}).join('')+'</div>';
+      // Each permission is a button: it opens a menu to change, close or schedule it.
+      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(gchip).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+
+        all.filter(function(g){return isOwn(g.path)}).map(gchip).join('')+'</div>';
       // Chapters with their own permission: open for a week from here too, without waiting for a request.
       h+=SITE.TREE.filter(function(n){return n.own}).map(function(n){var g=all.find(function(x){return x.path===n.path&&SITE.live(x)});
         return '<div class="add"><button type="button" data-week="'+n.path+'">'+(g?'הארכה':'פתיחה')+' של '+esc(n.title)+' ל־'+n.days+' ימים</button></div>'}).join('');
@@ -214,6 +225,52 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   function uname(u){return (u.first_name||u.last_name?[u.first_name,u.last_name].filter(Boolean).join(' '):u.full_name)||'(ללא שם)'}
   function isOwn(path){return SITE.TREE.some(function(n){return n.path===path&&n.own})}
   function day(t){return t?new Date(t).toLocaleDateString('he-IL',{day:'numeric',month:'long'}):''}
+  function dt(t){return t?new Date(t).toLocaleDateString('he-IL',{day:'numeric',month:'long'})+' '+new Date(t).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}):''}
+  // Short status of one permission: its level, and when it opens or closes.
+  function gstate(g){
+    var now=new Date(), parts=[isOwn(g.path)?'קריאה':modeName(g.mode)];
+    if(g.starts_at&&new Date(g.starts_at)>now)parts.push('ייפתח '+dt(g.starts_at));
+    if(g.expires_at)parts.push(new Date(g.expires_at)>now?'עד '+dt(g.expires_at):'הסתיים '+day(g.expires_at));
+    return parts.join(' · ');
+  }
+  function gchip(g){
+    var off=!SITE.live(g);
+    return '<button type="button" class="chip gch'+(off?' off':'')+'" data-gid="'+g.id+'">'+esc(title(g.path))+' · '+esc(gstate(g))+' <span aria-hidden="true">▾</span></button>';
+  }
+  // For <input type="datetime-local">: local time, without seconds.
+  function local(t){var d=new Date(t);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+  // The menu of one permission: level, close, scheduled opening, scheduled closing.
+  function gmenu(g,name){
+    var own=isOwn(g.path), n=SITE.TREE.find(function(x){return x.path===g.path})||{days:7};
+    var d=document.createElement('dialog');d.className='bulk gmenu';
+    var h='<h3>'+esc(title(g.path))+'</h3><p class="none">'+esc(name)+' · '+esc(gstate(g))+'</p><div class="gm">';
+    if(own)h+='<button type="button" data-act="week">פתיחה ל־'+n.days+' ימים מעכשיו</button>';
+    else h+=[['read','קריאה בלבד'],['study','קריאה + שאלון']].map(function(m){return '<button type="button" data-act="mode" data-v="'+m[0]+'"'+(g.mode===m[0]?' class="on"':'')+'>'+(g.mode===m[0]?'✓ ':'')+m[1]+'</button>'}).join('');
+    h+='<button type="button" class="close" data-act="del">סגירה</button>';
+    [['starts_at','תזמון מועד פתיחה','עד המועד הזה הגישה סגורה, ואז נפתחת מעצמה.'],['expires_at','תזמון מועד סגירה','במועד הזה הגישה נסגרת מעצמה.']].forEach(function(f){
+      h+='<div class="when"><b>'+f[1]+'</b><small class="none">'+f[2]+'</small><div class="add"><input type="datetime-local" data-f="'+f[0]+'" value="'+(g[f[0]]?local(g[f[0]]):'')+'">'+
+        '<button type="button" class="primary" data-act="set" data-f="'+f[0]+'">שמירה</button>'+(g[f[0]]?'<button type="button" data-act="clear" data-f="'+f[0]+'">בלי תזמון</button>':'')+'</div></div>';
+    });
+    h+='</div><div class="add acts"><button type="button" data-x>סגירת החלון</button></div><p class="msg" role="status"></p>';
+    d.innerHTML=h;document.body.appendChild(d);
+    d.addEventListener('close',function(){d.remove()});
+    d.addEventListener('click',async function(e){
+      if(e.target===d||e.target.closest('[data-x]')){d.close();return}
+      var b=e.target.closest('[data-act]');if(!b)return;
+      var act=b.getAttribute('data-act'), f=b.getAttribute('data-f'), m=d.querySelector('.msg'), r;
+      if(act==='del'&&!confirm('לסגור ל'+name+' את "'+title(g.path)+'"?'))return;
+      if(act==='set'){var v=d.querySelector('input[data-f="'+f+'"]').value;if(!v){m.textContent='צריך לבחור תאריך ושעה.';return}}
+      b.disabled=true;
+      if(act==='mode')r=await sb.from('grants').update({mode:b.getAttribute('data-v')}).eq('id',g.id);
+      else if(act==='week'){var wk={expires_at:new Date(Date.now()+n.days*864e5).toISOString()};if(g.starts_at)wk.starts_at=null;r=await sb.from('grants').update(wk).eq('id',g.id)}
+      else if(act==='del')r=await sb.from('grants').delete().eq('id',g.id);
+      else{var up={};up[f]=act==='set'?new Date(v).toISOString():null;r=await sb.from('grants').update(up).eq('id',g.id)}
+      if(r.error){b.disabled=false;m.classList.add('err');
+        m.textContent=/starts_at/.test(r.error.message)?'צריך קודם להריץ ב־Supabase את supabase/v7.sql.':/mode_check/.test(r.error.message)?'צריך קודם להריץ ב־Supabase את supabase/v7.sql.':r.error.message;return}
+      d.close();load();
+    });
+    d.showModal();
+  }
   // Opens a time-limited chapter for its number of days, counted from now.
   function openFor(uid,path){
     var n=SITE.TREE.find(function(x){return x.path===path});
@@ -294,6 +351,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 
   app.addEventListener('click',async function(e){
     if(e.target.closest('[data-selall]')){(window.__users||[]).forEach(function(u){sel.add(u.id)});document.querySelectorAll('[data-sel]').forEach(function(c){c.checked=true;c.closest('.user').classList.add('sel')});selBar();return}
+    var gc=e.target.closest('[data-gid]');
+    if(gc){var g=(window.__grants||[]).find(function(x){return String(x.id)===gc.getAttribute('data-gid')}), u=(window.__users||[]).find(function(x){return x.id===g.user_id});
+      gmenu(g,u?uname(u):'');return}
     var tg=e.target.closest('[data-toggle]'), un=e.target.closest('[data-uninv]'), rq=e.target.closest('[data-rq]'), wk=e.target.closest('[data-week]');
     if(rq){
       rq.disabled=true;

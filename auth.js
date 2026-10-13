@@ -44,7 +44,8 @@
   }
 
   // 'study' (text + quiz), 'read' (text only), 'quiz' (quiz only, older grants) or null.
-  function live(g){ return !g.expires_at||new Date(g.expires_at)>new Date() }
+  // A grant counts between its opening time (if scheduled) and its closing time (if any).
+  function live(g){ var now=new Date(); return (!g.starts_at||new Date(g.starts_at)<=now)&&(!g.expires_at||new Date(g.expires_at)>now) }
   function access(path){
     if(state.profile&&state.profile.is_admin) return 'study';
     var best=null, own=TREE.some(function(n){return n.path===path&&n.own});

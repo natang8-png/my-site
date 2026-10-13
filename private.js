@@ -33,7 +33,11 @@
       return false;
     }
     var g=grantOf(path);
-    box.innerHTML=(g&&g.expires_at?'<p><b>ההרשאה שלך לפרק "'+n.title+'" הסתיימה ב־'+day(g.expires_at)+'.</b></p><p>האם לשלוח בקשה חדשה?</p>'
+    if(g&&g.starts_at&&new Date(g.starts_at)>new Date()){
+      box.innerHTML='<p><b>הפרק "'+n.title+'" ייפתח לך ב־'+day(g.starts_at)+'.</b></p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');
+      return false;
+    }
+    box.innerHTML=(g&&g.expires_at&&new Date(g.expires_at)<=new Date()?'<p><b>ההרשאה שלך לפרק "'+n.title+'" הסתיימה ב־'+day(g.expires_at)+'.</b></p><p>האם לשלוח בקשה חדשה?</p>'
         :'<p><b>אין לך הרשאה לפרק "'+n.title+'".</b></p><p>האם לשלוח בקשה?</p>')+
       '<div class="acts"><button type="button" class="primary" data-ask>שליחת בקשה</button>'+(inDialog?'<button type="button" data-x>לא עכשיו</button>':'')+'</div><p class="msg" role="status"></p>';
     box.querySelector('[data-ask]').onclick=async function(){
