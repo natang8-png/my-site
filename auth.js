@@ -11,6 +11,8 @@
     {path:'halacha/family', title:'טהרת המשפחה'},
     {path:'halacha/family/harchakot', title:'הרחקות'},
     {path:'halacha/family/tumat-betulim', title:'טומאת בתולים'},
+    // Graphic version of הרחקות, still being proofread: outside 'halacha', so only its own grant opens it.
+    {path:'harchakot-graphic', title:'הרחקות גרפי'},
     // Opens only with its own grant (a wider grant does not cover it), for one week at a time.
     {path:'leil-hachatuna', title:'סדר ליל החתונה', own:true, days:7}
   ];

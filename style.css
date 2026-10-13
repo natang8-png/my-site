@@ -250,3 +250,10 @@ main.priv-locked ~ .rbar,main[data-track].checking ~ .rbar{display:none}
 .prefs .p-head+.grp{border-top:0;padding-top:0;margin-top:4px}
 .prefs .a11y{margin-top:6px}
 .rb-b i{font-family:system-ui,sans-serif}
+/* Graphic version of a chapter: a line icon beside each section heading and each entry of the headings list */
+.sec-ico{flex:none;display:inline-grid;place-items:center;width:2.2rem;height:2.2rem;border-radius:10px;background:var(--soft);color:var(--accent);align-self:center}
+.sec-ico svg{width:1.35rem;height:1.35rem}
+.sec-head:has(.sec-ico){justify-content:flex-start}
+.sec-head:has(.sec-ico) .sec-num{margin-inline-start:auto}
+.ico{flex:none;display:inline-grid;place-items:center;width:1.25em;height:1.5em;color:var(--accent)}
+.ico svg{width:1.15em;height:1.15em}
