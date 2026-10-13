@@ -25,14 +25,14 @@ ICONS = {"harchakot": {i: svg(b) for i, b in {
     7: '<path d="M17 3l4 4-4 4"/><path d="M21 7H3"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h18"/>',
     # 8 אכילה מצלחת אחת: a plate
     8: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/>',
-    # 9 אכילה על שולחן אחד: a table
-    9: '<path d="M2 8h20"/><path d="M4 8l1-3h14l1 3"/><path d="M5 8v12"/><path d="M19 8v12"/><path d="M5 14h14"/>',
+    # 9 אכילה על שולחן אחד: a table with two chairs
+    9: '<path d="M6 10h12"/><path d="M8 10v8"/><path d="M16 10v8"/><path d="M2 8v10"/><path d="M2 14h3v4"/><path d="M22 8v10"/><path d="M22 14h-3v4"/>',
     # 10 שיירי מאכל ומשקה: a cup with some drink left
     10: '<path d="M5 4h14l-1.6 15.2a2 2 0 0 1-2 1.8H8.6a2 2 0 0 1-2-1.8z"/><path d="M6.3 14h11.4"/>',
     # 11 מזיגה והושטה: a wine glass
     11: '<path d="M7 2h10l-.8 6.5a4.2 4.2 0 0 1-8.4 0z"/><path d="M12 13v8"/><path d="M8 21h8"/>',
-    # 12 הרחקה בין המיטות: two beds apart
-    12: '<path d="M2 20V8"/><path d="M2 13h6v7"/><path d="M2 17h6"/><path d="M22 20V8"/><path d="M22 13h-6v7"/><path d="M22 17h-6"/><path d="M12 5v15" stroke-dasharray="1.5 2.5"/>',
+    # 12 הרחקה בין המיטות: two beds seen from above, a dashed line between them
+    12: '<rect x="1.5" y="4" width="6" height="16" rx="1.5"/><path d="M1.5 8h6"/><rect x="16.5" y="4" width="6" height="16" rx="1.5"/><path d="M16.5 8h6"/><path d="M12 3v18" stroke-dasharray="1.5 2.5"/>',
     # 13 ישיבה ושכיבה על מיטת בן הזוג: a bed
     13: '<path d="M2 5v15"/><path d="M2 9h17a3 3 0 0 1 3 3v8"/><path d="M2 16h20"/><path d="M6 9v7"/>',
     # 14 ישיבה על ספסל אחד: a bench
@@ -48,16 +48,16 @@ ICONS = {"harchakot": {i: svg(b) for i, b in {
         '<path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
     # 19 הצעת המיטה לבן הזוג: a pillow
     19: '<path d="M3 9c0-2.2 1.8-3.5 4-3.5h10c2.2 0 4 1.3 4 3.5v6c0 2.2-1.8 3.5-4 3.5H7c-2.2 0-4-1.3-4-3.5z"/><path d="M7 5.5c1 2 1 11 0 13"/><path d="M17 5.5c-1 2-1 11 0 13"/>',
-    # 20 יציקת מים: a drop of water
-    20: '<path d="M12 2.7l5.7 5.7a8 8 0 1 1-11.4 0z"/><path d="M9 14a3 3 0 0 0 3 3"/>',
+    # 20 יציקת מים: a tap and a drop
+    20: '<path d="M3 9h7a3 3 0 0 1 3 3v2"/><path d="M6.5 9V5.5"/><path d="M4.5 5.5h4"/><path d="M13 17.5v.5"/><path d="M13 21v.5"/><path d="M17 15a2 2 0 0 0 4 0c0-1.5-2-4-2-4s-2 2.5-2 4z"/>',
     # 21 כשאחד מבני הזוג חולה: a thermometer
     21: '<path d="M14 4v10.5a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0z"/><path d="M12 11v6"/>',
     # 22 הליכת האשה לבית-הקברות או להלוויה: a gravestone
     22: '<path d="M6 21V9a6 6 0 0 1 12 0v12"/><path d="M3 21h18"/><path d="M10 11h4"/><path d="M10 14.5h4"/>',
     # 23 הליכת האשה לבית-הכנסת: a synagogue
     23: '<path d="M3 21h18"/><path d="M5 21V10l7-6 7 6v11"/><path d="M10 21v-5a2 2 0 0 1 4 0v5"/><path d="M12 7.5l1.3 2.2h-2.6z"/>',
-    # 24 חיוב האשה בתפילות וברכות: a Star of David
-    24: '<path d="M12 2.5l8.2 14.2H3.8z"/><path d="M12 21.5L3.8 7.3h16.4z"/>',
+    # 24 חיוב האשה בתפילות וברכות: an open prayer book
+    24: '<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/><path d="M5 9h3"/><path d="M5 12h3"/><path d="M16 9h3"/><path d="M16 12h3"/>',
     # 25 ההנהגה ביום הכיפורים ובתשעה באב: a calendar
     25: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 15h2"/><path d="M14 15h2"/>',
 }.items()}}
