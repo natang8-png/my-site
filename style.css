@@ -219,10 +219,10 @@ html.has-tbar main.chapter{padding-top:20px}
 :root:not([data-menu=full]) .cb-panel{position:fixed;left:0;right:0;bottom:0;height:auto;max-height:62dvh;background:var(--bg);border:1px solid var(--line);border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25);padding:8px 14px 20px}
 :root:not([data-menu=full]) .cb-panel::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
 :root:not([data-menu=full]) .cb-panel ol{padding-bottom:10px}
-.sec{scroll-margin-top:60px}
-/* Magnet: near a section's start the page settles with its heading tucked into the top bar */
+.sec{scroll-margin-top:70px}
+/* Magnet: near a section's start the page settles with its heading in view, just under the top bar */
 html:has(main.chapter){scroll-snap-type:y proximity}
-.sec-head+.content{scroll-snap-align:start;scroll-margin-top:84px}
+.sec-head{scroll-snap-align:start;scroll-margin-top:70px}
 /* The section bar sits right on the bottom bar, also at the very end of the page; no rubber-band stretch */
 main.chapter{padding-bottom:0}
 html{overscroll-behavior-y:none}
