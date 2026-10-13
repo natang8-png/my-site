@@ -98,6 +98,7 @@
             '<div class="end-btns"><button type="button" data-again>שוב</button>'+
             '<button type="button" data-mark>סמן כנקרא וסגור</button></div>';
           end.querySelector('[data-again]').onclick=function(){open(i);dlg.scrollTop=0};
+          if(window.quizDone)quizDone(i,right,qs.length);
           if(window.SITE)SITE.saveQuiz(document.querySelector('main[data-chapter]').getAttribute('data-chapter'),i,right,qs.length);
           end.querySelector('[data-mark]').onclick=function(){if(window.markRead)markRead(String(i),true);dlg.close()};
         }
@@ -131,12 +132,14 @@
     bar.querySelector('.cb-read').textContent=toc.querySelectorAll('a.done').length+'/'+total;
   }
   new MutationObserver(sync).observe(toc,{subtree:true,attributes:true,attributeFilter:['class']});sync();
-  function setOpen(on){panel.hidden=!on;menu.setAttribute('aria-expanded',on);bar.classList.toggle('open',on)}
+  var topOn=false;
+  function setOpen(on){panel.hidden=!on;menu.setAttribute('aria-expanded',on);bar.classList.toggle('open',on);bar.classList.toggle('show',on||topOn)}
+  window.openChapterMenu=function(){setOpen(true);var c=panel.querySelector('a.current');if(c)c.scrollIntoView({block:'center'})};
   menu.addEventListener('click',function(){setOpen(panel.hidden)});
   panel.addEventListener('click',function(e){if(e.target.closest('a'))setOpen(false)});
   document.addEventListener('click',function(e){if(e.target===bar||!bar.contains(e.target))setOpen(false)});
   // Row 1 appears as soon as the chapter title slides under it.
-  new IntersectionObserver(function(es){var on=!es[0].isIntersecting&&es[0].boundingClientRect.top<60;bar.classList.toggle('show',on);bar.setAttribute('aria-hidden',!on);if(!on)setOpen(false)},{rootMargin:'-49px 0px 0px 0px'}).observe(head.querySelector('h1'));
+  new IntersectionObserver(function(es){var on=!es[0].isIntersecting&&es[0].boundingClientRect.top<60;topOn=on;bar.classList.toggle('show',on);bar.setAttribute('aria-hidden',!on);if(!on)setOpen(false)},{rootMargin:'-49px 0px 0px 0px'}).observe(head.querySelector('h1'));
   // Row 2: the visible section's title, once its own heading has scrolled under the bar.
   var hio=new IntersectionObserver(function(es){es.forEach(function(e){
     var sec=e.target.closest('.sec');if(!sec||sec.hidden)return;
@@ -170,4 +173,82 @@
   fit();addEventListener('resize',fit);addEventListener('hashchange',fit);
   if(document.fonts)document.fonts.ready.then(fit);
   new MutationObserver(fit).observe(document.documentElement,{attributes:true,attributeFilter:['style','class']});
+})();
+
+// Reading bar fixed to the screen bottom: previous / menu (read count) / quiz / design / next / "קראתי" (marks and moves on).
+// It replaces each section's own bar and the page footer. Private chapters (data-track) get it without "קראתי" and the quiz.
+(function(){
+  var main=document.querySelector('main.chapter'), toc=document.getElementById('toc');
+  var secs=[].slice.call(document.querySelectorAll('.sec'));
+  if(!main||!toc||!secs.length) return;
+  var priv=main.hasAttribute('data-track'), ch=main.getAttribute('data-chapter'), n=secs.length;
+  var quizzes=!priv&&!!document.querySelector('[data-quiz]'), scores={}, qdata=null;
+  try{scores=JSON.parse(localStorage.getItem('quiz:'+ch))||{}}catch(e){}
+  var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט בפרק');
+  bar.innerHTML='<div class="rb-prog"><i></i></div><div class="rb-row">'+
+    '<button type="button" class="rb-b" data-go="-1"><i>→</i><span>הקודם</span></button>'+
+    '<button type="button" class="rb-b" data-rb="menu"><i>☰</i><span class="rb-count"></span></button>'+
+    (quizzes?'<button type="button" class="rb-b rb-quiz" data-rb="quiz"><i>?</i><span>שאלון</span></button>':'')+
+    '<button type="button" class="rb-b" data-rb="design"><i>Aa</i><span>עיצוב</span></button>'+
+    '<button type="button" class="rb-b" data-go="1"><i>←</i><span>הבא</span></button>'+
+    (priv?'':'<button type="button" class="rb-read" data-rb="read"></button>')+
+    '</div><div class="rb-toast" role="status" hidden></div>';
+  document.body.appendChild(bar);
+  document.documentElement.classList.add('has-rbar');
+  function cur(){var s=document.querySelector('.sec:not([hidden])')||secs[0];return +s.id.slice(1)}
+  function isRead(i){var a=toc.querySelector('a[href="#s'+i+'"]');return !!(a&&a.classList.contains('done'))}
+  function go(i){var back=main.querySelector('header .back');if(i<1){location.href=back?back.getAttribute('href'):'/';return}if(i<=n)location.hash='#s'+i}
+  function paint(){
+    var i=cur(), done=toc.querySelectorAll('a.done').length;
+    bar.querySelector('[data-go="-1"] span').textContent=i>1?'הקודם':'חזרה';
+    bar.querySelector('[data-go="1"]').disabled=i>=n;
+    bar.querySelector('.rb-count').textContent=priv?i+'/'+n:done+'/'+n;
+    bar.querySelector('.rb-prog i').style.width=(100*(priv?i:done)/n)+'%';
+    var r=bar.querySelector('.rb-read');
+    if(r){var rd=isRead(i);r.classList.toggle('done',rd);
+      r.textContent=rd?'נקרא ✓':(i>=n?'סיימתי ✓':'קראתי ✓');
+      r.title=rd?'לחיצה מבטלת את הסימון':(i>=n?'סימון הקטע האחרון כנקרא':'סימון כנקרא ומעבר לקטע הבא')}
+    var q=bar.querySelector('.rb-quiz');
+    if(q){var sc=scores[i], has=!qdata||(qdata[i]||[]).length>0;
+      q.disabled=!has;q.classList.toggle('todo',has&&!sc);
+      q.querySelector('span').textContent=sc?sc:'שאלון'}
+  }
+  function toast(t){var el=bar.querySelector('.rb-toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},3500)}
+  bar.addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    e.stopPropagation();
+    var i=cur(), g=b.getAttribute('data-go'), k=b.getAttribute('data-rb');
+    if(g)return go(i+ +g);
+    if(k==='menu'){if(window.openChapterMenu)openChapterMenu();else{toc.open=true;toc.scrollIntoView({block:'start'})}}
+    if(k==='design'){var t=document.getElementById('theme');if(t)t.click()}
+    if(k==='quiz'){var qb=document.querySelector('#s'+i+' [data-quiz]');if(qb)qb.click()}
+    if(k==='read'){
+      if(isRead(i)){if(window.markRead)markRead(String(i),false);return}
+      if(window.markRead)markRead(String(i),true);
+      if(i<n)go(i+1);else toast(toc.querySelectorAll('a.done').length>=n?'כל הכבוד! סיימת את כל הפרק ✓':'הקטע האחרון סומן ✓ אפשר לראות בתפריט מה עוד לא נקרא.');
+    }
+  });
+  // Quiz results: this device right away; the account's results when logged in.
+  window.quizDone=function(i,right,total){scores[i]=right+'/'+total;try{localStorage.setItem('quiz:'+ch,JSON.stringify(scores))}catch(e){}paint()};
+  if(quizzes){
+    fetch('quiz.json').then(function(r){return r.json()}).then(function(d){qdata=d;paint()}).catch(function(){});
+    if(window.SITE)SITE.ready.then(function(st){
+      if(!st.user)return;
+      return SITE.sb.from('quiz_results').select('section,score,total,taken_at').eq('user_id',st.user.id).eq('chapter',ch).order('taken_at').then(function(r){
+        (r.data||[]).forEach(function(x){scores[x.section]=x.score+'/'+x.total});paint();
+      });
+    });
+  }
+  // Swipe on the text: right = next section, left = previous (like turning a Hebrew book's page).
+  var sx=null, sy=0;
+  main.addEventListener('touchstart',function(e){if(e.touches.length!==1){sx=null;return}sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  main.addEventListener('touchend',function(e){
+    if(sx===null)return;var t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;sx=null;
+    if(Math.abs(dx)<70||Math.abs(dy)>Math.abs(dx)*0.6)return;
+    if(String(window.getSelection&&getSelection())!=='')return;
+    var i=cur();if(dx>0&&i<n)go(i+1);else if(dx<0&&i>1)go(i-1);
+  },{passive:true});
+  new MutationObserver(paint).observe(toc,{subtree:true,attributes:true,attributeFilter:['class']});
+  window.addEventListener('hashchange',function(){setTimeout(paint,0)});
+  paint();
 })();
