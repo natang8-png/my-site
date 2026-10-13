@@ -10,12 +10,12 @@ create table if not exists public.profiles (
   last_seen timestamptz
 );
 
--- A grant opens a path and everything under it. mode: 'study' (text + quiz) or 'quiz' (quiz only).
+-- A grant opens a path and everything under it. mode: 'study' (text + quiz), 'read' (text only) or 'quiz' (quiz only, older).
 create table if not exists public.grants (
   id bigserial primary key,
   user_id uuid not null references public.profiles on delete cascade,
   path text not null,
-  mode text not null check (mode in ('study','quiz')),
+  mode text not null check (mode in ('study','read','quiz')),
   created_at timestamptz not null default now(),
   unique (user_id, path)
 );
@@ -269,3 +269,8 @@ create policy "read with permission" on public.chapter_text for select using (
       and (g.expires_at is null or g.expires_at > now())));
 revoke all on public.chapter_text from anon, authenticated;
 grant select on public.chapter_text to authenticated;
+
+-- v6: a "reading only" permission level ('read') next to reading + quiz ('study').
+-- Older 'quiz' (quiz only) grants keep working.
+alter table public.grants drop constraint if exists grants_mode_check;
+alter table public.grants add constraint grants_mode_check check (mode in ('study','read','quiz'));

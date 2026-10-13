@@ -47,7 +47,8 @@
   });
 })();
 
-// Access: guests and users without a grant see headings only; "quiz" grants see quizzes without the text
+// Access: guests and users without a grant see headings only; "read" grants see the text without quizzes;
+// older "quiz" grants see quizzes without the text
 (function(){
   var main=document.querySelector('main[data-path]');
   if(!main||!window.SITE)return;
@@ -56,6 +57,7 @@
     var a=SITE.access(main.getAttribute('data-path'));
     main.classList.remove('checking');
     if(a==='study')return;
+    if(a==='read'){main.classList.add('read-only');return}
     main.classList.add(a==='quiz'?'quiz-only':'locked');
     var next=encodeURIComponent(location.pathname+location.hash);
     var msg=a==='quiz'?'בפרק הזה פתוחה לך הבחינה העצמית בלבד.'

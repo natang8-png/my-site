@@ -43,14 +43,14 @@
     sb.from('profiles').update({last_seen:new Date().toISOString()}).eq('id',state.user.id).then(function(){});
   }
 
-  // 'study' (text + quiz), 'quiz' (quiz only) or null.
+  // 'study' (text + quiz), 'read' (text only), 'quiz' (quiz only, older grants) or null.
   function live(g){ return !g.expires_at||new Date(g.expires_at)>new Date() }
   function access(path){
     if(state.profile&&state.profile.is_admin) return 'study';
     var best=null, own=TREE.some(function(n){return n.path===path&&n.own});
     state.grants.forEach(function(g){
       if(!live(g)) return;
-      if(path===g.path||(!own&&path.indexOf(g.path+'/')===0)){ if(g.mode==='study') best='study'; else if(!best) best='quiz' }
+      if(path===g.path||(!own&&path.indexOf(g.path+'/')===0)){ var rank={study:3,read:2,quiz:1}; if((rank[g.mode]||0)>(rank[best]||0)) best=g.mode }
     });
     return best;
   }

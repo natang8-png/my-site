@@ -123,13 +123,13 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div></label>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
       if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
-      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')+'</span>'}).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+
+      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+modeName(g.mode)+'</span>'}).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+
         all.filter(function(g){return isOwn(g.path)}).map(function(g){return '<span class="chip plain">'+esc(title(g.path))+' · '+(SITE.live(g)?'עד '+day(g.expires_at):'הסתיים '+day(g.expires_at))+'</span>'}).join('')+'</div>';
       // Chapters with their own permission: open for a week from here too, without waiting for a request.
       h+=SITE.TREE.filter(function(n){return n.own}).map(function(n){var g=all.find(function(x){return x.path===n.path&&SITE.live(x)});
         return '<div class="add"><button type="button" data-week="'+n.path+'">'+(g?'הארכה':'פתיחה')+' של '+esc(n.title)+' ל־'+n.days+' ימים</button></div>'}).join('');
       // One button: approve (with the chosen access) when closed, close (remove all access) when open.
-      h+='<div class="add">'+(ug.length?'':'<select data-path>'+opts()+'</select><select data-mode><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select>')+
+      h+='<div class="add">'+(ug.length?'':'<select data-path>'+opts()+'</select><select data-mode><option value="study">קריאה + שאלון</option><option value="read">קריאה בלבד</option></select>')+
         '<button type="button" class="'+(ug.length?'close':'primary')+'" data-toggle="'+(ug.length?'close':'open')+'" title="'+(ug.length?'חסימת כל הגישה של התלמיד (אפשר לפתוח שוב)':'פתיחת הגישה שבחרת ברשימות')+'">'+(ug.length?'סגירה':'אישור')+'</button>'+
         '<span class="none">'+(ug.length?'סגירה חוסמת לו את כל הגישה':'בחר מה לפתוח ולחץ אישור')+'</span></div>';
       Object.keys(CHAPTERS).forEach(function(c){
@@ -170,6 +170,8 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     c.closest('.user').classList.toggle('sel',c.checked);selBar();
   });
 
+  // Permission levels: 'study' = reading + quiz, 'read' = reading only ('quiz' = quiz only, from before).
+  function modeName(m){return m==='study'?'קריאה + שאלון':m==='read'?'קריאה בלבד':'רק שאלון'}
   function bulk(){
     var users=(window.__users||[]).filter(function(u){return sel.has(u.id)});
     var d=document.createElement('dialog');d.className='bulk';
@@ -177,7 +179,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     h+='<p class="help" style="margin:8px 0 0">מה שמסומן "בלי שינוי" נשאר לכל אחד כמו שהוא היה.</p>';
     SITE.TREE.forEach(function(n,i){
       var o=n.own?[['keep','בלי שינוי'],['week','פתיחה ל־'+n.days+' ימים'],['off','סגירה']]
-                 :[['keep','בלי שינוי'],['study','לימוד + מבחן'],['quiz','רק מבחן'],['off','סגירה']];
+                 :[['keep','בלי שינוי'],['study','קריאה + שאלון'],['read','קריאה בלבד'],['off','סגירה']];
       h+='<div class="rowp"><b>'+'\u00a0\u00a0'.repeat(n.own?0:depth(n.path))+esc(n.title)+'</b><div class="opts">'+
         o.map(function(x,j){return '<label><input type="radio" name="p'+i+'" value="'+x[0]+'"'+(j?'':' checked')+'>'+x[1]+'</label>'}).join('')+'</div></div>';
     });
@@ -240,12 +242,12 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       '<div class="row"><label>שם פרטי<input name="first" required></label><label>שם משפחה<input name="last"></label></div>'+
       '<div class="row"><label>מייל<input name="email" type="email" required dir="ltr"></label><label>טלפון<input name="phone" type="tel" dir="ltr"></label></div>'+
       '<div class="row"><label>הערה<input name="note"></label><label>סיסמה זמנית<input name="pw" value="123456" required minlength="6" dir="ltr"></label></div>'+
-      '<div class="row"><label>מה נפתח לו<select name="path">'+opts()+'</select></label><label>סוג<select name="mode"><option value="study">לימוד + מבחן</option><option value="quiz">רק מבחן</option></select></label></div>'+
+      '<div class="row"><label>מה נפתח לו<select name="path">'+opts()+'</select></label><label>סוג<select name="mode"><option value="study">קריאה + שאלון</option><option value="read">קריאה בלבד</option></select></label></div>'+
       '<button class="primary" type="submit">הוספה</button><p class="none">התלמיד נכנס עם המייל והסיסמה הזמנית, ובכניסה הראשונה חייב לבחור סיסמה חדשה. הגישה שבחרת פתוחה לו מיד.</p><p class="msg" id="invmsg" role="status"></p></form>';
     if(open.length){
       h+='<h3 style="margin-top:20px">הוזמנו ועוד לא נרשמו ('+open.length+')</h3><p class="help">הגישה שלהם כבר מאושרת (בעמודה "גישה") ותיפתח ברגע שיירשמו. <b class="g">פתיחת חשבון</b> יוצר להם חשבון כבר עכשיו עם סיסמה זמנית 123456. <b class="r">ביטול הזמנה</b> מבטל את האישור.</p><table class="q"><thead><tr><th>שם</th><th>מייל</th><th>גישה</th><th></th></tr></thead><tbody>'+
         open.map(function(i){return '<tr><td>'+esc([i.first_name,i.last_name].filter(Boolean).join(' '))+'</td><td dir="ltr">'+esc(i.email)+'</td><td>'+
-          (i.grants||[]).map(function(g){return esc(title(g.path))+' · '+(g.mode==='study'?'לימוד + מבחן':'רק מבחן')}).join(', ')+
+          (i.grants||[]).map(function(g){return esc(title(g.path))+' · '+modeName(g.mode)}).join(', ')+
           '</td><td class="acts"><button type="button" class="primary" data-mkacc="'+esc(i.email)+'" title="פותח לו חשבון עכשיו עם סיסמה זמנית 123456, עם הגישה שבעמודה גישה">פתיחת חשבון</button><button type="button" class="close" data-uninv="'+esc(i.email)+'" title="ביטול ההזמנה (התלמיד לא יקבל גישה אוטומטית)">ביטול הזמנה</button></td></tr>'}).join('')+'</tbody></table>';
     }
     return h;
