@@ -201,8 +201,11 @@
         q.a.map(function(a,j){return '<button type="button" data-j="'+j+'">'+esc(a)+'</button>'}).join('')+
         '</div><p class="why" hidden></p></fieldset>';
     });
-    h+='<div class="quiz-end" hidden></div>';
+    var last=+i>=document.querySelectorAll('.sec').length;
+    // "הבא" under the questions: shown once they are all answered (or right away if this section was done before).
+    h+='<div class="quiz-end" hidden></div><div class="iq-next"'+(done[i]?'':' hidden')+'><button type="button" class="primary" data-next>'+(last?'סיימתי ✓':'לקטע הבא ←')+'</button></div>';
     box.innerHTML=h;
+    box.querySelector('[data-next]').onclick=function(){if(window.markRead)markRead(i,true);if(!last)location.hash='#s'+(+i+1)};
     [].forEach.call(box.querySelectorAll('.qq'),function(f){
       var q=qs[+f.getAttribute('data-k')];
       f.addEventListener('click',function(e){
@@ -214,12 +217,10 @@
         var w=f.querySelector('.why');w.hidden=false;w.innerHTML='<b>'+(ok?'נכון!':'לא בדיוק.')+'</b> '+esc(q.why||'');
         if(answered<qs.length)return;
         done[i]=1;try{localStorage.setItem(key,JSON.stringify(Object.keys(done)))}catch(e){}
-        var last=+i>=document.querySelectorAll('.sec').length;
         var end=box.querySelector('.quiz-end');end.hidden=false;
-        end.innerHTML='<p><b>'+right+' מתוך '+qs.length+'</b> תשובות נכונות.</p><div class="end-btns"><button type="button" data-again>שוב</button>'+
-          '<button type="button" class="primary" data-next>'+(last?'סיימתי ✓':'לקטע הבא ←')+'</button></div>';
+        end.innerHTML='<p><b>'+right+' מתוך '+qs.length+'</b> תשובות נכונות.</p><div class="end-btns"><button type="button" data-again>לענות שוב</button></div>';
         end.querySelector('[data-again]').onclick=function(){render(box);box.scrollIntoView({block:'start'})};
-        end.querySelector('[data-next]').onclick=function(){if(window.markRead)markRead(i,true);if(!last)location.hash='#s'+(+i+1)};
+        box.querySelector('.iq-next').hidden=false;
         if(window.quizDone)quizDone(i,right,qs.length);
         if(window.SITE)SITE.saveQuiz(ch,i,right,qs.length);
         changed();

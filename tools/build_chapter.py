@@ -80,9 +80,9 @@ PRIVATE_TAIL = f"""<script src="/private.js"></script>
 """
 
 # Inline questions: a blank gap after the text (styled later), then the section's questions, filled in by chapter.js.
-INLINE_Q = """
-    <div class="q-gap"><span>↓ שאלות על הקטע ↓</span></div>
-    <div class="iq" data-iq="{i}" id="q{i}"></div>"""
+INLINE_Q = f"""
+    <div class="q-gap">{"".join('<span>↓ השאלון למטה ↓</span>' for _ in range(4))}</div>
+    <div class="iq" data-iq="{{i}}" id="q{{i}}"></div>"""
 
 toc, secs, private_rows = [], [], []
 for i, h in enumerate(heads, 1):
