@@ -73,7 +73,7 @@
 
 // Self-quiz on the current section
 (function(){
-  var btns=document.querySelectorAll('[data-quiz]');
+  var btns=document.querySelectorAll('button[data-quiz]');
   if(!btns.length)return;
   var data=null, dlg=document.createElement('dialog');
   dlg.className='quiz';dlg.setAttribute('dir','rtl');
@@ -181,6 +181,56 @@
   new MutationObserver(fit).observe(document.documentElement,{attributes:true,attributeFilter:['style','class']});
 })();
 
+// Beta (data-inline-quiz): each section's questions sit on the same page below the text, after a blank gap.
+// "הבא" shows only after every question of the section is answered; this device remembers the sections already done.
+(function(){
+  var main=document.querySelector('main[data-inline-quiz]');
+  if(!main)return;
+  var ch=main.getAttribute('data-chapter'), key='iq:'+ch, done={}, data=null;
+  try{(JSON.parse(localStorage.getItem(key))||[]).forEach(function(n){done[n]=1})}catch(e){}
+  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+  function changed(){document.dispatchEvent(new Event('iq-change'))}
+  // Open = the next section may show: its questions are done, or it has none (or they did not load).
+  window.iqOpen=function(i){return !data||!(data[i]||[]).length||!!done[i]||main.classList.contains('read-only')};
+  function render(box){
+    var i=box.getAttribute('data-iq'), qs=data[i]||[], right=0, answered=0;
+    if(!qs.length){box.innerHTML='';box.previousElementSibling.hidden=true;return}
+    var h='<h3 class="iq-h">שאלות על הקטע</h3>'+(done[i]?'<p class="iq-past">כבר ענית על השאלות בקטע הזה. אפשר לענות שוב.</p>':'');
+    qs.forEach(function(q,k){
+      h+='<fieldset class="qq" data-k="'+k+'"><legend>'+(k+1)+'. '+esc(q.q)+'</legend><div class="opts'+(q.a.length===2?' tf':'')+'">'+
+        q.a.map(function(a,j){return '<button type="button" data-j="'+j+'">'+esc(a)+'</button>'}).join('')+
+        '</div><p class="why" hidden></p></fieldset>';
+    });
+    h+='<div class="quiz-end" hidden></div>';
+    box.innerHTML=h;
+    [].forEach.call(box.querySelectorAll('.qq'),function(f){
+      var q=qs[+f.getAttribute('data-k')];
+      f.addEventListener('click',function(e){
+        var b=e.target.closest('button[data-j]');if(!b||f.classList.contains('done'))return;
+        f.classList.add('done');answered++;
+        var j=+b.getAttribute('data-j'), ok=j===q.c;if(ok)right++;
+        b.classList.add(ok?'ok':'bad');
+        f.querySelectorAll('button')[q.c].classList.add('ok');
+        var w=f.querySelector('.why');w.hidden=false;w.innerHTML='<b>'+(ok?'נכון!':'לא בדיוק.')+'</b> '+esc(q.why||'');
+        if(answered<qs.length)return;
+        done[i]=1;try{localStorage.setItem(key,JSON.stringify(Object.keys(done)))}catch(e){}
+        var last=+i>=document.querySelectorAll('.sec').length;
+        var end=box.querySelector('.quiz-end');end.hidden=false;
+        end.innerHTML='<p><b>'+right+' מתוך '+qs.length+'</b> תשובות נכונות.</p><div class="end-btns"><button type="button" data-again>שוב</button>'+
+          '<button type="button" class="primary" data-next>'+(last?'סיימתי ✓':'לקטע הבא ←')+'</button></div>';
+        end.querySelector('[data-again]').onclick=function(){render(box);box.scrollIntoView({block:'start'})};
+        end.querySelector('[data-next]').onclick=function(){if(window.markRead)markRead(i,true);if(!last)location.hash='#s'+(+i+1)};
+        if(window.quizDone)quizDone(i,right,qs.length);
+        if(window.SITE)SITE.saveQuiz(ch,i,right,qs.length);
+        changed();
+      });
+    });
+  }
+  fetch(main.getAttribute('data-quiz')).then(function(r){return r.json()}).then(function(d){
+    data=d;[].forEach.call(document.querySelectorAll('[data-iq]'),render);changed();
+  }).catch(function(){data=null;changed()});
+})();
+
 // Reading bar fixed to the screen bottom: previous / menu (read count) / quiz / accessibility / next / "קראתי" (marks and moves on).
 // It replaces each section's own bar and the page footer. Private chapters (data-track) get it without "קראתי" and the quiz.
 (function(){
@@ -210,10 +260,12 @@
     var i=cur(), done=toc.querySelectorAll('a.done').length;
     bar.querySelector('[data-go="-1"] span').textContent=i>1?'הקודם':i===1?'תוכן':'חזרה';
     bar.querySelector('[data-go="1"]').disabled=i>=n;
+    var gate=!!window.iqOpen&&i>0&&!iqOpen(i); // beta: next only after the questions
+    bar.querySelector('[data-go="1"]').hidden=gate;
     bar.querySelector('.rb-count').textContent=priv?'כותרות':'✓ '+done+'/'+n;
     prog.firstChild.style.width=(100*(priv?i:done)/n)+'%';
     var r=bar.querySelector('.rb-read');
-    if(r)r.hidden=!i;
+    if(r)r.hidden=!i||gate;
     if(r&&i){var rd=isRead(i);r.classList.toggle('done',rd);
       r.textContent=rd?'נקרא ✓':(i>=n?'סיימתי ✓':'קראתי ✓');
       r.title=rd?'לחיצה מבטלת את הסימון':(i>=n?'סימון הקטע האחרון כנקרא':'סימון כנקרא ומעבר לקטע הבא')}
@@ -230,6 +282,7 @@
     if(g)return go(i+ +g);
     if(k==='menu'){if(window.openChapterMenu)openChapterMenu();else{toc.open=true;toc.scrollIntoView({block:'start'})}}
     if(k==='design'){var t=document.getElementById('theme');if(t)t.click()}
+    if(k==='quiz'&&window.iqOpen){var qx=document.getElementById('q'+i);if(qx)qx.scrollIntoView({block:'start',behavior:'smooth'});return}
     if(k==='quiz'){var qb=document.querySelector('#s'+i+' [data-quiz]');if(qb)qb.click()}
     if(k==='read'){
       if(isRead(i)){if(window.markRead)markRead(String(i),false);return}
@@ -255,9 +308,10 @@
     if(sx===null)return;var t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;sx=null;
     if(Math.abs(dx)<70||Math.abs(dy)>Math.abs(dx)*0.6)return;
     if(String(window.getSelection&&getSelection())!=='')return;
-    var i=cur();if(dx>0&&i<n)go(i+1);else if(dx<0&&i>=1)go(i-1);
+    var i=cur();if(dx>0&&i<n&&(!window.iqOpen||!i||iqOpen(i)))go(i+1);else if(dx<0&&i>=1)go(i-1);
   },{passive:true});
   new MutationObserver(paint).observe(toc,{subtree:true,attributes:true,attributeFilter:['class']});
   window.addEventListener('hashchange',function(){setTimeout(paint,0)});
+  document.addEventListener('iq-change',paint);
   paint();
 })();
