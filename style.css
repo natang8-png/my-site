@@ -282,7 +282,7 @@ main.locked .q-gap,main.locked .iq,main.read-only .q-gap,main.read-only .iq,main
 .me-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
 /* "הבא" waits for the section's questions: half see-through, and a short note when pressed. */
-.rb-pill{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;font-weight:700;font-size:.95rem;white-space:nowrap;
+.rb-pill{flex:0 0 auto;box-sizing:border-box;width:6.6rem;height:2.75rem;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;border-radius:999px;font-weight:700;font-size:.95rem;white-space:nowrap;
   background:var(--accent);color:var(--bg);border:1.5px solid var(--accent);cursor:pointer}
 .rb-pill:hover{filter:brightness(1.08)}
 .rb-arr{width:1.15em;height:1.15em;flex:none}
