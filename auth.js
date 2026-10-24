@@ -11,8 +11,6 @@
     {path:'halacha/family', title:'טהרת המשפחה'},
     {path:'halacha/family/harchakot', title:'הרחקות'},
     {path:'halacha/family/tumat-betulim', title:'טומאת בתולים'},
-    // Graphic version of הרחקות, still being proofread: outside 'halacha', so only its own grant opens it.
-    {path:'harchakot-graphic', title:'הרחקות גרפי'},
     // Opens only with its own grant (a wider grant does not cover it), for one week at a time.
     {path:'leil-hachatuna', title:'סדר ליל החתונה', own:true, days:7}
   ];
@@ -90,6 +88,23 @@
   window.SITE={sb:sb, ready:ready, state:state, access:access, live:live, name:name, incomplete:incomplete, GOOGLE:GOOGLE, TREE:TREE,
     loadReads:async function(ch){ if(!state.user) return null; var r=await sb.from('reads').select('section').eq('user_id',state.user.id).eq('chapter',ch); return r.error?null:(r.data||[]).map(function(x){return String(x.section)}) },
     saveRead:function(ch,sec,on){ if(!state.user) return; var q=on?sb.from('reads').upsert({user_id:state.user.id,chapter:ch,section:+sec}):sb.from('reads').delete().eq('user_id',state.user.id).eq('chapter',ch).eq('section',+sec); q.then(function(){}) },
-    saveQuiz:function(ch,sec,score,total){ if(!state.user) return; sb.from('quiz_results').insert({user_id:state.user.id,chapter:ch,section:+sec,score:score,total:total}).then(function(){}) }
+    // A section's quiz: the score and the chosen answers (the answers column comes with supabase/v8.sql; without it, score only).
+    saveQuiz:function(ch,sec,score,total,answers){ if(!state.user) return; var row={user_id:state.user.id,chapter:ch,section:+sec,score:score,total:total};
+      sb.from('quiz_results').insert(Object.assign({answers:answers||null},row)).then(function(r){ if(r.error) sb.from('quiz_results').insert(row).then(function(){}) }) },
+    // The current round of a chapter's quiz: results since the last reset (the latest per section), oldest first.
+    loadQuiz:async function(ch){ if(!state.user) return null;
+      var z=await sb.from('quiz_resets').select('reset_at').eq('user_id',state.user.id).eq('chapter',ch).order('reset_at',{ascending:false}).limit(1);
+      var since=!z.error&&z.data&&z.data[0]?z.data[0].reset_at:null;
+      var q=sb.from('quiz_results').select('*').eq('user_id',state.user.id).eq('chapter',ch).order('taken_at');
+      if(since) q=q.gt('taken_at',since);
+      var r=await q; if(r.error) return null;
+      var last={}; (r.data||[]).forEach(function(x){last[x.section]=x});
+      return {since:since, rows:Object.keys(last).map(function(k){return last[k]})} },
+    // Reset the whole quiz of a chapter: nothing is deleted, a new round starts (the admin sees every round).
+    resetQuiz:async function(ch){
+      try{localStorage.removeItem('iq:'+ch);localStorage.removeItem('quiz:'+ch)}catch(e){}
+      if(!state.user) return null;
+      var r=await sb.from('quiz_resets').insert({user_id:state.user.id,chapter:ch});
+      return r.error||null }
   };
 })();

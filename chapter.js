@@ -71,54 +71,6 @@
   });
 })();
 
-// Self-quiz on the current section
-(function(){
-  var btns=document.querySelectorAll('button[data-quiz]');
-  if(!btns.length)return;
-  var data=null, dlg=document.createElement('dialog');
-  dlg.className='quiz';dlg.setAttribute('dir','rtl');
-  document.body.appendChild(dlg);
-  function load(cb){if(data)return cb();fetch(document.querySelector('main').getAttribute('data-quiz')||'quiz.json').then(function(r){return r.json()}).then(function(d){data=d;cb()}).catch(function(){data={};cb()})}
-  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
-  function open(i){
-    var qs=data[i]||[], title=document.getElementById('s'+i+'-h').textContent, right=0, answered=0;
-    var h='<div class="quiz-head"><div><small>בחינה עצמית</small><h3>'+esc(title)+'</h3></div><button type="button" class="x" aria-label="סגירה">✕</button></div>';
-    if(!qs.length)h+='<p>עוד אין שאלות לקטע הזה.</p>';
-    qs.forEach(function(q,k){
-      h+='<fieldset class="qq" data-k="'+k+'"><legend>'+(k+1)+'. '+esc(q.q)+'</legend><div class="opts'+(q.a.length===2?' tf':'')+'">'+
-        q.a.map(function(a,j){return '<button type="button" data-j="'+j+'">'+esc(a)+'</button>'}).join('')+
-        '</div><p class="why" hidden></p></fieldset>';
-    });
-    h+='<div class="quiz-end" hidden></div>';
-    dlg.innerHTML=h;
-    dlg.querySelector('.x').onclick=function(){dlg.close()};
-    [].forEach.call(dlg.querySelectorAll('.qq'),function(f){
-      var q=qs[+f.getAttribute('data-k')];
-      f.addEventListener('click',function(e){
-        var b=e.target.closest('button[data-j]');if(!b||f.classList.contains('done'))return;
-        f.classList.add('done');answered++;
-        var j=+b.getAttribute('data-j'), ok=j===q.c;if(ok)right++;
-        b.classList.add(ok?'ok':'bad');
-        f.querySelectorAll('button')[q.c].classList.add('ok');
-        var w=f.querySelector('.why');w.hidden=false;w.innerHTML='<b>'+(ok?'נכון!':'לא בדיוק.')+'</b> '+esc(q.why||'');
-        if(answered===qs.length){
-          var end=dlg.querySelector('.quiz-end');end.hidden=false;
-          end.innerHTML='<p><b>'+right+' מתוך '+qs.length+'</b> תשובות נכונות.</p>'+
-            '<div class="end-btns"><button type="button" data-again>שוב</button>'+
-            '<button type="button" data-mark>סמן כנקרא וסגור</button></div>';
-          end.querySelector('[data-again]').onclick=function(){open(i);dlg.scrollTop=0};
-          if(window.quizDone)quizDone(i,right,qs.length);
-          if(window.SITE)SITE.saveQuiz(document.querySelector('main[data-chapter]').getAttribute('data-chapter'),i,right,qs.length);
-          end.querySelector('[data-mark]').onclick=function(){if(window.markRead)markRead(String(i),true);dlg.close()};
-        }
-      });
-    });
-    if(!dlg.open)dlg.showModal();
-  }
-  [].forEach.call(btns,function(b){b.addEventListener('click',function(){var i=b.getAttribute('data-quiz');load(function(){open(i)})})});
-  dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close()});
-})();
-
 // Slim top bar, always on while reading: back to the chapter list, the chapter name over the current heading,
 // and the section number ("קטע 2/25"). The headings menu itself opens from the bottom bar.
 (function(){
@@ -181,127 +133,130 @@
   new MutationObserver(fit).observe(document.documentElement,{attributes:true,attributeFilter:['style','class']});
 })();
 
-// Beta (data-inline-quiz): each section's questions sit on the same page below the text, after a blank gap.
-// "הבא" shows only after every question of the section is answered; this device remembers the sections already done.
+// Each section's questions sit on the same page below the text, after a blank gap (data-inline-quiz).
+// Answers are kept for good: in the account when logged in, otherwise on this device. There is no "answer again"
+// for a single section; the whole quiz can be reset from the הלכה page, and the admin still sees every round.
 (function(){
   var main=document.querySelector('main[data-inline-quiz]');
   if(!main)return;
-  var ch=main.getAttribute('data-chapter'), key='iq:'+ch, done={}, data=null;
-  try{(JSON.parse(localStorage.getItem(key))||[]).forEach(function(n){done[n]=1})}catch(e){}
+  var ch=main.getAttribute('data-chapter'), key='iq:'+ch, saved={}, data=null, loaded=false, online=false;
+  try{var old=JSON.parse(localStorage.getItem(key));
+    if(Array.isArray(old))old.forEach(function(n){saved[n]={}});else if(old)saved=old}catch(e){}
   function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
   function changed(){document.dispatchEvent(new Event('iq-change'))}
-  // Open = the next section may show: its questions are done, or it has none (or they did not load).
-  window.iqOpen=function(i){return !data||!(data[i]||[]).length||!!done[i]||main.classList.contains('read-only')};
+  function keep(){if(!online)try{localStorage.setItem(key,JSON.stringify(saved))}catch(e){}}
+  // Open = "הבא" may be pressed: this section's questions are all answered, or it has none,
+  // or this reader has no quiz (reading only, or no access yet).
+  window.iqOpen=function(i){
+    if(main.classList.contains('read-only')||main.classList.contains('locked'))return true;
+    if(!loaded)return false;
+    return !data||!(data[i]||[]).length||!!saved[i];
+  };
+  function result(box,s,t){
+    var end=box.querySelector('.quiz-end');end.hidden=false;
+    end.innerHTML='<p><b>'+s+' מתוך '+t+'</b> תשובות נכונות.</p><p class="iq-past">התשובות נשמרו. כפתור "הבא" למטה פעיל עכשיו.</p>';
+  }
   function render(box){
-    var i=box.getAttribute('data-iq'), qs=data[i]||[], right=0, answered=0;
+    var i=box.getAttribute('data-iq'), qs=data[i]||[], sv=saved[i], right=0, answered=0, picks=[];
     if(!qs.length){box.innerHTML='';box.previousElementSibling.hidden=true;return}
-    var h='<h3 class="iq-h">שאלות על הקטע</h3>'+(done[i]?'<p class="iq-past">כבר ענית על השאלות בקטע הזה. אפשר לענות שוב.</p>':'');
+    var h='<h3 class="iq-h">שאלות על הקטע</h3>';
     qs.forEach(function(q,k){
       h+='<fieldset class="qq" data-k="'+k+'"><legend>'+(k+1)+'. '+esc(q.q)+'</legend><div class="opts'+(q.a.length===2?' tf':'')+'">'+
         q.a.map(function(a,j){return '<button type="button" data-j="'+j+'">'+esc(a)+'</button>'}).join('')+
         '</div><p class="why" hidden></p></fieldset>';
     });
-    var last=+i>=document.querySelectorAll('.sec').length;
-    // "הבא" under the questions: shown once they are all answered (or right away if this section was done before).
-    h+='<div class="quiz-end" hidden></div><div class="iq-next"'+(done[i]?'':' hidden')+'><button type="button" class="primary" data-next>'+(last?'סיימתי ✓':'לקטע הבא ←')+'</button></div>';
-    box.innerHTML=h;
-    box.querySelector('[data-next]').onclick=function(){if(window.markRead)markRead(i,true);if(!last)location.hash='#s'+(+i+1)};
+    box.innerHTML=h+'<div class="quiz-end" hidden></div>';
+    function mark(f,q,j){
+      f.classList.add('done');
+      var bs=f.querySelectorAll('button'), ok=j===q.c;
+      if(j!=null&&bs[j])bs[j].classList.add(ok?'ok':'bad');
+      bs[q.c].classList.add('ok');
+      var w=f.querySelector('.why');w.hidden=false;
+      w.innerHTML=(j==null?'':'<b>'+(ok?'נכון!':'לא בדיוק.')+'</b> ')+esc(q.why||'');
+      return ok;
+    }
+    // Answered before: show the saved answers, locked.
+    if(sv){
+      [].forEach.call(box.querySelectorAll('.qq'),function(f){var k=+f.getAttribute('data-k');mark(f,qs[k],sv.a?sv.a[k]:null)});
+      if(sv.t!=null)result(box,sv.s,sv.t);
+      return;
+    }
     [].forEach.call(box.querySelectorAll('.qq'),function(f){
-      var q=qs[+f.getAttribute('data-k')];
+      var k=+f.getAttribute('data-k'), q=qs[k];
       f.addEventListener('click',function(e){
         var b=e.target.closest('button[data-j]');if(!b||f.classList.contains('done'))return;
-        f.classList.add('done');answered++;
-        var j=+b.getAttribute('data-j'), ok=j===q.c;if(ok)right++;
-        b.classList.add(ok?'ok':'bad');
-        f.querySelectorAll('button')[q.c].classList.add('ok');
-        var w=f.querySelector('.why');w.hidden=false;w.innerHTML='<b>'+(ok?'נכון!':'לא בדיוק.')+'</b> '+esc(q.why||'');
+        var j=+b.getAttribute('data-j');picks[k]=j;answered++;
+        if(mark(f,q,j))right++;
         if(answered<qs.length)return;
-        done[i]=1;try{localStorage.setItem(key,JSON.stringify(Object.keys(done)))}catch(e){}
-        var end=box.querySelector('.quiz-end');end.hidden=false;
-        end.innerHTML='<p><b>'+right+' מתוך '+qs.length+'</b> תשובות נכונות.</p><div class="end-btns"><button type="button" data-again>לענות שוב</button></div>';
-        end.querySelector('[data-again]').onclick=function(){render(box);box.scrollIntoView({block:'start'})};
-        box.querySelector('.iq-next').hidden=false;
-        if(window.quizDone)quizDone(i,right,qs.length);
-        if(window.SITE)SITE.saveQuiz(ch,i,right,qs.length);
+        saved[i]={a:picks,s:right,t:qs.length};keep();
+        result(box,right,qs.length);
+        if(window.markRead)markRead(i,true);
+        if(window.SITE)SITE.saveQuiz(ch,i,right,qs.length,picks);
         changed();
       });
     });
   }
-  fetch(main.getAttribute('data-quiz')).then(function(r){return r.json()}).then(function(d){
-    data=d;[].forEach.call(document.querySelectorAll('[data-iq]'),render);changed();
-  }).catch(function(){data=null;changed()});
+  var quiz=fetch(main.getAttribute('data-quiz')).then(function(r){return r.json()}).catch(function(){return null});
+  // Logged in: the account's answers since the last reset replace this device's.
+  var mine=window.SITE?SITE.ready.then(function(st){return st.user?SITE.loadQuiz(ch):null}).catch(function(){return null}):Promise.resolve(null);
+  Promise.all([quiz,mine]).then(function(r){
+    data=r[0];
+    if(r[1]){online=true;saved={};r[1].rows.forEach(function(x){saved[x.section]={a:x.answers||null,s:x.score,t:x.total}})}
+    loaded=true;
+    if(data)[].forEach.call(document.querySelectorAll('[data-iq]'),render);
+    changed();
+  });
 })();
 
-// Reading bar fixed to the screen bottom: previous / menu (read count) / quiz / accessibility / next / "קראתי" (marks and moves on).
-// It replaces each section's own bar and the page footer. Private chapters (data-track) get it without "קראתי" and the quiz.
+// Reading bar fixed to the screen bottom: previous / menu (read count) / accessibility / next.
+// In a chapter with questions, "הבא" stays half see-through until the section's questions are all answered.
+// It replaces each section's own bar and the page footer.
 (function(){
   var main=document.querySelector('main.chapter'), toc=document.getElementById('toc');
   var secs=[].slice.call(document.querySelectorAll('.sec'));
   if(!main||!toc||!secs.length) return;
-  var priv=main.hasAttribute('data-track'), ch=main.getAttribute('data-chapter'), n=secs.length;
-  var quizzes=!priv&&!!document.querySelector('[data-quiz]'), scores={}, qdata=null;
-  try{scores=JSON.parse(localStorage.getItem('quiz:'+ch))||{}}catch(e){}
+  var priv=main.hasAttribute('data-track'), n=secs.length;
   var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט בפרק');
   bar.innerHTML='<div class="rb-row">'+
     '<button type="button" class="rb-b" data-go="-1"><i>→</i><span>הקודם</span></button>'+
     '<button type="button" class="rb-b" data-rb="menu"><i>☰</i><span class="rb-count"></span></button>'+
-    (quizzes?'<button type="button" class="rb-b rb-quiz" data-rb="quiz"><i>?</i><span>שאלון</span></button>':'')+
     '<button type="button" class="rb-b" data-rb="design"><i>♿</i><span>נגישות</span></button>'+
-    '<button type="button" class="rb-b" data-go="1"><i>←</i><span>הבא</span></button>'+
-    (priv?'':'<button type="button" class="rb-read" data-rb="read"></button>')+
-    '</div><div class="rb-toast" role="status" hidden></div>';
+    '<button type="button" class="rb-b rb-next" data-go="1"><i>←</i><span>הבא</span></button>'+
+    '</div>';
   document.body.appendChild(bar);
   document.documentElement.classList.add('has-rbar');
   var prog=document.createElement('div');prog.className='rb-prog';prog.innerHTML='<i></i>';
   (document.querySelector('.chbar')||bar).appendChild(prog);
+  // Pressing "הבא" before the questions are done explains why it is not active yet.
+  var dlg=document.createElement('dialog');dlg.className='rb-dlg';dlg.dir='rtl';
+  dlg.innerHTML='<p>אחרי הקריאה, תוכל למלא את השאלון המופיע בהמשך העמוד, למטה.<br>לאחר מילוי השאלון - כפתור "הבא" יהפוך לפעיל.</p><button type="button" class="primary" data-close>הבנתי</button>';
+  document.body.appendChild(dlg);
+  dlg.addEventListener('click',function(e){if(e.target===dlg||e.target.closest('[data-close]'))dlg.close()});
   function cur(){var s=document.querySelector('.sec:not([hidden])');return s?+s.id.slice(1):0} // 0 = תוכן עניינים
-  function isRead(i){var a=toc.querySelector('a[href="#s'+i+'"]');return !!(a&&a.classList.contains('done'))}
-  function go(i){var back=main.querySelector('header .back');if(i<0){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}if(i<=n)location.hash='#s'+i}
+  function gated(i){return !!window.iqOpen&&i>0&&!iqOpen(i)}
+  function go(i){var back=main.querySelector('header .back');if(i<0||i>n){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}location.hash='#s'+i}
   function paint(){
-    var i=cur(), done=toc.querySelectorAll('a.done').length;
+    var i=cur(), done=toc.querySelectorAll('a.done').length, nx=bar.querySelector('.rb-next'), g=gated(i);
     bar.querySelector('[data-go="-1"] span').textContent=i>1?'הקודם':i===1?'תוכן':'חזרה';
-    bar.querySelector('[data-go="1"]').disabled=i>=n;
-    var gate=!!window.iqOpen&&i>0&&!iqOpen(i); // beta: next only after the questions
-    bar.querySelector('[data-go="1"]').hidden=gate;
+    nx.querySelector('span').textContent=i>=n?'סיום':'הבא';
+    nx.classList.toggle('off',g);nx.setAttribute('aria-disabled',g?'true':'false');
     bar.querySelector('.rb-count').textContent=priv?'כותרות':'✓ '+done+'/'+n;
     prog.firstChild.style.width=(100*(priv?i:done)/n)+'%';
-    var r=bar.querySelector('.rb-read');
-    if(r)r.hidden=!i||gate;
-    if(r&&i){var rd=isRead(i);r.classList.toggle('done',rd);
-      r.textContent=rd?'נקרא ✓':(i>=n?'סיימתי ✓':'קראתי ✓');
-      r.title=rd?'לחיצה מבטלת את הסימון':(i>=n?'סימון הקטע האחרון כנקרא':'סימון כנקרא ומעבר לקטע הבא')}
-    var q=bar.querySelector('.rb-quiz');
-    if(q){var sc=scores[i], has=!qdata||(qdata[i]||[]).length>0;
-      q.disabled=!has||!i;q.classList.toggle('todo',has&&!sc);
-      q.querySelector('span').textContent=sc?sc:'שאלון'}
   }
-  function toast(t){var el=bar.querySelector('.rb-toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},3500)}
   bar.addEventListener('click',function(e){
     var b=e.target.closest('button');if(!b)return;
     e.stopPropagation();
     var i=cur(), g=b.getAttribute('data-go'), k=b.getAttribute('data-rb');
-    if(g)return go(i+ +g);
+    if(g==='1'){
+      if(gated(i)){dlg.showModal();return}
+      // Sections without questions (or readers without a quiz) count as read when moving on.
+      if(i>0&&!priv&&window.markRead&&!toc.querySelector('a[href="#s'+i+'"].done'))markRead(String(i),true);
+      return go(i+1);
+    }
+    if(g)return go(i-1);
     if(k==='menu'){if(window.openChapterMenu)openChapterMenu();else{toc.open=true;toc.scrollIntoView({block:'start'})}}
     if(k==='design'){var t=document.getElementById('theme');if(t)t.click()}
-    if(k==='quiz'&&window.iqOpen){var qx=document.getElementById('q'+i);if(qx)qx.scrollIntoView({block:'start',behavior:'smooth'});return}
-    if(k==='quiz'){var qb=document.querySelector('#s'+i+' [data-quiz]');if(qb)qb.click()}
-    if(k==='read'){
-      if(isRead(i)){if(window.markRead)markRead(String(i),false);return}
-      if(window.markRead)markRead(String(i),true);
-      if(i<n)go(i+1);else toast(toc.querySelectorAll('a.done').length>=n?'כל הכבוד! סיימת את כל הפרק ✓':'הקטע האחרון סומן ✓ אפשר לראות בתפריט מה עוד לא נקרא.');
-    }
   });
-  // Quiz results: this device right away; the account's results when logged in.
-  window.quizDone=function(i,right,total){scores[i]=right+'/'+total;try{localStorage.setItem('quiz:'+ch,JSON.stringify(scores))}catch(e){}paint()};
-  if(quizzes){
-    fetch(document.querySelector('main').getAttribute('data-quiz')||'quiz.json').then(function(r){return r.json()}).then(function(d){qdata=d;paint()}).catch(function(){});
-    if(window.SITE)SITE.ready.then(function(st){
-      if(!st.user)return;
-      return SITE.sb.from('quiz_results').select('section,score,total,taken_at').eq('user_id',st.user.id).eq('chapter',ch).order('taken_at').then(function(r){
-        (r.data||[]).forEach(function(x){scores[x.section]=x.score+'/'+x.total});paint();
-      });
-    });
-  }
   // Swipe on the text: right = next section, left = previous (like turning a Hebrew book's page).
   var sx=null, sy=0;
   main.addEventListener('touchstart',function(e){if(e.touches.length!==1){sx=null;return}sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
@@ -309,9 +264,10 @@
     if(sx===null)return;var t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;sx=null;
     if(Math.abs(dx)<70||Math.abs(dy)>Math.abs(dx)*0.6)return;
     if(String(window.getSelection&&getSelection())!=='')return;
-    var i=cur();if(dx>0&&i<n&&(!window.iqOpen||!i||iqOpen(i)))go(i+1);else if(dx<0&&i>=1)go(i-1);
+    var i=cur();if(dx>0&&i<n&&!gated(i))go(i+1);else if(dx<0&&i>=1)go(i-1);
   },{passive:true});
   new MutationObserver(paint).observe(toc,{subtree:true,attributes:true,attributeFilter:['class']});
+  new MutationObserver(paint).observe(main,{attributes:true,attributeFilter:['class']}); // access level arrives later
   window.addEventListener('hashchange',function(){setTimeout(paint,0)});
   document.addEventListener('iq-change',paint);
   paint();

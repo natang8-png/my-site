@@ -64,13 +64,17 @@ dialog.bulk::backdrop{background:rgb(0 0 0/.45)}
 .bulk .opts input{margin:0}
 .bulk .acts{margin-top:14px}
 body:has(.selbar:not([hidden])) main{padding-bottom:150px}
+.rounds{margin-top:10px}.rounds h4{margin:0 0 4px;font-size:.95rem}
+.round{border-top:1px solid var(--line);padding:6px 0;font-size:.92rem}.round.empty{color:var(--muted)}
+.rsec{padding:8px 0;border-bottom:1px dashed var(--line)}
+.ans{margin:6px 0 0;padding-inline-start:1.2em;display:grid;gap:6px}.ans li.ok{color:var(--fg)}.ans li.bad{color:#b3261e}.ans small{color:var(--muted)}
 </style>
 </head><body>
 <main dir="rtl" lang="he">
   <header>
     <a class="back" href="/">→ חזרה לדף הבית</a>
     <h1>ניהול</h1>
-    <p class="lead">מי נרשם, מה למד, מה הציונים, ומה פתוח לכל אחד. · <a href="/admin/versions/">יומן גרסאות</a> · <a href="/halacha/harchakot-graphic/">הרחקות גרפי</a></p>
+    <p class="lead">מי נרשם, מה למד, מה הציונים, ומה פתוח לכל אחד. · <a href="/admin/versions/">יומן גרסאות</a></p>
   </header>
   <section id="app"><p class="msg">טוען…</p></section>
   <footer>
@@ -93,6 +97,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   if(!st.user){app.innerHTML='<p>צריך <a href="/login/?next=/admin/">להיכנס</a> קודם.</p>';return}
   if(!(st.profile&&st.profile.is_admin)){app.innerHTML='<p class="msg">הדף הזה פתוח רק למנהל.</p>';return}
 
+  var QUIZ=null, RESETS=[];
   async function load(){
     var r=await Promise.all([
       sb.from('profiles').select('*').order('created_at',{ascending:false}),
@@ -100,11 +105,42 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       sb.from('reads').select('*'),
       sb.from('quiz_results').select('*').order('taken_at',{ascending:false}),
       sb.from('invites').select('*').order('created_at',{ascending:false}),
-      sb.from('access_requests').select('*').is('handled_at',null).order('created_at')
+      sb.from('access_requests').select('*').is('handled_at',null).order('created_at'),
+      sb.from('quiz_resets').select('*').order('reset_at'),  // from supabase/v8.sql; empty until it runs
+      QUIZ?null:fetch('/halacha/harchakot/quiz.json').then(function(x){return x.json()}).then(function(d){QUIZ={harchakot:d}}).catch(function(){QUIZ={}})
     ]);
+    RESETS=r[6].error?[]:r[6].data;
     var err=r.slice(0,4).find(function(x){return x.error});
     if(err){app.innerHTML='<p class="msg err">שגיאה בטעינה: '+esc(err.error.message)+'</p>';return}
     render(r[0].data,r[1].data,r[2].data,r[3].data,r[4].error?null:r[4].data,r[5].error?null:r[5].data);
+  }
+
+  // Quiz rounds: every reset of a chapter's quiz starts a new row. Each row opens to the answers, section by section.
+  function rounds(u,uq){
+    var out='';
+    Object.keys(CHAPTERS).forEach(function(c){
+      var cq=uq.filter(function(x){return x.chapter===c}).slice().sort(function(a,b){return a.taken_at<b.taken_at?-1:1});
+      var cuts=RESETS.filter(function(z){return z.user_id===u.id&&z.chapter===c}).map(function(z){return z.reset_at});
+      if(!cq.length&&!cuts.length)return;
+      var starts=[null].concat(cuts), qd=(QUIZ||{})[c]||{};
+      var rows=starts.map(function(from,k){
+        var to=starts[k+1], last={};
+        cq.forEach(function(x){if((!from||x.taken_at>from)&&(!to||x.taken_at<=to))last[x.section]=x});
+        var list=Object.keys(last).sort(function(a,b){return a-b}).map(function(n){return last[n]});
+        var s=0,t=0;list.forEach(function(x){s+=x.score;t+=x.total});
+        var hd='סבב '+(k+1)+(from?' · מ־'+when(from):'')+' · '+list.length+' קטעים, '+t+' שאלות'+(t?' · ציון '+Math.round(100*s/t)+'%':'')+(to?'':' (נוכחי)');
+        if(!list.length)return '<div class="round empty">'+esc(hd)+' · עוד לא ענה</div>';
+        return '<details class="round"><summary>'+esc(hd)+'</summary>'+list.map(function(x){
+          var qs=qd[x.section]||[];
+          var ans=x.answers?'<ol class="ans">'+qs.map(function(q,i){var j=x.answers[i], ok=j===q.c;
+            return '<li class="'+(ok?'ok':'bad')+'">'+(ok?'✓ ':'✗ ')+esc(q.q)+'<br><small>ענה: '+esc(j==null?'—':q.a[j])+(ok?'':' · הנכונה: '+esc(q.a[q.c]))+'</small></li>'}).join('')+'</ol>'
+            :'<p class="none">התשובות עצמן לא נשמרו (לפני שהתחלנו לשמור אותן).</p>';
+          return '<div class="rsec"><b>קטע '+x.section+'</b> · '+x.score+'/'+x.total+' · '+when(x.taken_at)+ans+'</div>';
+        }).join('')+'</details>';
+      });
+      out+='<div class="rounds"><h4>שאלונים · '+esc(CHAPTERS[c].title)+'</h4>'+rows.join('')+'</div>';
+    });
+    return out;
   }
 
   function render(users,grants,reads,results,invites,requests){
@@ -154,10 +190,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
           h+='<details><summary>קריאה לפי כותרות</summary><ol class="none" style="margin:6px 0 0">'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
             return '<li>'+(r?'✓ ':'○ ')+esc(t)+(r?' · '+when(r.read_at):'')+'</li>'}).join('')+'</ol></details>'}
       });
-      if(uq.length){
-        h+='<details><summary>כל הבחינות ('+uq.length+')</summary><table class="q"><thead><tr><th>פרק</th><th>קטע</th><th>ציון</th><th>מתי</th></tr></thead><tbody>'+
-          uq.map(function(x){return '<tr><td>'+esc((CHAPTERS[x.chapter]||{}).title||x.chapter)+'</td><td>'+x.section+'</td><td>'+x.score+'/'+x.total+'</td><td>'+when(x.taken_at)+'</td></tr>'}).join('')+'</tbody></table></details>';
-      }
+      h+=rounds(u,uq);
       h+='</article>';
     });
     app.innerHTML=h+'</div>'+inviteBlock(invites);

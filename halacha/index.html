@@ -14,11 +14,10 @@
   <section aria-labelledby="sub-h">
     <h2 id="sub-h">תתי־נושאים</h2>
     <ol class="topics">
-      <li><a class="topic" href="/halacha/harchakot/"><h3><span class="num">1</span>הרחקות</h3><p>האיסורים הנוהגים בזמן נדתה: 25 קטעים, מהקדמה ועד יום הכיפורים.</p><span class="go" aria-hidden="true">←</span></a></li>
+      <li><a class="topic" href="/halacha/harchakot/"><h3><span class="num">1</span>הרחקות</h3><p>האיסורים הנוהגים בזמן נדתה: 25 קטעים, מהקדמה ועד יום הכיפורים.</p><span class="go" aria-hidden="true">←</span></a>
+        <div class="qsum" data-qsum="harchakot" data-path="halacha/family/harchakot" data-quiz="/halacha/harchakot/quiz.json" hidden></div></li>
       <li><a class="topic" href="/halacha/tumat-betulim/"><h3><span class="num">2</span>טומאת בתולים</h3><p>התוכן ייכתב בהדרגה.</p><span class="go" aria-hidden="true">←</span></a></li>
       <li><a class="topic" href="/halacha/leil-hachatuna/" data-lock="leil-hachatuna"><h3><span class="num">3</span>סדר ליל החתונה<span class="lock" aria-label="בהרשאה אישית">🔒</span></h3><p>נפתח בהרשאה אישית לשבוע.</p><span class="go" aria-hidden="true">←</span></a></li>
-      <li hidden data-show="harchakot-beta"><a class="topic" href="/halacha/harchakot-beta/"><h3><span class="num">1</span>הרחקות beta</h3><p>אותו פרק, עם השאלות בתחתית כל קטע. למנהלים בלבד.</p><span class="go" aria-hidden="true">←</span></a></li>
-      <li hidden data-show="harchakot-graphic"><a class="topic" href="/halacha/harchakot-graphic/"><h3><span class="num">1</span>הרחקות גרפי</h3><p>אותו פרק, עם סמל לכל קטע. נמצא בבדיקה.</p><span class="go" aria-hidden="true">←</span></a></li>
     </ol>
   </section>
 
@@ -32,7 +31,34 @@
 <script src="/auth.js"></script>
 <script src="/private.js"></script>
 <script>
-// Chapters still in review show only to whoever has access to them (the admin always does).
-if(window.SITE)SITE.ready.then(function(){[].forEach.call(document.querySelectorAll('[data-show]'),function(li){if(SITE.access(li.getAttribute('data-show')))li.hidden=false})});
+// Quiz score under each chapter: questions answered out of all, the score in percent, and a reset of the whole quiz.
+// The answers stay saved (on the account, or on this device for guests); a reset only starts a new round.
+(function(){
+  if(!window.SITE)return;
+  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+  SITE.ready.then(function(st){
+    [].forEach.call(document.querySelectorAll('[data-qsum]'),async function(box){
+      var ch=box.getAttribute('data-qsum'), a=SITE.access(box.getAttribute('data-path'));
+      if(a!=='study'&&a!=='quiz')return;
+      var data=await fetch(box.getAttribute('data-quiz')).then(function(r){return r.json()}).catch(function(){return null});
+      if(!data)return;
+      var all=0;Object.keys(data).forEach(function(k){all+=(data[k]||[]).length});
+      var rows=[];
+      if(st.user){var r=await SITE.loadQuiz(ch);rows=r?r.rows:[]}
+      else try{var o=JSON.parse(localStorage.getItem('iq:'+ch))||{};if(!Array.isArray(o))rows=Object.keys(o).map(function(k){return o[k]}).filter(function(x){return x.t!=null}).map(function(x){return {score:x.s,total:x.t}})}catch(e){}
+      var s=0,t=0;rows.forEach(function(x){s+=x.score;t+=x.total});
+      box.innerHTML='<span>שאלון: ענית על <b>'+t+' מתוך '+all+'</b> שאלות'+(t?' · ציון <b>'+Math.round(100*s/t)+'%</b>':'')+'</span>'+
+        (t?'<button type="button" class="link" data-reset>איפוס השאלון</button>':'')+'<span class="qmsg" role="status"></span>';
+      box.hidden=false;
+      var b=box.querySelector('[data-reset]');
+      if(b)b.onclick=async function(){
+        if(!confirm('לאפס את כל השאלון של הפרק?\nאפשר יהיה לענות מחדש על כל השאלות, וכפתור "הבא" ייסגר שוב עד שתענה.'))return;
+        var err=await SITE.resetQuiz(ch);
+        if(err){box.querySelector('.qmsg').textContent='האיפוס לא הצליח: '+err.message;return}
+        location.reload();
+      };
+    });
+  });
+})();
 </script>
 </body></html>

@@ -266,8 +266,6 @@ main.priv-locked ~ .rbar,main[data-track].checking ~ .rbar{display:none}
 .iq-h{font-family:var(--display);color:var(--accent);font-size:1.4rem;margin:0 0 6px}
 .iq-past{color:var(--muted);margin:0 0 6px;font-size:.95rem}
 .iq .quiz-end{margin-bottom:6px}
-.iq-next{margin:14px 0 28px}
-.iq-next .primary{width:100%;padding:14px 18px;font-size:1.1rem;border-radius:14px}
 main.locked .q-gap,main.locked .iq,main.read-only .q-gap,main.read-only .iq,main.checking .q-gap,main.checking .iq{display:none}
 
 /* Personal area */
@@ -282,3 +280,16 @@ main.locked .q-gap,main.locked .iq,main.read-only .q-gap,main.read-only .iq,main
 .me-bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
 .me-card p{margin:0}
 .me-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* "הבא" waits for the section's questions: half see-through, and a short note when pressed. */
+.rb-next.off{opacity:.4}
+.rb-next.off:hover{background:none}
+dialog.rb-dlg{border:0;border-radius:16px;padding:22px 20px 18px;max-width:22rem;width:calc(100% - 32px);background:var(--bg);color:var(--fg);box-shadow:0 10px 40px rgb(0 0 0/.25);text-align:center}
+dialog.rb-dlg::backdrop{background:rgb(0 0 0/.35)}
+dialog.rb-dlg p{margin:0 0 16px;line-height:1.7;font-size:1.05rem}
+dialog.rb-dlg .primary{width:100%;padding:10px 16px}
+.iq .quiz-end{margin-bottom:28px}
+/* Quiz score under a chapter on the הלכה page. */
+.qsum{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 14px 0;color:var(--muted);font-size:.95rem}
+.qsum b{color:var(--fg)}
+.qsum .qmsg{color:#b3261e}

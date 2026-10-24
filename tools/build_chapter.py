@@ -11,17 +11,10 @@ and reading is recorded automatically for the admin when the reader reaches the 
 import os, sys, html
 
 CHAPTERS = {
-    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot", graphic=True,
-         credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
-    # Same text, sources and progress as "harchakot" (shared "קראתי" and quiz results), plus graphics. Opens with its own
-    # permission, so Natan can proofread the graphics while students keep the plain chapter. Icons: tools/icons.py.
-    "harchakot-graphic": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="harchakot-graphic",
-         src="harchakot", key="harchakot", quiz="/halacha/harchakot/quiz.json", graphic=True, note="גרסה גרפית",
-         credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
-    # Beta for the admin only (Natan, 2026-10-18): the same chapter, with each section's questions on the same page
-    # below the text, after a blank gap, and "הבא" only once they are all answered. Progress is shared with "harchakot".
-    "harchakot-beta": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="harchakot-beta",
-         src="harchakot", key="harchakot", quiz="/halacha/harchakot/quiz.json", graphic=True, note="beta", inline_quiz=True,
+    # One version only (Natan, 2026-10-24): icons for each section, and each section's questions on the same page
+    # below the text, after a blank gap. "הבא" in the bottom bar opens only once they are all answered.
+    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
+         graphic=True, inline_quiz=True, quiz="/halacha/harchakot/quiz.json",
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=3, of=3, path="leil-hachatuna", private=True),
 }
