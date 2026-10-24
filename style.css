@@ -298,3 +298,14 @@ dialog.rb-dlg .primary{width:100%;padding:10px 16px}
 .qsum{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 14px 0;color:var(--muted);font-size:.95rem}
 .qsum b{color:var(--fg)}
 .qsum .qmsg{color:#b3261e}
+
+/* Man / woman icon beside a halacha that is mainly about one of them, and the key above the headings list. */
+:root{--who-m:#2d5f93;--who-w:#a8436a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--who-m:#8fbbe8;--who-w:#e79ab7}}
+:root[data-theme="dark"]{--who-m:#8fbbe8;--who-w:#e79ab7}
+.who{display:inline-grid;place-items:center;width:1.35em;height:1.35em;border-radius:50%;vertical-align:-.3em;margin-inline:.15em .3em;background:var(--soft)}
+.who svg{width:1em;height:1em}
+.who-m{color:var(--who-m)}.who-w{color:var(--who-w)}
+.who-key{margin:4px 0 12px;font-size:.95rem;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.who-key .sep{margin-inline:8px}
+.who-key .who{width:1.7em;height:1.7em;background:var(--bg);margin-inline:0 .2em}.who-key .who svg{width:1.2em;height:1.2em}

@@ -34,6 +34,26 @@ if ch.get("graphic"):
 def ico(i, cls):
     return f'<span class="{cls}" aria-hidden="true">{icons[i]}</span>' if i in icons else ""
 heads = [h.strip() for h in open(f"{src}/headings.txt", encoding="utf-8") if h.strip()]
+
+# Man / woman icons beside a halacha that is mainly about one of them (src/who.txt; not listed = both, no icon).
+WHO_SVG = {
+    "m": '<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.8" fill="currentColor"/><path fill="currentColor" d="M8.5 9.5h7a2 2 0 0 1 2 2V16h-2v6h-7v-6h-2v-4.5a2 2 0 0 1 2-2z"/></svg>',
+    "w": '<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.8" fill="currentColor"/><path fill="currentColor" d="M9.6 9.5h4.8l3.6 8h-3V22h-6v-4.5H6z"/></svg>',
+}
+WHO_LABEL = {"m": "דגש לבעל", "w": "הדגשה לאשה"}
+def who_icon(k):
+    return f'<span class="who who-{k}" role="img" aria-label="{WHO_LABEL[k]}" title="{WHO_LABEL[k]}">{WHO_SVG[k]}</span>'
+who = {}
+if os.path.exists(f"{src}/who.txt"):
+    for line in open(f"{src}/who.txt", encoding="utf-8"):
+        line = line.strip()
+        if line and not line.startswith("#"):
+            letter, k = line.split()
+            who[letter] = k
+def add_who(body):
+    import re
+    return re.sub(r'(<b class="hl">([^<.]+)\.</b>)', lambda m: m.group(1) + (who_icon(who[m.group(2)]) if m.group(2) in who else ""), body)
+WHO_KEY = (f'<p class="who-key">{who_icon("m")} = דגש לבעל<span class="sep">·</span>{who_icon("w")} = הדגשה לאשה</p>' if who else "")
 n = len(heads)
 
 # Private chapters: hidden until the reader's permission is confirmed; reading is tracked quietly for the admin.
@@ -81,7 +101,7 @@ toc, secs, private_rows = [], [], []
 for i, h in enumerate(heads, 1):
     path = f"{src}/{i:02d}.html"
     if os.path.exists(path):
-        body = open(path, encoding="utf-8").read().strip()
+        body = add_who(open(path, encoding="utf-8").read().strip())
         filled = True
         if private:
             private_rows.append((i, body))
@@ -124,6 +144,7 @@ page = f'''<!doctype html>
   {'<div id="gate" hidden></div>' if private else ""}
   <details class="toc" id="toc">
     <summary><span>תוכן עניינים</span><span class="toc-count" data-total="{n}">{n} קטעים</span></summary>
+    {WHO_KEY}
     <ol>
       {chr(10).join("      "+t for t in toc).strip()}
     </ol>
