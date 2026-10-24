@@ -309,3 +309,14 @@ dialog.rb-dlg .primary{width:100%;padding:10px 16px}
 .who-key{margin:4px 0 12px;font-size:.95rem;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px}
 .who-key .sep{margin-inline:8px}
 .who-key .who{width:1.7em;height:1.7em;background:var(--bg);margin-inline:0 .2em}.who-key .who svg{width:1.2em;height:1.2em}
+
+/* Proofreading page (?proof): whole chapter in one scroll. */
+html.proof .sec-foot{display:none}
+html.proof .sec + .sec{border-top:3px solid #d32f2f;margin-top:36px;padding-top:28px}
+html.proof .q-gap{min-height:0;height:18px;margin:22px 0;display:block;position:relative;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='18'%3E%3Cpolyline points='0,14 8,4 16,14' fill='none' stroke='%23999' stroke-width='2'/%3E%3C/svg%3E") repeat-x center}
+html.proof .q-gap span{display:none}
+html.proof .qq.done .opts button{cursor:default}
+.proof-note{background:#fdecea;color:#8a1c1c;border-radius:10px;padding:8px 12px;margin:0 0 14px;font-size:.95rem}
+@media print{html.proof .acct,html.proof footer{display:none}}
+main.chapter{grid-template-columns:minmax(0,1fr)}.sec{min-width:0;grid-template-columns:minmax(0,1fr)}

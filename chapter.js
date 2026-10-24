@@ -1,7 +1,15 @@
+// Proofreading page (?proof): the whole chapter in one scroll, a red line between sections, every question open
+// with its right answer and explanation, and a zigzag where the blank gap before the questions was left out.
+window.PROOF=/[?&]proof\b/.test(location.search)&&!!document.querySelector('main.chapter');
+if(PROOF){document.documentElement.classList.add('proof');
+  var pn=document.createElement('p');pn.className='proof-note';
+  pn.textContent='דף הגהה: כל הקטעים ברצף. קו אדום מפריד בין קטעים, וזיג־זג מסמן את המרווח שהושמט לפני השאלות. בשאלות מסומנת התשובה הנכונה עם ההסבר.';
+  var hd=document.querySelector('main.chapter > header');if(hd)hd.appendChild(pn)}
 (function(){
   var secs=[].slice.call(document.querySelectorAll('.sec'));
   if(!secs.length)return;
   var toc=document.getElementById('toc');
+  if(PROOF){toc.open=true;return}
   document.documentElement.classList.add('one-sec');
   function show(){
     var id=(location.hash||'').slice(1), found=false;
@@ -75,7 +83,7 @@
 // and the section number ("קטע 2/25"). The headings menu itself opens from the bottom bar.
 (function(){
   var main=document.querySelector('main.chapter'), head=main&&main.querySelector('header'), toc=document.getElementById('toc');
-  if(!main||!head||!toc) return;
+  if(!main||!head||!toc||PROOF) return;
   var total=+(toc.querySelector('[data-total]')||{}).getAttribute('data-total')||toc.querySelectorAll('a').length;
   var back=head.querySelector('.back'), title=head.querySelector('h1').textContent;
   var bar=document.createElement('header');bar.className='chbar';bar.dir='rtl';
@@ -175,6 +183,8 @@
       w.innerHTML=(j==null?'':'<b>'+(ok?'נכון!':'לא בדיוק.')+'</b> ')+esc(q.why||'');
       return ok;
     }
+    // Proofreading: every question shows its right answer and explanation, nothing is saved.
+    if(PROOF){[].forEach.call(box.querySelectorAll('.qq'),function(f){mark(f,qs[+f.getAttribute('data-k')],null)});return}
     // Answered before: show the saved answers, locked.
     if(sv){
       [].forEach.call(box.querySelectorAll('.qq'),function(f){var k=+f.getAttribute('data-k');mark(f,qs[k],sv.a?sv.a[k]:null)});
@@ -198,7 +208,7 @@
   }
   var quiz=fetch(main.getAttribute('data-quiz')).then(function(r){return r.json()}).catch(function(){return null});
   // Logged in: the account's answers since the last reset replace this device's.
-  var mine=window.SITE?SITE.ready.then(function(st){return st.user?SITE.loadQuiz(ch):null}).catch(function(){return null}):Promise.resolve(null);
+  var mine=window.SITE&&!PROOF?SITE.ready.then(function(st){return st.user?SITE.loadQuiz(ch):null}).catch(function(){return null}):Promise.resolve(null);
   Promise.all([quiz,mine]).then(function(r){
     data=r[0];
     if(r[1]){online=true;saved={};r[1].rows.forEach(function(x){saved[x.section]={a:x.answers||null,s:x.score,t:x.total}})}
@@ -215,6 +225,7 @@
   var main=document.querySelector('main.chapter'), toc=document.getElementById('toc');
   var secs=[].slice.call(document.querySelectorAll('.sec'));
   if(!main||!toc||!secs.length) return;
+  if(PROOF) return;
   var priv=main.hasAttribute('data-track'), n=secs.length;
   // A solid arrow (filled shape, not a text character) for the two big buttons.
   function ARROW(d){return '<svg class="rb-arr" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="'+(d==='r'?'M13 4.5 21 12l-8 7.5V15H4.5a1.5 1.5 0 0 1-1.5-1.5v-3A1.5 1.5 0 0 1 4.5 9H13z':'M11 4.5 3 12l8 7.5V15h8.5a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 19.5 9H11z')+'"/></svg>'}
