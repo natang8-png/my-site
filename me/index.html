@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>האזור האישי · הלכה בבית</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head><body>
+<main dir="rtl" lang="he">
+  <header>
+    <a class="back" href="/">→ חזרה לדף הבית</a>
+    <h1>האזור האישי</h1>
+    <p class="lead" id="who">רגע…</p>
+  </header>
+
+  <section class="me-sec" id="out" hidden>
+    <p>כדי לראות את האזור האישי צריך להיכנס לאתר. <a href="/login/?next=/me/">כניסה / הרשמה</a></p>
+  </section>
+
+  <div id="in" hidden>
+    <section class="me-sec" aria-labelledby="open-h">
+      <h2 id="open-h">מה פתוח לך, וכמה הספקת</h2>
+      <p class="me-meta" id="admin-note" hidden>אתה מנהל, ולכן כל התכנים פתוחים לך.</p>
+      <ul class="me-list" id="list"></ul>
+      <p class="me-meta" id="none" hidden>עוד לא נפתח לך אף פרק. נתן יפתח לך גישה בקרוב.</p>
+    </section>
+
+    <section class="me-sec" aria-labelledby="acc-h">
+      <h2 id="acc-h">החשבון</h2>
+      <div class="me-row">
+        <button type="button" id="pw-open">שינוי סיסמה</button>
+        <a href="/login/?complete=1&amp;next=/me/" id="details" hidden>השלמת פרטים</a>
+      </div>
+      <form class="form" id="pwf" hidden style="margin-top:16px">
+        <label>סיסמה חדשה<input name="p1" type="password" required minlength="6" autocomplete="new-password" dir="ltr"></label>
+        <label>שוב, לאימות<input name="p2" type="password" required minlength="6" autocomplete="new-password" dir="ltr"></label>
+        <div class="me-row"><button class="primary" type="submit">שמירת הסיסמה</button><button type="button" id="pw-cancel">ביטול</button></div>
+        <p class="msg" id="pmsg" role="status"></p>
+      </form>
+    </section>
+  </div>
+
+  <footer>
+    <span>נבנה בהדרגה, צעד אחר צעד.</span>
+    <button id="theme" type="button">מצב כהה</button>
+  </footer>
+</main>
+<script src="/site.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
+<script>
+(async function(){
+  // Chapters the site has. Progress is counted per chapter key.
+  var CHAPTERS=[
+    {path:'halacha/family/harchakot', title:'הרחקות', url:'/halacha/harchakot/', key:'harchakot', total:25, quiz:'/halacha/harchakot/quiz.json'},
+    {path:'leil-hachatuna', title:'סדר ליל החתונה', url:'/halacha/leil-hachatuna/', key:'leil-hachatuna', total:15}
+  ];
+  var LEVEL={study:'קריאה ושאלונים', read:'קריאה בלבד', quiz:'שאלונים בלבד'};
+  function say(el,t,err){el.textContent=t;el.classList.toggle('err',!!err)}
+  function day(d){return new Date(d).toLocaleDateString('he-IL',{day:'numeric',month:'numeric',year:'numeric'})}
+  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+  var st=await SITE.ready;
+  if(!st.user){document.getElementById('who').textContent='';document.getElementById('out').hidden=false;return}
+  var admin=!!(st.profile&&st.profile.is_admin);
+  document.getElementById('who').textContent='שלום, '+SITE.name()+'.';
+  document.getElementById('in').hidden=false;
+  document.getElementById('admin-note').hidden=!admin;
+  document.getElementById('details').hidden=!SITE.incomplete();
+
+  // The grant that opens a chapter, to show its closing date (the latest one, if several cover it).
+  function grantOf(path){
+    var own=SITE.TREE.some(function(n){return n.path===path&&n.own}), best=null;
+    st.grants.forEach(function(g){
+      if(!SITE.live(g))return;
+      if(path===g.path||(!own&&path.indexOf(g.path+'/')===0)){if(!best||!g.expires_at||(best.expires_at&&g.expires_at>best.expires_at))best=g}
+    });
+    return best;
+  }
+  var open=CHAPTERS.filter(function(c){return c.adminOnly?admin:!!SITE.access(c.path)});
+  document.getElementById('none').hidden=open.length>0;
+
+  // Progress: sections marked read, and sections whose questions were answered.
+  var keys=open.filter(function(c){return c.key}).map(function(c){return c.key});
+  var reads={}, quizzed={}, qtotal={};
+  if(keys.length){
+    var r=await SITE.sb.from('reads').select('chapter,section').eq('user_id',st.user.id).in('chapter',keys);
+    (r.data||[]).forEach(function(x){(reads[x.chapter]=reads[x.chapter]||{})[x.section]=1});
+    // Questions answered in the current round (since the last reset of the quiz).
+    for(var k=0;k<keys.length;k++){var q=await SITE.loadQuiz(keys[k]);(q?q.rows:[]).forEach(function(x){(quizzed[x.chapter]=quizzed[x.chapter]||{})[x.section]=1})}
+  }
+  await Promise.all(open.filter(function(c){return c.quiz}).map(function(c){
+    return fetch(c.quiz).then(function(r){return r.json()}).then(function(d){qtotal[c.key]=Object.keys(d).filter(function(k){return (d[k]||[]).length}).length}).catch(function(){});
+  }));
+
+  var list=document.getElementById('list');
+  open.forEach(function(c){
+    var a=admin?'study':SITE.access(c.path), g=admin?null:grantOf(c.path), li=document.createElement('li');
+    var meta=[admin&&c.adminOnly?'למנהלים בלבד':c.key&&!c.quiz?'קריאה':LEVEL[a]||''];
+    if(g&&g.expires_at)meta.push('פתוח עד '+day(g.expires_at));
+    var h='<div class="me-card"><h3><a href="'+c.url+'">'+esc(c.title)+'</a></h3><p class="me-meta">'+esc(meta.filter(Boolean).join(' · '))+'</p>';
+    if(c.shared){h+='<p class="me-meta">ההתקדמות כאן משותפת עם הפרק "'+esc(c.shared)+'".</p>'}
+    else{
+      var n=Object.keys(reads[c.key]||{}).length, pct=Math.round(100*n/c.total);
+      h+='<div class="me-bar" aria-hidden="true"><i style="width:'+pct+'%"></i></div>';
+      h+='<p>קראת <b>'+n+' מתוך '+c.total+'</b> קטעים ('+pct+'%)</p>';
+      if(c.quiz&&a!=='read'){var qn=Object.keys(quizzed[c.key]||{}).length, qt=qtotal[c.key]||c.total;h+='<p>ענית על השאלות ב־<b>'+qn+' מתוך '+qt+'</b> קטעים</p>'}
+    }
+    li.innerHTML=h+'</div>';list.appendChild(li);
+  });
+
+  // Change password.
+  var pwf=document.getElementById('pwf'), pm=document.getElementById('pmsg'), ob=document.getElementById('pw-open');
+  ob.onclick=function(){pwf.hidden=false;ob.hidden=true;say(pm,'');pwf.p1.focus()};
+  document.getElementById('pw-cancel').onclick=function(){pwf.reset();pwf.hidden=true;ob.hidden=false};
+  pwf.onsubmit=async function(e){
+    e.preventDefault();
+    if(pwf.p1.value!==pwf.p2.value){say(pm,'שתי הסיסמאות לא זהות.',true);return}
+    if(pwf.p1.value==='123456'){say(pm,'בחר סיסמה אחרת מהזמנית.',true);return}
+    say(pm,'רגע…');
+    var r=await SITE.sb.auth.updateUser({password:pwf.p1.value});
+    if(r.error){say(pm,/different from the old/i.test(r.error.message)?'זו הסיסמה הנוכחית. בחר סיסמה אחרת.':'משהו השתבש: '+r.error.message,true);return}
+    pwf.reset();say(pm,'הסיסמה עודכנה ✓');
+    setTimeout(function(){pwf.hidden=true;ob.hidden=false},2500);
+  };
+})();
+</script>
+</body></html>

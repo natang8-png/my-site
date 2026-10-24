@@ -11,12 +11,10 @@ and reading is recorded automatically for the admin when the reader reaches the 
 import os, sys, html
 
 CHAPTERS = {
-    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot", graphic=True,
-         credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
-    # Same text, sources and progress as "harchakot" (shared "קראתי" and quiz results), plus graphics. Opens with its own
-    # permission, so Natan can proofread the graphics while students keep the plain chapter. Icons: tools/icons.py.
-    "harchakot-graphic": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="harchakot-graphic",
-         src="harchakot", key="harchakot", quiz="/halacha/harchakot/quiz.json", graphic=True, note="גרסה גרפית",
+    # One version only (Natan, 2026-10-24): icons for each section, and each section's questions on the same page
+    # below the text, after a blank gap. "הבא" in the bottom bar opens only once they are all answered.
+    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
+         graphic=True, inline_quiz=True, quiz="/halacha/harchakot/quiz.json",
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=3, of=3, path="leil-hachatuna", private=True),
 }
@@ -26,6 +24,7 @@ ch = CHAPTERS[slug]
 private = ch.get("private", False)
 src = f"/mnt/project-files/private/{slug}" if private else f"_src/{ch.get('src', slug)}"
 key = ch.get("key", slug)
+inline = ch.get("inline_quiz", False)
 icons = {}
 if ch.get("graphic"):
     sys.dont_write_bytecode = True
@@ -73,6 +72,11 @@ PRIVATE_TAIL = f"""<script src="/private.js"></script>
 </script>
 """
 
+# Inline questions: a blank gap after the text (styled later), then the section's questions, filled in by chapter.js.
+INLINE_Q = f"""
+    <div class="q-gap">{"".join('<span>↓ השאלון למטה ↓</span>' for _ in range(4))}</div>
+    <div class="iq" data-iq="{{i}}" id="q{{i}}"></div>"""
+
 toc, secs, private_rows = [], [], []
 for i, h in enumerate(heads, 1):
     path = f"{src}/{i:02d}.html"
@@ -94,9 +98,9 @@ for i, h in enumerate(heads, 1):
     <div class="sec-head">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}</h2><span class="sec-num" aria-label="קטע {i} מתוך {n}">{i}/{n}</span></div>
     <div class="content">
 {body}
-    </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}
+    </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
     <div class="sec-foot">
-      {"" if private else f'<div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label><button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button></div>'}
+      {"" if private else f'<div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label>{"" if inline else f'<button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button>'}</div>'}
       <nav class="pager" aria-label="ניווט בין קטעים">{prev}{mid}{nxt}</nav>
     </div>
   </section>''')
@@ -107,7 +111,7 @@ page = f'''<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
 <link rel="stylesheet" href="/style.css">
-{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}>
+{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}>
   <header>
     <a class="back" href="/halacha/">→ חזרה להלכה</a>
     <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>

@@ -258,3 +258,43 @@ main.priv-locked ~ .rbar,main[data-track].checking ~ .rbar{display:none}
 .sec-head:has(.sec-ico) .sec-num{margin-inline-start:auto}
 .ico{flex:none;display:inline-grid;place-items:center;width:1.25em;height:1.5em;color:var(--accent)}
 .ico svg{width:1.15em;height:1.15em}
+
+/* Beta: questions on the page itself, below the text. The gap keeps them out of sight while studying (to be designed later). */
+.q-gap{min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;color:var(--muted);font-size:.95rem}
+.q-gap span{opacity:.7}
+.iq{scroll-margin-top:70px}
+.iq-h{font-family:var(--display);color:var(--accent);font-size:1.4rem;margin:0 0 6px}
+.iq-past{color:var(--muted);margin:0 0 6px;font-size:.95rem}
+.iq .quiz-end{margin-bottom:6px}
+main.locked .q-gap,main.locked .iq,main.read-only .q-gap,main.read-only .iq,main.checking .q-gap,main.checking .iq{display:none}
+
+/* Personal area */
+.me-sec{margin-top:28px}
+.me-sec h2{margin-bottom:10px}
+.me-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.me-card{border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.me-card h3{margin:0 0 4px;font-family:var(--display);font-size:1.25rem}
+.me-card h3 a{color:var(--accent);text-decoration:none}
+.me-card .me-meta{color:var(--muted);font-size:.9rem;margin:0 0 8px}
+.me-bar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;margin:4px 0 8px}
+.me-bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.me-card p{margin:0}
+.me-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* "הבא" waits for the section's questions: half see-through, and a short note when pressed. */
+.rb-pill{flex:0 0 auto;box-sizing:border-box;width:6.6rem;height:2.75rem;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;border-radius:999px;font-weight:700;font-size:.95rem;white-space:nowrap;
+  background:var(--accent);color:var(--bg);border:1.5px solid var(--accent);cursor:pointer}
+.rb-pill:hover{filter:brightness(1.08)}
+.rb-arr{width:1.15em;height:1.15em;flex:none}
+.rb-prev.none{visibility:hidden}
+.rb-next.off{opacity:.4}
+.rb-next.off:hover{filter:none}
+dialog.rb-dlg{border:0;border-radius:16px;padding:22px 20px 18px;max-width:22rem;width:calc(100% - 32px);background:var(--bg);color:var(--fg);box-shadow:0 10px 40px rgb(0 0 0/.25);text-align:center}
+dialog.rb-dlg::backdrop{background:rgb(0 0 0/.35)}
+dialog.rb-dlg p{margin:0 0 16px;line-height:1.7;font-size:1.05rem}
+dialog.rb-dlg .primary{width:100%;padding:10px 16px}
+.iq .quiz-end{margin-bottom:28px}
+/* Quiz score under a chapter on the הלכה page. */
+.qsum{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 14px 0;color:var(--muted);font-size:.95rem}
+.qsum b{color:var(--fg)}
+.qsum .qmsg{color:#b3261e}
