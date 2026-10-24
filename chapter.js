@@ -216,12 +216,14 @@
   var secs=[].slice.call(document.querySelectorAll('.sec'));
   if(!main||!toc||!secs.length) return;
   var priv=main.hasAttribute('data-track'), n=secs.length;
+  // A solid arrow (filled shape, not a text character) for the two big buttons.
+  function ARROW(d){return '<svg class="rb-arr" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="'+(d==='r'?'M13 4.5 21 12l-8 7.5V15H4.5a1.5 1.5 0 0 1-1.5-1.5v-3A1.5 1.5 0 0 1 4.5 9H13z':'M11 4.5 3 12l8 7.5V15h8.5a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 19.5 9H11z')+'"/></svg>'}
   var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט בפרק');
   bar.innerHTML='<div class="rb-row">'+
-    '<button type="button" class="rb-b" data-go="-1"><i>→</i><span>הקודם</span></button>'+
+    '<button type="button" class="rb-pill rb-prev" data-go="-1">'+ARROW('r')+'<span>הקודם</span></button>'+
     '<button type="button" class="rb-b" data-rb="menu"><i>☰</i><span class="rb-count"></span></button>'+
     '<button type="button" class="rb-b" data-rb="design"><i>♿</i><span>נגישות</span></button>'+
-    '<button type="button" class="rb-b rb-next" data-go="1"><i>←</i><span>הבא</span></button>'+
+    '<button type="button" class="rb-pill rb-next" data-go="1"><span>הבא</span>'+ARROW('l')+'</button>'+
     '</div>';
   document.body.appendChild(bar);
   document.documentElement.classList.add('has-rbar');
@@ -237,7 +239,8 @@
   function go(i){var back=main.querySelector('header .back');if(i<0||i>n){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}location.hash='#s'+i}
   function paint(){
     var i=cur(), done=toc.querySelectorAll('a.done').length, nx=bar.querySelector('.rb-next'), g=gated(i);
-    bar.querySelector('[data-go="-1"] span').textContent=i>1?'הקודם':i===1?'תוכן':'חזרה';
+    // The opening page (תוכן עניינים) has no "הקודם".
+    var pv=bar.querySelector('.rb-prev');pv.classList.toggle('none',i===0);pv.querySelector('span').textContent=i>1?'הקודם':'תוכן';
     nx.querySelector('span').textContent=i>=n?'סיום':'הבא';
     nx.classList.toggle('off',g);nx.setAttribute('aria-disabled',g?'true':'false');
     bar.querySelector('.rb-count').textContent=priv?'כותרות':'✓ '+done+'/'+n;
