@@ -1,0 +1,18 @@
+# Who each halacha is mainly about: m = דגש לבעל, w = הדגשה לאשה. A halacha not listed is for both, with no icon.
+# A halacha whose icon belongs to only one of its paragraphs has {m} / {w} at the start of that paragraph in its source file instead.
+# One per line: the halacha's letter, then m or w. Natan/the Rabbi can change this list; then rebuild the chapter.
+ה w
+ו m
+יג m
+יד m
+טו w
+יח m
+כ m
+כא m
+כח m
+לא w
+לב m
+לג m
+לד w
+לה w
+לו w

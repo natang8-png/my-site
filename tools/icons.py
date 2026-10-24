@@ -10,54 +10,56 @@ def svg(body):
 ICONS = {"harchakot": {i: svg(b) for i, b in {
     # 1 הקדמה: a starting flag
     1: '<path d="M12 22V3"/><path d="M12 4h7l-2 3 2 3h-7"/><path d="M8 22h8"/>',
-    # 2 האיסור הכללי: a shield
-    2: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M8.5 12h7"/>',
-    # 3 איסור נגיעה: a hand, crossed out
-    3: '<path d="M18 11V7a2 2 0 0 0-4 0"/><path d="M14 10V5a2 2 0 0 0-4 0v1"/><path d="M10 10.5V7a2 2 0 0 0-4 0v7"/>'
+    # 2 סיפור מהגמרא: an open book
+    2: '<path d="M2 5h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/>',
+    # 3 האיסור הכללי: a shield
+    3: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M8.5 12h7"/>',
+    # 4 איסור נגיעה: a hand, crossed out
+    4: '<path d="M18 11V7a2 2 0 0 0-4 0"/><path d="M14 10V5a2 2 0 0 0-4 0v1"/><path d="M10 10.5V7a2 2 0 0 0-4 0v7"/>'
        '<path d="M18 9a2 2 0 1 1 4 0v5a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.3l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15"/><path d="M3 3l18 18"/>',
-    # 4 הרחקות נוספות: keeping a distance
-    4: '<path d="M3 12h18"/><path d="M7 8l-4 4 4 4"/><path d="M17 8l4 4-4 4"/><path d="M12 5v2"/><path d="M12 17v2"/>',
-    # 5 הנהגת האשה: a clothes hanger (fewer adornments, special clothes for these days)
-    5: '<path d="M10 6a2 2 0 1 1 2 2c-.6 0-1 .5-1 1v1.5"/><path d="M11 10.5l-8.2 6.3A1.2 1.2 0 0 0 3.5 19h15a1.2 1.2 0 0 0 .7-2.2z"/>',
-    # 6 הסתכלות בה: an eye
-    6: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
-    # 7 מסירת דבר מאחד לשני: passing from one to the other
-    7: '<path d="M17 3l4 4-4 4"/><path d="M21 7H3"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h18"/>',
-    # 8 אכילה מצלחת אחת: a plate
-    8: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/>',
-    # 9 אכילה על שולחן אחד: a table with two chairs
-    9: '<path d="M6 10h12"/><path d="M8 10v8"/><path d="M16 10v8"/><path d="M2 8v10"/><path d="M2 14h3v4"/><path d="M22 8v10"/><path d="M22 14h-3v4"/>',
-    # 10 שיירי מאכל ומשקה: a cup with some drink left
-    10: '<path d="M5 4h14l-1.6 15.2a2 2 0 0 1-2 1.8H8.6a2 2 0 0 1-2-1.8z"/><path d="M6.3 14h11.4"/>',
-    # 11 מזיגה והושטה: a wine glass
-    11: '<path d="M7 2h10l-.8 6.5a4.2 4.2 0 0 1-8.4 0z"/><path d="M12 13v8"/><path d="M8 21h8"/>',
-    # 12 הרחקה בין המיטות: two beds seen from above, a dashed line between them
-    12: '<rect x="1.5" y="4" width="6" height="16" rx="1.5"/><path d="M1.5 8h6"/><rect x="16.5" y="4" width="6" height="16" rx="1.5"/><path d="M16.5 8h6"/><path d="M12 3v18" stroke-dasharray="1.5 2.5"/>',
-    # 13 ישיבה ושכיבה על מיטת בן הזוג: a bed
-    13: '<path d="M2 5v15"/><path d="M2 9h17a3 3 0 0 1 3 3v8"/><path d="M2 16h20"/><path d="M6 9v7"/>',
-    # 14 ישיבה על ספסל אחד: a bench
-    14: '<path d="M4 6h16"/><path d="M4 10h16"/><path d="M5 6v4"/><path d="M19 6v4"/><path d="M2 14h20"/><path d="M5 14v6"/><path d="M19 14v6"/>',
-    # 15 טיול: a walking path
-    15: '<circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/><path d="M7 19h7a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h7"/>',
-    # 16 אכילה במסעדה ושהייה במלון: fork and knife
-    16: '<path d="M4 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M20 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3zm0 0v7"/>',
-    # 17 ההנהגה בין אנשים: people
-    17: '<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/>',
-    # 18 מתנה: a gift
-    18: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/>'
+    # 5 הרחקות נוספות: keeping a distance
+    5: '<path d="M3 12h18"/><path d="M7 8l-4 4 4 4"/><path d="M17 8l4 4-4 4"/><path d="M12 5v2"/><path d="M12 17v2"/>',
+    # 6 הנהגת האשה: a clothes hanger (fewer adornments, special clothes for these days)
+    6: '<path d="M10 6a2 2 0 1 1 2 2c-.6 0-1 .5-1 1v1.5"/><path d="M11 10.5l-8.2 6.3A1.2 1.2 0 0 0 3.5 19h15a1.2 1.2 0 0 0 .7-2.2z"/>',
+    # 7 הסתכלות בה: an eye
+    7: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    # 8 מסירת דבר מאחד לשני: passing from one to the other
+    8: '<path d="M17 3l4 4-4 4"/><path d="M21 7H3"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h18"/>',
+    # 9 אכילה מצלחת אחת: a plate
+    9: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/>',
+    # 10 אכילה על שולחן אחד: a table with two chairs
+    10: '<path d="M6 10h12"/><path d="M8 10v8"/><path d="M16 10v8"/><path d="M2 8v10"/><path d="M2 14h3v4"/><path d="M22 8v10"/><path d="M22 14h-3v4"/>',
+    # 11 שיירי מאכל ומשקה: a cup with some drink left
+    11: '<path d="M5 4h14l-1.6 15.2a2 2 0 0 1-2 1.8H8.6a2 2 0 0 1-2-1.8z"/><path d="M6.3 14h11.4"/>',
+    # 12 מזיגה והושטה: a wine glass
+    12: '<path d="M7 2h10l-.8 6.5a4.2 4.2 0 0 1-8.4 0z"/><path d="M12 13v8"/><path d="M8 21h8"/>',
+    # 13 הרחקה בין המיטות: two beds seen from above, a dashed line between them
+    13: '<rect x="1.5" y="4" width="6" height="16" rx="1.5"/><path d="M1.5 8h6"/><rect x="16.5" y="4" width="6" height="16" rx="1.5"/><path d="M16.5 8h6"/><path d="M12 3v18" stroke-dasharray="1.5 2.5"/>',
+    # 14 ישיבה ושכיבה על מיטת בן הזוג: a bed
+    14: '<path d="M2 5v15"/><path d="M2 9h17a3 3 0 0 1 3 3v8"/><path d="M2 16h20"/><path d="M6 9v7"/>',
+    # 15 ישיבה על ספסל אחד: a bench
+    15: '<path d="M4 6h16"/><path d="M4 10h16"/><path d="M5 6v4"/><path d="M19 6v4"/><path d="M2 14h20"/><path d="M5 14v6"/><path d="M19 14v6"/>',
+    # 16 טיול: a walking path
+    16: '<circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/><path d="M7 19h7a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h7"/>',
+    # 17 אכילה במסעדה ושהייה במלון: fork and knife
+    17: '<path d="M4 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M20 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3zm0 0v7"/>',
+    # 18 ההנהגה בין אנשים: people
+    18: '<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/>',
+    # 19 מתנה: a gift
+    19: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/>'
         '<path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
-    # 19 הצעת המיטה לבן הזוג: a pillow
-    19: '<path d="M3 9c0-2.2 1.8-3.5 4-3.5h10c2.2 0 4 1.3 4 3.5v6c0 2.2-1.8 3.5-4 3.5H7c-2.2 0-4-1.3-4-3.5z"/><path d="M7 5.5c1 2 1 11 0 13"/><path d="M17 5.5c-1 2-1 11 0 13"/>',
-    # 20 יציקת מים: a tap and a drop
-    20: '<path d="M3 9h7a3 3 0 0 1 3 3v2"/><path d="M6.5 9V5.5"/><path d="M4.5 5.5h4"/><path d="M13 17.5v.5"/><path d="M13 21v.5"/><path d="M17 15a2 2 0 0 0 4 0c0-1.5-2-4-2-4s-2 2.5-2 4z"/>',
-    # 21 כשאחד מבני הזוג חולה: a thermometer
-    21: '<path d="M14 4v10.5a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0z"/><path d="M12 11v6"/>',
-    # 22 הליכת האשה לבית-הקברות או להלוויה: a gravestone
-    22: '<path d="M6 21V9a6 6 0 0 1 12 0v12"/><path d="M3 21h18"/><path d="M10 11h4"/><path d="M10 14.5h4"/>',
-    # 23 הליכת האשה לבית-הכנסת: a synagogue
-    23: '<path d="M3 21h18"/><path d="M5 21V10l7-6 7 6v11"/><path d="M10 21v-5a2 2 0 0 1 4 0v5"/><path d="M12 7.5l1.3 2.2h-2.6z"/>',
-    # 24 חיוב האשה בתפילות וברכות: an open prayer book
-    24: '<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/><path d="M5 9h3"/><path d="M5 12h3"/><path d="M16 9h3"/><path d="M16 12h3"/>',
-    # 25 ההנהגה ביום הכיפורים ובתשעה באב: a calendar
-    25: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 15h2"/><path d="M14 15h2"/>',
+    # 20 הצעת המיטה לבן הזוג: a pillow
+    20: '<path d="M3 9c0-2.2 1.8-3.5 4-3.5h10c2.2 0 4 1.3 4 3.5v6c0 2.2-1.8 3.5-4 3.5H7c-2.2 0-4-1.3-4-3.5z"/><path d="M7 5.5c1 2 1 11 0 13"/><path d="M17 5.5c-1 2-1 11 0 13"/>',
+    # 21 יציקת מים: a tap and a drop
+    21: '<path d="M3 9h7a3 3 0 0 1 3 3v2"/><path d="M6.5 9V5.5"/><path d="M4.5 5.5h4"/><path d="M13 17.5v.5"/><path d="M13 21v.5"/><path d="M17 15a2 2 0 0 0 4 0c0-1.5-2-4-2-4s-2 2.5-2 4z"/>',
+    # 22 כשאחד מבני הזוג חולה: a thermometer
+    22: '<path d="M14 4v10.5a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0z"/><path d="M12 11v6"/>',
+    # 23 הליכת האשה לבית-הקברות או להלוויה: a gravestone
+    23: '<path d="M6 21V9a6 6 0 0 1 12 0v12"/><path d="M3 21h18"/><path d="M10 11h4"/><path d="M10 14.5h4"/>',
+    # 24 הליכת האשה לבית-הכנסת: a synagogue
+    24: '<path d="M3 21h18"/><path d="M5 21V10l7-6 7 6v11"/><path d="M10 21v-5a2 2 0 0 1 4 0v5"/><path d="M12 7.5l1.3 2.2h-2.6z"/>',
+    # 25 חיוב האשה בתפילות וברכות: an open prayer book
+    25: '<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/><path d="M5 9h3"/><path d="M5 12h3"/><path d="M16 9h3"/><path d="M16 12h3"/>',
+    # 26 ההנהגה ביום הכיפורים ובתשעה באב: a calendar
+    26: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 15h2"/><path d="M14 15h2"/>',
 }.items()}}
