@@ -320,3 +320,12 @@ html.proof .qq.done .opts button{cursor:default}
 .proof-note{background:#fdecea;color:#8a1c1c;border-radius:10px;padding:8px 12px;margin:0 0 14px;font-size:.95rem}
 @media print{html.proof .acct,html.proof footer{display:none}}
 main.chapter{grid-template-columns:minmax(0,1fr)}.sec{min-width:0;grid-template-columns:minmax(0,1fr)}
+
+/* Icons in a heading: after the title; in parentheses when only part of the section is for that side. */
+.hw{white-space:nowrap;margin-inline-start:.35em}
+.hw .who{width:1.1em;height:1.1em;margin-inline:.1em;vertical-align:-.2em;font-size:.85em}
+.hw.part::before{content:"(";color:var(--muted)}
+.hw.part::after{content:")";color:var(--muted)}
+.who-key .key-note{flex-basis:100%;font-size:.9rem}
+/* A long title with icons may wrap; the icons stay together. */
+.sec-head h2{white-space:normal}

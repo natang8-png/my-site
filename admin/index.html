@@ -88,7 +88,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 <script>
 (async function(){
   var app=document.getElementById('app'), sb=SITE.sb;
-  var CHAPTERS={harchakot:{title:'הרחקות',total:25},'leil-hachatuna':{title:'סדר ליל החתונה',total:15,own:true,heads:["כניסה לבית", "חופת נדה", "חופה טהורה", "סידור החדר", "כדי להימנע מאי נעימות ומכאב", "דברי אהבה וריצוי", "הביאה", "בשעת התשמיש", "בכלה בתולה", "טומאת בתולים", "לאחר שעברו את טומאת בתולים", "התארגנות שאחרי", "לבעול בזמן המוקדם האפשרי", "קשר עם המדריך/כה", "ומה עוד לגבי המשך החיים?"]}};
+  var CHAPTERS={harchakot:{title:'הרחקות',total:26},'leil-hachatuna':{title:'סדר ליל החתונה',total:15,own:true,heads:["כניסה לבית", "חופת נדה", "חופה טהורה", "סידור החדר", "כדי להימנע מאי נעימות ומכאב", "דברי אהבה וריצוי", "הביאה", "בשעת התשמיש", "בכלה בתולה", "טומאת בתולים", "לאחר שעברו את טומאת בתולים", "התארגנות שאחרי", "לבעול בזמן המוקדם האפשרי", "קשר עם המדריך/כה", "ומה עוד לגבי המשך החיים?"]}};
   function esc(t){var d=document.createElement('div');d.textContent=t==null?'':t;return d.innerHTML}
   function when(t){if(!t)return'—';var d=new Date(t);return d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
   function title(path){var n=SITE.TREE.find(function(x){return x.path===path});return n?n.title:path}

@@ -52,8 +52,19 @@ if os.path.exists(f"{src}/who.txt"):
             who[letter] = k
 def add_who(body):
     import re
+    body = body.replace("{m}", who_icon("m") + " ").replace("{w}", who_icon("w") + " ")
     return re.sub(r'(<b class="hl">([^<.]+)\.</b>)', lambda m: m.group(1) + (who_icon(who[m.group(2)]) if m.group(2) in who else ""), body)
-WHO_KEY = (f'<p class="who-key">{who_icon("m")} = דגש לבעל<span class="sep">·</span>{who_icon("w")} = הדגשה לאשה</p>' if who else "")
+def heading_who(raw):
+    """Icons for a section's heading. All its halachot for one side: the icon alone. Only part of it: the icons in parentheses."""
+    import re
+    letters = re.findall(r'<b class="hl">([^<.]+)\.</b>', raw)
+    kinds = {who[l] for l in letters if l in who} | set(re.findall(r"\{([mw])\}", raw))
+    if not kinds:
+        return ""
+    full = bool(letters) and all(l in who for l in letters) and len(kinds) == 1
+    icons = "".join(who_icon(k) for k in "mw" if k in kinds)
+    return f'<span class="hw{"" if full else " part"}">{icons}</span>'
+WHO_KEY = (f'<p class="who-key">{who_icon("m")} = דגש לבעל<span class="sep">·</span>{who_icon("w")} = הדגשה לאשה<span class="key-note">סמל בסוגריים בכותרת = רק חלק מהקטע</span></p>' if who else "")
 n = len(heads)
 
 # Private chapters: hidden until the reader's permission is confirmed; reading is tracked quietly for the admin.
@@ -101,21 +112,24 @@ toc, secs, private_rows = [], [], []
 for i, h in enumerate(heads, 1):
     path = f"{src}/{i:02d}.html"
     if os.path.exists(path):
-        body = add_who(open(path, encoding="utf-8").read().strip())
+        raw = open(path, encoding="utf-8").read().strip()
+        hw = heading_who(raw)
+        body = add_who(raw)
         filled = True
         if private:
             private_rows.append((i, body))
             body = '<p class="msg">טוען…</p>'
     else:
         body = '<p class="placeholder">הטקסט של הקטע הזה עוד לא נוסף.</p>'
+        hw = ""
         filled = False
-    toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{i}</span>{ico(i, "ico")}{html.escape(h)}</a></li>')
+    toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{i}</span>{ico(i, "ico")}{html.escape(h)}{hw}</a></li>')
     prev = (f'<a class="pn prev" href="#s{i-1}"><small>הקודם</small>{html.escape(heads[i-2])}</a>' if i > 1
             else '<a class="pn prev" href="/halacha/"><small>חזרה</small>לתפריט הלכה</a>')
     mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
     nxt = f'<a class="pn next" href="#s{i+1}"><small>הבא</small>{html.escape(heads[i])}</a>' if i < n else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
-    <div class="sec-head">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}</h2><span class="sec-num" aria-label="קטע {i} מתוך {n}">{i}/{n}</span></div>
+    <div class="sec-head">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {i} מתוך {n}">{i}/{n}</span></div>
     <div class="content">
 {body}
     </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
