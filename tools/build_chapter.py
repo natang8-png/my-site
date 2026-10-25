@@ -8,7 +8,7 @@ The page then loads each section's text from the chapter_text table, which only 
 It opens only with its own time-limited permission (see private.js): no quiz, no "קראתי",
 and reading is recorded automatically for the admin when the reader reaches the end of a section.
 """
-import os, sys, html
+import os, sys, html, hashlib
 
 CHAPTERS = {
     # One version only (Natan, 2026-10-24): icons for each section, and each section's questions on the same page
@@ -139,12 +139,16 @@ for i, h in enumerate(heads, 1):
     </div>
   </section>''')
 
+def ver(name):
+    # A short fingerprint of the file, so phones fetch the new style.css / chapter.js right after a change instead of a cached copy.
+    return hashlib.md5(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', name), 'rb').read()).hexdigest()[:8]
+
 page = f'''<!doctype html>
 <html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{ch["title"]} · הלכה</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/style.css?v={ver("style.css")}">
 {PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}>
   <header>
     <a class="back" href="/halacha/">→ חזרה להלכה</a>
@@ -174,7 +178,7 @@ page = f'''<!doctype html>
 <script src="/site.js"></script>
 <script src="/vendor/supabase.js"></script>
 <script src="/auth.js"></script>
-<script src="/chapter.js"></script>
+<script src="/chapter.js?v={ver("chapter.js")}"></script>
 {PRIVATE_TAIL if private else ""}</body></html>
 '''
 if private:

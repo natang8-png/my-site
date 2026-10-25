@@ -160,10 +160,6 @@ if(PROOF){document.documentElement.classList.add('proof');
     if(!loaded)return false;
     return !data||!(data[i]||[]).length||!!saved[i];
   };
-  function result(box,s,t){
-    var end=box.querySelector('.quiz-end');end.hidden=false;
-    end.innerHTML='<p><b>'+s+' מתוך '+t+'</b> תשובות נכונות.</p><p class="iq-past">התשובות נשמרו. כפתור "הבא" למטה פעיל עכשיו.</p>';
-  }
   function render(box){
     var i=box.getAttribute('data-iq'), qs=data[i]||[], sv=saved[i], right=0, answered=0, picks=[];
     if(!qs.length){box.innerHTML='';box.previousElementSibling.hidden=true;return}
@@ -171,24 +167,24 @@ if(PROOF){document.documentElement.classList.add('proof');
     qs.forEach(function(q,k){
       h+='<fieldset class="qq" data-k="'+k+'"><legend>'+(k+1)+'. '+esc(q.q)+'</legend><div class="opts'+(q.a.length===2?' tf':'')+'">'+
         q.a.map(function(a,j){return '<button type="button" data-j="'+j+'">'+esc(a)+'</button>'}).join('')+
-        '</div><p class="why" hidden></p></fieldset>';
+        '</div><p class="why pre"><b>לא בדיוק.</b> '+esc(q.why||'')+'</p></fieldset>';
     });
     box.innerHTML=h+'<div class="quiz-end" hidden></div>';
     function mark(f,q,j){
-      f.classList.add('done');
+      f.classList.add('done');if(j==null)f.classList.add('nopick');
       var bs=f.querySelectorAll('button'), ok=j===q.c;
       if(j!=null&&bs[j])bs[j].classList.add(ok?'ok':'bad');
       bs[q.c].classList.add('ok');
-      var w=f.querySelector('.why');w.hidden=false;
-      w.innerHTML=(j==null?'':'<b>'+(ok?'נכון!':'לא בדיוק.')+'</b> ')+esc(q.why||'');
+      var w=f.querySelector('.why');w.classList.remove('pre');
+      w.innerHTML=(j==null?'':'<b>'+(ok?'צדקת!':'לא בדיוק.')+'</b> ')+esc(q.why||'');
       return ok;
     }
     // Proofreading: every question shows its right answer and explanation, nothing is saved.
     if(PROOF){[].forEach.call(box.querySelectorAll('.qq'),function(f){mark(f,qs[+f.getAttribute('data-k')],null)});return}
     // Answered before: show the saved answers, locked.
     if(sv){
+      if(sv.t!=null){box.setAttribute('data-s',sv.s);box.setAttribute('data-t',sv.t)}
       [].forEach.call(box.querySelectorAll('.qq'),function(f){var k=+f.getAttribute('data-k');mark(f,qs[k],sv.a?sv.a[k]:null)});
-      if(sv.t!=null)result(box,sv.s,sv.t);
       return;
     }
     [].forEach.call(box.querySelectorAll('.qq'),function(f){
@@ -199,7 +195,6 @@ if(PROOF){document.documentElement.classList.add('proof');
         if(mark(f,q,j))right++;
         if(answered<qs.length)return;
         saved[i]={a:picks,s:right,t:qs.length};keep();
-        result(box,right,qs.length);
         if(window.markRead)markRead(i,true);
         if(window.SITE)SITE.saveQuiz(ch,i,right,qs.length,picks);
         changed();
@@ -257,6 +252,28 @@ if(PROOF){document.documentElement.classList.add('proof');
     bar.querySelector('.rb-count').textContent=priv?'כותרות':'✓ '+done+'/'+n;
     prog.firstChild.style.width=(100*(priv?i:done)/n)+'%';
   }
+  // Answer marks: one smiley per question of the current section, in the bottom bar. Empty until answered:
+  // a green happy face for a right answer, a red sad face for a wrong one. The question number is on its right, a "." on its left.
+  var dotsEl=document.createElement('div');dotsEl.className='rb-dots';dotsEl.dir='rtl';dotsEl.hidden=true;
+  bar.insertBefore(dotsEl,bar.firstChild);
+  function dotsPaint(){
+    var i=cur(), box=i>0&&document.getElementById('q'+i), qq=box?[].slice.call(box.querySelectorAll('.qq')):[];
+    dotsEl.hidden=!qq.length;
+    document.documentElement.classList.toggle('has-dots',!!qq.length);
+    if(!qq.length)return;
+    var h='<div class="rb-dg">', got=0, all=true, unk=false;
+    qq.forEach(function(f,k){
+      var st=!f.classList.contains('done')?'':f.classList.contains('nopick')?'unk':f.querySelector('button.bad')?'bad':'ok';
+      if(st==='ok')got++;if(!st)all=false;if(st==='unk')unk=true;
+      h+='<span class="rb-di"><b class="rb-dn">'+(k+1)+'</b><span class="rb-dot '+(st||'todo')+'" role="img" aria-label="שאלה '+(k+1)+(st==='ok'?': נכון':st==='bad'?': לא נכון':st==='unk'?': נענתה (התשובה לא נשמרה)':': עוד לא נענתה')+'">'+(st==='ok'?'😊':st==='bad'?'😞':st==='unk'?'•':'')+'</span><b class="rb-dp">.</b></span>';
+    });
+    if(unk&&box.getAttribute('data-t')){got=+box.getAttribute('data-s');}
+    h+='</div>'+(all?'<span class="rb-score">ציון: '+got+'/'+qq.length+' · '+Math.round(100*got/qq.length)+'%</span>':'');
+    dotsEl.innerHTML=h;
+  }
+  dotsPaint();
+  window.addEventListener('hashchange',dotsPaint);
+  new MutationObserver(dotsPaint).observe(main,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
   bar.addEventListener('click',function(e){
     var b=e.target.closest('button');if(!b)return;
     e.stopPropagation();

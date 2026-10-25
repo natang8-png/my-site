@@ -6,7 +6,9 @@ alter table public.migrations enable row level security;  -- no policies: only t
 do $$
 begin
   if not exists (select 1 from public.migrations where name = 'v9-harchakot-section-shift') then
-    update public.reads set section = section + 1 where chapter = 'harchakot' and section >= 2;
+    -- two steps: reads has a primary key on (user, chapter, section), so a direct +1 could collide halfway
+    update public.reads set section = -(section + 1) where chapter = 'harchakot' and section >= 2;
+    update public.reads set section = -section where chapter = 'harchakot' and section < 0;
     update public.quiz_results set section = section + 1 where chapter = 'harchakot' and section >= 2;
     insert into public.migrations (name) values ('v9-harchakot-section-shift');
   end if;

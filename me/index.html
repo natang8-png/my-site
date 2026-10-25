@@ -104,9 +104,10 @@
       var n=Object.keys(reads[c.key]||{}).length, pct=Math.round(100*n/c.total);
       h+='<div class="me-bar" aria-hidden="true"><i style="width:'+pct+'%"></i></div>';
       h+='<p>קראת <b>'+n+' מתוך '+c.total+'</b> קטעים ('+pct+'%)</p>';
-      if(c.quiz&&a!=='read'){var qn=Object.keys(quizzed[c.key]||{}).length, qt=qtotal[c.key]||c.total;h+='<p>ענית על השאלות ב־<b>'+qn+' מתוך '+qt+'</b> קטעים</p>'}
+      if(c.quiz&&a!=='read'){var qn=Object.keys(quizzed[c.key]||{}).length, qt=qtotal[c.key]||c.total;h+='<p>ענית על השאלות ב־<b>'+qn+' מתוך '+qt+'</b> קטעים</p><div data-qreset-host="'+c.key+'"></div>'}
     }
     li.innerHTML=h+'</div>';list.appendChild(li);
+    [].forEach.call(li.querySelectorAll('[data-qreset-host]'),function(el){SITE.quizResetControls(el,el.getAttribute('data-qreset-host'))});
   });
 
   // Change password.
