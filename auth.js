@@ -70,8 +70,8 @@
     var next=encodeURIComponent(location.pathname+location.hash);
     if(state.user){
       bar.innerHTML=(state.profile&&state.profile.is_admin?'<a href="/admin/">ניהול</a><span>·</span>':'')+
-        '<a class="who" href="/me/" title="האזור האישי"></a>'+(incomplete()?'<span>·</span><a href="/login/?complete=1&next='+next+'">השלמת פרטים</a>':'')+'<span>·</span><button type="button" class="link" data-out>יציאה</button>';
-      bar.querySelector('.who').textContent=name();
+        '<a class="acct-name" href="/me/" title="האזור האישי"></a>'+(incomplete()?'<span>·</span><a href="/login/?complete=1&next='+next+'">השלמת פרטים</a>':'')+'<span>·</span><button type="button" class="link" data-out>יציאה</button>';
+      bar.querySelector('.acct-name').textContent=name();
       bar.querySelector('[data-out]').onclick=async function(){await sb.auth.signOut();location.reload()};
     } else {
       bar.innerHTML='<a href="/login/?next='+next+'">כניסה / הרשמה</a>';
