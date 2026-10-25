@@ -263,6 +263,7 @@ main.priv-locked ~ .rbar,main[data-track].checking ~ .rbar{display:none}
 .q-gap{min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;color:var(--muted);font-size:.95rem}
 .q-gap span{opacity:.7}
 .iq{scroll-margin-top:70px}
+.iq .why.pre{visibility:hidden}
 .iq-h{font-family:var(--display);color:var(--accent);font-size:1.4rem;margin:0 0 6px}
 .iq-past{color:var(--muted);margin:0 0 6px;font-size:.95rem}
 .iq .quiz-end{margin-bottom:6px}

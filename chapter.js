@@ -171,7 +171,7 @@ if(PROOF){document.documentElement.classList.add('proof');
     qs.forEach(function(q,k){
       h+='<fieldset class="qq" data-k="'+k+'"><legend>'+(k+1)+'. '+esc(q.q)+'</legend><div class="opts'+(q.a.length===2?' tf':'')+'">'+
         q.a.map(function(a,j){return '<button type="button" data-j="'+j+'">'+esc(a)+'</button>'}).join('')+
-        '</div><p class="why" hidden></p></fieldset>';
+        '</div><p class="why pre"><b>לא בדיוק.</b> '+esc(q.why||'')+'</p></fieldset>';
     });
     box.innerHTML=h+'<div class="quiz-end" hidden></div>';
     function mark(f,q,j){
@@ -179,7 +179,7 @@ if(PROOF){document.documentElement.classList.add('proof');
       var bs=f.querySelectorAll('button'), ok=j===q.c;
       if(j!=null&&bs[j])bs[j].classList.add(ok?'ok':'bad');
       bs[q.c].classList.add('ok');
-      var w=f.querySelector('.why');w.hidden=false;
+      var w=f.querySelector('.why');w.classList.remove('pre');
       w.innerHTML=(j==null?'':'<b>'+(ok?'צדקת!':'לא בדיוק.')+'</b> ')+esc(q.why||'');
       return ok;
     }
