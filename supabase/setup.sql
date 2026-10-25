@@ -305,3 +305,8 @@ grant usage, select on all sequences in schema public to authenticated;
 drop policy if exists "own resets delete" on public.quiz_resets;
 create policy "own resets delete" on public.quiz_resets for delete using (user_id = auth.uid());
 grant delete on public.quiz_resets to authenticated;
+
+drop policy if exists "admin resets write" on public.quiz_resets;
+create policy "admin resets write" on public.quiz_resets for insert with check (public.is_admin());
+drop policy if exists "admin resets delete" on public.quiz_resets;
+create policy "admin resets delete" on public.quiz_resets for delete using (public.is_admin());
