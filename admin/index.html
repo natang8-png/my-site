@@ -143,6 +143,17 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     return out;
   }
 
+  // Reset of one student's quiz (a new round; nothing is deleted), with a way back. Needs supabase/v11.sql.
+  function studentReset(u,uq){
+    return Object.keys(QUIZ||{}).map(function(c){
+      var cuts=RESETS.filter(function(z){return z.user_id===u.id&&z.chapter===c}).map(function(z){return z.reset_at}).sort(), last=cuts[cuts.length-1];
+      var cur=uq.filter(function(x){return x.chapter===c&&(!last||x.taken_at>last)}).length;
+      if(!cur&&!last)return '';
+      return '<div class="qreset" data-sr="'+u.id+'|'+c+'">'+(cur?'<button type="button" class="link" data-sreset>איפוס השאלון של התלמיד</button>':'')+
+        (last?'<button type="button" class="link" data-sundo>ביטול האיפוס האחרון</button><span class="none"> (בוצע ב־'+when(last)+')</span>':'')+'<span class="qmsg" role="status"></span></div>';
+    }).join('');
+  }
+
   function render(users,grants,reads,results,invites,requests){
     var others=users.filter(function(u){return !u.is_admin});
     var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id&&!isOwn(g.path)})});
@@ -191,7 +202,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
           h+='<details><summary>קריאה לפי כותרות</summary><ol class="none" style="margin:6px 0 0">'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
             return '<li>'+(r?'✓ ':'○ ')+esc(t)+(r?' · '+when(r.read_at):'')+'</li>'}).join('')+'</ol></details>'}
       });
-      h+=rounds(u,uq);
+      h+=rounds(u,uq)+studentReset(u,uq);
       h+='</article>';
     });
     app.innerHTML=h+'</div>'+inviteBlock(invites);
@@ -202,6 +213,21 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   }
 
   // Several students at once: tick them, then set their permissions in one floating window.
+  app.addEventListener('click',async function(e){
+    var b=e.target.closest('[data-sreset],[data-sundo]');if(!b)return;
+    var box=b.closest('[data-sr]'), p=box.getAttribute('data-sr').split('|'), uid=p[0], ch=p[1], msg=box.querySelector('.qmsg'), err;
+    if(b.hasAttribute('data-sreset')){
+      if(!confirm('לאפס את כל השאלון של התלמיד הזה?\n\nהוא יוכל לענות מחדש. התשובות הקודמות נשמרות, ואפשר לבטל את האיפוס האחרון.'))return;
+      err=(await sb.from('quiz_resets').insert({user_id:uid,chapter:ch})).error;
+    }else{
+      if(!confirm('לבטל את האיפוס האחרון של התלמיד?\n\nהתשובות מהסבב הקודם יחזרו להופיע.'))return;
+      var z=await sb.from('quiz_resets').select('id').eq('user_id',uid).eq('chapter',ch).order('reset_at',{ascending:false}).limit(1);
+      err=z.error;
+      if(!err&&z.data&&z.data[0])err=(await sb.from('quiz_resets').delete().eq('id',z.data[0].id)).error;
+    }
+    if(err){msg.textContent=' לא הצליח: '+err.message+' (אולי צריך להריץ את v11.sql)';return}
+    load();
+  });
   var sel=new Set(), bar=document.createElement('div');bar.className='selbar';bar.hidden=true;document.body.appendChild(bar);
   function selBar(){
     bar.hidden=!sel.size;
