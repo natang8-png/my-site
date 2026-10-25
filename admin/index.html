@@ -155,6 +155,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       '<div class="stat"><b>'+results.filter(function(x){return others.some(function(u){return u.id===x.user_id})}).length+'</b><span>בחינות שנעשו</span></div></div>';
     // Adding a student lives at the bottom; up here only a button that scrolls down to it.
     h+='<div class="add" style="margin-top:16px"><button type="button" class="primary" data-goinv>+ הוספת תלמיד</button></div>';
+    h+='<h2 style="margin-top:32px">השאלון שלי</h2><p class="help">איפוס השאלון של הרחקות בחשבון שלך (סבב חדש). אפשר לבטל את האיפוס האחרון.</p><div id="myreset"></div>';
     h+=requestBlock(requests,users);
     h+='<h2 style="margin-top:32px">משתמשים</h2><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
     if(!others.length)h+='<p class="none">עוד אין משתמשים רשומים. כשמישהו יירשם דרך "כניסה / הרשמה", הוא יופיע כאן.</p>';
@@ -194,6 +195,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       h+='</article>';
     });
     app.innerHTML=h+'</div>'+inviteBlock(invites);
+    var mr=document.getElementById('myreset');if(mr)SITE.quizResetControls(mr,'harchakot');
     window.__users=others;window.__grants=grants;
     sel.forEach(function(id){if(!others.some(function(u){return u.id===id}))sel.delete(id)});
     selBar();

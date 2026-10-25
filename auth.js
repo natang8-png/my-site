@@ -105,6 +105,38 @@
       try{localStorage.removeItem('iq:'+ch);localStorage.removeItem('quiz:'+ch)}catch(e){}
       if(!state.user) return null;
       var r=await sb.from('quiz_resets').insert({user_id:state.user.id,chapter:ch});
-      return r.error||null }
+      return r.error||null },
+    // Undo the latest reset of a chapter's quiz (the older round comes back). Needs supabase/v10.sql (a delete policy on quiz_resets).
+    undoReset:async function(ch){
+      if(!state.user) return null;
+      var z=await sb.from('quiz_resets').select('id').eq('user_id',state.user.id).eq('chapter',ch).order('reset_at',{ascending:false}).limit(1);
+      if(z.error) return z.error;
+      if(!z.data||!z.data[0]) return null;
+      var r=await sb.from('quiz_resets').delete().eq('id',z.data[0].id);
+      return r.error||null },
+    // The only place a quiz is reset: a button with a warning, and a way back from the latest reset. Used by /me/ and /admin/.
+    quizResetControls:async function(host,ch){
+      if(!state.user){host.innerHTML='';return}
+      var q=await this.loadQuiz(ch), answered=q?q.rows.length:0, since=q&&q.since;
+      var d=since?new Date(since).toLocaleDateString('he-IL',{day:'numeric',month:'numeric',year:'numeric'})+' '+new Date(since).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}):'';
+      host.innerHTML='<div class="qreset">'+
+        (answered?'<button type="button" class="link" data-qreset>איפוס השאלון</button>':'')+
+        (since?'<button type="button" class="link" data-qundo>ביטול האיפוס האחרון</button><span class="me-meta"> (בוצע ב־'+d+')</span>':'')+
+        '<span class="qmsg" role="status"></span></div>';
+      var self=this, msg=host.querySelector('.qmsg');
+      var rb=host.querySelector('[data-qreset]'), ub=host.querySelector('[data-qundo]');
+      if(rb)rb.onclick=async function(){
+        if(!confirm('לאפס את כל השאלון של הפרק?\n\nאפשר יהיה לענות מחדש על כל השאלות, וכפתור "הבא" ייסגר שוב בכל קטע עד שתענה. התשובות הקודמות נשמרות, ואפשר לבטל את האיפוס האחרון.'))return;
+        var err=await self.resetQuiz(ch);
+        if(err){msg.textContent='האיפוס לא הצליח: '+err.message;return}
+        location.reload();
+      };
+      if(ub)ub.onclick=async function(){
+        if(!confirm('לבטל את האיפוס האחרון?\n\nהתשובות מהסבב הקודם יחזרו להופיע.'))return;
+        var err=await self.undoReset(ch);
+        if(err){msg.textContent='הביטול לא הצליח: '+err.message;return}
+        location.reload();
+      };
+    }
   };
 })();

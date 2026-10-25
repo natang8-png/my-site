@@ -302,3 +302,6 @@ drop policy if exists "own resets write" on public.quiz_resets;
 create policy "own resets write" on public.quiz_resets for insert with check (user_id = auth.uid());
 grant select, insert on public.quiz_resets to authenticated;
 grant usage, select on all sequences in schema public to authenticated;
+drop policy if exists "own resets delete" on public.quiz_resets;
+create policy "own resets delete" on public.quiz_resets for delete using (user_id = auth.uid());
+grant delete on public.quiz_resets to authenticated;

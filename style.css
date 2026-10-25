@@ -345,3 +345,5 @@ html.has-rbar.has-dots body{padding-bottom:calc(104px + env(safe-area-inset-bott
 @media (prefers-reduced-motion:reduce){.rb-dot{transition:none}}
 /* An answered question is locked: its buttons give no touch / hover feedback */
 .qq.done .opts button{pointer-events:none;-webkit-tap-highlight-color:transparent}
+.qreset{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:6px 0 2px}
+.qreset .qmsg{color:#b3261e}
