@@ -63,3 +63,22 @@ ICONS = {"harchakot": {i: svg(b) for i, b in {
     # 26 ההנהגה ביום הכיפורים ובתשעה באב: a calendar
     26: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 15h2"/><path d="M14 15h2"/>',
 }.items()}}
+
+ICONS["yoledet"] = {i: svg(b) for i, b in {
+    # 1 הקדמה: a starting flag
+    1: '<path d="M12 22V3"/><path d="M12 4h7l-2 3 2 3h-7"/><path d="M8 22h8"/>',
+    # 2 יולדת: a baby carriage
+    2: '<path d="M3 4h2.2l1.6 9.5"/><path d="M6.8 13.5H20a8 8 0 0 0-8-8v8"/><circle cx="9" cy="19" r="2"/><circle cx="18" cy="19" r="2"/>',
+    # 3 מפלת: a broken heart
+    3: '<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/><path d="M12 7.2l-1.5 4 3 2-1.5 3.5"/>',
+    # 4 ניתוח קיסרי: a medical cross
+    4: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8"/><path d="M8 12h8"/>',
+    # 5 חילול שבת עבור יולדת: Shabbat candles
+    5: '<path d="M8 10v11"/><path d="M16 10v11"/><path d="M5 21h14"/><path d="M8 3.5c-1.2 1.4-1.2 3 0 4 1.2-1 1.2-2.6 0-4z"/><path d="M16 3.5c-1.2 1.4-1.2 3 0 4 1.2-1 1.2-2.6 0-4z"/>',
+    # 6 יולדת בשבת: a car (the drive to the hospital)
+    6: '<path d="M5 15v-4l2-5h10l2 5v4"/><path d="M3 15h18v3H3z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/><path d="M5 11h14"/>',
+    # 7 דינים בקצרה: a checklist
+    7: '<path d="M10 6h10"/><path d="M10 12h10"/><path d="M10 18h10"/><path d="M4 6l1.2 1.2L7.5 5"/><path d="M4 12l1.2 1.2L7.5 11"/><path d="M4 18l1.2 1.2L7.5 17"/>',
+    # 8 הבאת ילדים לעולם: a family
+    8: '<circle cx="7" cy="6" r="2.5"/><circle cx="17" cy="6" r="2.5"/><circle cx="12" cy="12.5" r="2"/><path d="M3 21v-5a4 4 0 0 1 6-3.5"/><path d="M15 12.5a4 4 0 0 1 6 3.5v5"/><path d="M8.5 21v-1.5a3.5 3.5 0 0 1 7 0V21"/>',
+}.items()}

@@ -16,6 +16,11 @@ CHAPTERS = {
     "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
          graphic=True, inline_quiz=True, quiz="/halacha/harchakot/quiz.json",
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
+    # Second chapter (Natan, 2026-10-25): built like הרחקות (icons, questions under each section). It opens with the same
+    # permission as הרחקות (see auth.js TREE "with"), so whoever studies הרחקות gets it too.
+    "yoledet": dict(title="יולדת", subtitle="דיני יולדת ומפלת, ויולדת בשבת", num=2, of=4, path="halacha/family/yoledet",
+         graphic=True, inline_quiz=True, quiz="/halacha/yoledet/quiz.json",
+         credit="מאת הרב דב טברדוביץ"),
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=3, of=3, path="leil-hachatuna", private=True),
 }
 
