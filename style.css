@@ -330,3 +330,19 @@ main.chapter{grid-template-columns:minmax(0,1fr)}.sec{min-width:0;grid-template-
 .who-key .key-note{flex-basis:100%;font-size:.9rem}
 /* A long title with icons may wrap; the icons stay together. */
 .sec-head h2{white-space:normal}
+/* Answer marks strip (trial): one circle per question, in the bottom bar or under the top bar */
+.rb-dots{display:flex;align-items:center;justify-content:center;gap:10px;padding:6px 10px 0;max-width:40rem;margin:0 auto;border-bottom:0}
+.rb-dots[hidden]{display:none}
+.rb-dl{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.rb-dot{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:1.7rem;height:1.7rem;border-radius:50%;border:2px solid var(--line);color:var(--muted);font-size:.8rem;font-weight:700;line-height:1;transition:background .25s,border-color .25s,transform .25s}
+.rb-dot.ok{background:#2e7d4f;border-color:#2e7d4f;color:#fff;transform:scale(1.08)}
+.rb-dot.bad{background:#d32f2f;border-color:#d32f2f;color:#fff;transform:scale(1.08)}
+.look-smile .rb-dot{font-size:1.15rem}
+.look-smile .rb-dot.ok{background:#d9efe0;border-color:#2e7d4f}
+.look-smile .rb-dot.bad{background:#fbe0e0;border-color:#d32f2f}
+.look-fill .rb-dot{width:1.05rem;height:1.05rem}
+.rb-dtool{background:none;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.72rem;color:var(--muted);white-space:nowrap}
+html.has-rbar.has-dots:not(.dots-top) body{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+html.dots-top .chbar .rb-dots{padding:4px 10px 6px}
+@media (prefers-reduced-motion:reduce){.rb-dot{transition:none}}
+html.has-tbar.dots-top.has-dots body{padding-top:calc(92px + env(safe-area-inset-top))}
