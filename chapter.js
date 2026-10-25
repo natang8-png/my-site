@@ -180,7 +180,7 @@ if(PROOF){document.documentElement.classList.add('proof');
       if(j!=null&&bs[j])bs[j].classList.add(ok?'ok':'bad');
       bs[q.c].classList.add('ok');
       var w=f.querySelector('.why');w.hidden=false;
-      w.innerHTML=(j==null?'':'<b>'+(ok?'נכון!':'לא בדיוק.')+'</b> ')+esc(q.why||'');
+      w.innerHTML=(j==null?'':'<b>'+(ok?'צדקת!':'לא בדיוק.')+'</b> ')+esc(q.why||'');
       return ok;
     }
     // Proofreading: every question shows its right answer and explanation, nothing is saved.
