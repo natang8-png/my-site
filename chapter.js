@@ -266,11 +266,13 @@ if(PROOF){document.documentElement.classList.add('proof');
     dotsEl.hidden=!qq.length;
     document.documentElement.classList.toggle('has-dots',!!qq.length);
     if(!qq.length)return;
-    var h='';
+    var h='<div class="rb-dg">', got=0, all=true;
     qq.forEach(function(f,k){
       var st=!f.classList.contains('done')?'':f.querySelector('button.bad')?'bad':'ok';
+      if(st==='ok')got++;if(!st)all=false;
       h+='<span class="rb-di"><b class="rb-dn">'+(k+1)+'</b><span class="rb-dot '+(st||'todo')+'" role="img" aria-label="שאלה '+(k+1)+(st==='ok'?': נכון':st==='bad'?': לא נכון':': עוד לא נענתה')+'">'+(st==='ok'?'😊':st==='bad'?'😞':'')+'</span><b class="rb-dp">.</b></span>';
     });
+    h+='</div>'+(all?'<span class="rb-score">ציון: '+got+'/'+qq.length+' · '+Math.round(100*got/qq.length)+'%</span>':'');
     dotsEl.innerHTML=h;
   }
   dotsPaint();
