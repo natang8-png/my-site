@@ -171,7 +171,7 @@ if(PROOF){document.documentElement.classList.add('proof');
     });
     box.innerHTML=h+'<div class="quiz-end" hidden></div>';
     function mark(f,q,j){
-      f.classList.add('done');
+      f.classList.add('done');if(j==null)f.classList.add('nopick');
       var bs=f.querySelectorAll('button'), ok=j===q.c;
       if(j!=null&&bs[j])bs[j].classList.add(ok?'ok':'bad');
       bs[q.c].classList.add('ok');
@@ -183,6 +183,7 @@ if(PROOF){document.documentElement.classList.add('proof');
     if(PROOF){[].forEach.call(box.querySelectorAll('.qq'),function(f){mark(f,qs[+f.getAttribute('data-k')],null)});return}
     // Answered before: show the saved answers, locked.
     if(sv){
+      if(sv.t!=null){box.setAttribute('data-s',sv.s);box.setAttribute('data-t',sv.t)}
       [].forEach.call(box.querySelectorAll('.qq'),function(f){var k=+f.getAttribute('data-k');mark(f,qs[k],sv.a?sv.a[k]:null)});
       return;
     }
@@ -260,12 +261,13 @@ if(PROOF){document.documentElement.classList.add('proof');
     dotsEl.hidden=!qq.length;
     document.documentElement.classList.toggle('has-dots',!!qq.length);
     if(!qq.length)return;
-    var h='<div class="rb-dg">', got=0, all=true;
+    var h='<div class="rb-dg">', got=0, all=true, unk=false;
     qq.forEach(function(f,k){
-      var st=!f.classList.contains('done')?'':f.querySelector('button.bad')?'bad':'ok';
-      if(st==='ok')got++;if(!st)all=false;
-      h+='<span class="rb-di"><b class="rb-dn">'+(k+1)+'</b><span class="rb-dot '+(st||'todo')+'" role="img" aria-label="שאלה '+(k+1)+(st==='ok'?': נכון':st==='bad'?': לא נכון':': עוד לא נענתה')+'">'+(st==='ok'?'😊':st==='bad'?'😞':'')+'</span><b class="rb-dp">.</b></span>';
+      var st=!f.classList.contains('done')?'':f.classList.contains('nopick')?'unk':f.querySelector('button.bad')?'bad':'ok';
+      if(st==='ok')got++;if(!st)all=false;if(st==='unk')unk=true;
+      h+='<span class="rb-di"><b class="rb-dn">'+(k+1)+'</b><span class="rb-dot '+(st||'todo')+'" role="img" aria-label="שאלה '+(k+1)+(st==='ok'?': נכון':st==='bad'?': לא נכון':st==='unk'?': נענתה (התשובה לא נשמרה)':': עוד לא נענתה')+'">'+(st==='ok'?'😊':st==='bad'?'😞':st==='unk'?'•':'')+'</span><b class="rb-dp">.</b></span>';
     });
+    if(unk&&box.getAttribute('data-t')){got=+box.getAttribute('data-s');}
     h+='</div>'+(all?'<span class="rb-score">ציון: '+got+'/'+qq.length+' · '+Math.round(100*got/qq.length)+'%</span>':'');
     dotsEl.innerHTML=h;
   }

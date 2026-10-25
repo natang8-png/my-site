@@ -347,3 +347,4 @@ html.has-rbar.has-dots body{padding-bottom:calc(104px + env(safe-area-inset-bott
 .qq.done .opts button{pointer-events:none;-webkit-tap-highlight-color:transparent}
 .qreset{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:6px 0 2px}
 .qreset .qmsg{color:#b3261e}
+.rb-dot.unk{background:var(--soft);border-color:var(--muted);color:var(--muted);font-size:1.3rem}
