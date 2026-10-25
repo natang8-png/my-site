@@ -160,10 +160,6 @@ if(PROOF){document.documentElement.classList.add('proof');
     if(!loaded)return false;
     return !data||!(data[i]||[]).length||!!saved[i];
   };
-  function result(box,s,t){
-    var end=box.querySelector('.quiz-end');end.hidden=false;
-    end.innerHTML='<p><b>'+s+' מתוך '+t+'</b> תשובות נכונות.</p><p class="iq-past">התשובות נשמרו. כפתור "הבא" למטה פעיל עכשיו.</p>';
-  }
   function render(box){
     var i=box.getAttribute('data-iq'), qs=data[i]||[], sv=saved[i], right=0, answered=0, picks=[];
     if(!qs.length){box.innerHTML='';box.previousElementSibling.hidden=true;return}
@@ -188,7 +184,6 @@ if(PROOF){document.documentElement.classList.add('proof');
     // Answered before: show the saved answers, locked.
     if(sv){
       [].forEach.call(box.querySelectorAll('.qq'),function(f){var k=+f.getAttribute('data-k');mark(f,qs[k],sv.a?sv.a[k]:null)});
-      if(sv.t!=null)result(box,sv.s,sv.t);
       return;
     }
     [].forEach.call(box.querySelectorAll('.qq'),function(f){
@@ -199,7 +194,6 @@ if(PROOF){document.documentElement.classList.add('proof');
         if(mark(f,q,j))right++;
         if(answered<qs.length)return;
         saved[i]={a:picks,s:right,t:qs.length};keep();
-        result(box,right,qs.length);
         if(window.markRead)markRead(i,true);
         if(window.SITE)SITE.saveQuiz(ch,i,right,qs.length,picks);
         changed();
