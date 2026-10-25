@@ -257,42 +257,23 @@ if(PROOF){document.documentElement.classList.add('proof');
     bar.querySelector('.rb-count').textContent=priv?'כותרות':'✓ '+done+'/'+n;
     prog.firstChild.style.width=(100*(priv?i:done)/n)+'%';
   }
-  // Answer marks: one circle per question of the current section, filled in as the answers come.
-  // Trial: tap the circles to change their look, tap "⇅" to move the strip between the bottom bar and the top bar.
+  // Answer marks: one smiley per question of the current section, in the bottom bar. Empty until answered:
+  // a green happy face for a right answer, a red sad face for a wrong one. The question number is on its right, a "." on its left.
   var dotsEl=document.createElement('div');dotsEl.className='rb-dots';dotsEl.dir='rtl';dotsEl.hidden=true;
-  var LOOKS=['v','smile','fill'], LOOK_NAMES={v:'✓ ו־✗',smile:'סמיילי',fill:'עיגולים'};
-  var look='v', pos='bottom', qs=/[?&]dots=(\w+)/.exec(location.search), qp=/[?&]pos=(\w+)/.exec(location.search);
-  try{look=localStorage.getItem('dots:look')||look;pos=localStorage.getItem('dots:pos')||pos}catch(e){}
-  if(qs&&LOOKS.indexOf(qs[1])>=0)look=qs[1];
-  if(qp&&(qp[1]==='top'||qp[1]==='bottom'))pos=qp[1];
-  function dotsPlace(){
-    var host=pos==='top'&&document.querySelector('.chbar')||bar;
-    if(host===bar)bar.insertBefore(dotsEl,bar.firstChild);else host.appendChild(dotsEl);
-    document.documentElement.classList.toggle('dots-top',host!==bar);
-  }
+  bar.insertBefore(dotsEl,bar.firstChild);
   function dotsPaint(){
     var i=cur(), box=i>0&&document.getElementById('q'+i), qq=box?[].slice.call(box.querySelectorAll('.qq')):[];
     dotsEl.hidden=!qq.length;
     document.documentElement.classList.toggle('has-dots',!!qq.length);
     if(!qq.length)return;
-    var h='<div class="rb-dl look-'+look+'">';
+    var h='';
     qq.forEach(function(f,k){
       var st=!f.classList.contains('done')?'':f.querySelector('button.bad')?'bad':'ok';
-      var sym=st==='ok'?(look==='smile'?'😊':look==='v'?'✓':''):st==='bad'?(look==='smile'?'😞':look==='v'?'✗':''):(look==='fill'?'':k+1);
-      h+='<span class="rb-dot '+(st||'todo')+'" aria-label="שאלה '+(k+1)+(st==='ok'?': נכון':st==='bad'?': לא נכון':': עוד לא נענתה')+'">'+sym+'</span>';
+      h+='<span class="rb-di"><b class="rb-dn">'+(k+1)+'</b><span class="rb-dot '+(st||'todo')+'" role="img" aria-label="שאלה '+(k+1)+(st==='ok'?': נכון':st==='bad'?': לא נכון':': עוד לא נענתה')+'">'+(st==='ok'?'😊':st==='bad'?'😞':'')+'</span><b class="rb-dp">.</b></span>';
     });
-    h+='</div><button type="button" class="rb-dtool" data-dots="look" aria-label="שינוי צורת הסימון">'+LOOK_NAMES[look]+'</button>'+
-      '<button type="button" class="rb-dtool" data-dots="pos" aria-label="העברת הסרגל למעלה או למטה">⇅</button>';
     dotsEl.innerHTML=h;
   }
-  dotsEl.addEventListener('click',function(e){
-    var b=e.target.closest('[data-dots],.rb-dl');if(!b)return;e.stopPropagation();
-    if(b.getAttribute('data-dots')==='pos'){pos=pos==='top'?'bottom':'top';dotsPlace()}
-    else look=LOOKS[(LOOKS.indexOf(look)+1)%LOOKS.length];
-    try{localStorage.setItem('dots:look',look);localStorage.setItem('dots:pos',pos)}catch(e){}
-    dotsPaint();
-  });
-  dotsPlace();dotsPaint();
+  dotsPaint();
   window.addEventListener('hashchange',dotsPaint);
   new MutationObserver(dotsPaint).observe(main,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
   bar.addEventListener('click',function(e){
