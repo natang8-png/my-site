@@ -10,8 +10,8 @@
     {path:'halacha', title:'הלכה'},
     {path:'halacha/family', title:'טהרת המשפחה'},
     {path:'halacha/family/harchakot', title:'הרחקות'},
-    {path:'halacha/family/tumat-betulim', title:'טומאת בתולים'},
     // Opens only with its own grant (a wider grant does not cover it), for one week at a time.
+    {path:'tumat-betulim', title:'טומאת בתולים', own:true, days:7},
     {path:'leil-hachatuna', title:'סדר ליל החתונה', own:true, days:7}
   ];
 
