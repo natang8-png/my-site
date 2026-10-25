@@ -206,7 +206,7 @@ if(PROOF){document.documentElement.classList.add('proof');
   var mine=window.SITE&&!PROOF?SITE.ready.then(function(st){return st.user?SITE.loadQuiz(ch):null}).catch(function(){return null}):Promise.resolve(null);
   Promise.all([quiz,mine]).then(function(r){
     data=r[0];
-    if(r[1]){online=true;saved={};r[1].rows.forEach(function(x){saved[x.section]={a:x.answers||null,s:x.score,t:x.total}})}
+    if(r[1]){online=true;saved={};r[1].rows.forEach(function(x){if(!x.answers&&data&&(data[x.section]||[]).length!==x.total)return;saved[x.section]={a:x.answers||null,s:x.score,t:x.total}})}
     loaded=true;
     if(data)[].forEach.call(document.querySelectorAll('[data-iq]'),render);
     changed();
