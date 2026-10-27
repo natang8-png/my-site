@@ -68,6 +68,45 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .round{border-top:1px solid var(--line);padding:6px 0;font-size:.92rem}.round.empty{color:var(--muted)}
 .rsec{padding:8px 0;border-bottom:1px dashed var(--line)}
 .ans{margin:6px 0 0;padding-inline-start:1.2em;display:grid;gap:6px}.ans li.ok{color:var(--fg)}.ans li.bad{color:#b3261e}.ans small{color:var(--muted)}
+/* Quiz results bar: all -> topics -> questions. Blue = read (striped = not read), green/red/gray = right/wrong/not answered. */
+.qb{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px;--qok:#2e8b57;--qbad:#c8463d;--qnone:var(--line);--qread:#3d6fa3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .qb{--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
+:root[data-theme="dark"] .qb{--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
+.qb-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px}.qb-top b{font-size:1.05rem}
+.qb-avg{font:inherit;font-weight:600;padding:4px 14px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);background:var(--soft);cursor:pointer;font-variant-numeric:tabular-nums}
+.qb{border-top:0;padding-top:0}
+.qb-crumbs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.9rem}
+.qb-crumbs button{font:inherit;font-size:.85rem;padding:1px 10px;border-radius:8px}
+.qb-hit{all:unset;cursor:pointer;display:grid;gap:6px;width:100%;box-sizing:border-box;border-radius:6px}
+.qb-hit:focus-visible,.qb-seg:focus-visible,.qb-seg.on{outline:2px solid var(--fg);outline-offset:2px}
+.qb-thick{display:flex;gap:2px;height:14px;width:100%}
+.qb-thick i{border-radius:3px;min-width:0}
+.qb .ok{background:var(--qok)}.qb .bad{background:var(--qbad)}.qb .no{background:var(--qnone)}
+.qb .rd{background:var(--qread)}
+.qb .ur{background:repeating-linear-gradient(135deg,var(--qread) 0 2px,transparent 2px 6px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--qread) 45%,transparent)}
+.qb-read{color:var(--qread);font-weight:600;font-variant-numeric:tabular-nums}
+.qb-score{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-variant-numeric:tabular-nums;font-size:.9rem;line-height:1.35}
+.qb-score span{white-space:nowrap}.qb-score .c2{text-align:center}.qb-score .c3{text-align:left}
+.qb .c1{color:var(--qok)}.qb .c2{color:var(--qbad)}.qb .c3{color:var(--muted)}
+.qb-secs{display:flex;gap:3px;width:100%}
+.qb-seg{all:unset;cursor:pointer;flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;border-radius:3px}
+.qb-seg .s{height:14px;border-radius:2px}
+.qb-seg .q{display:flex;gap:1px;height:34px}.qb-seg .q i{flex:1;border-radius:2px}
+.qb-axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+.qb-qs{display:flex;gap:4px}
+.qb-qs button{flex:1;height:40px;border:0;border-radius:6px;font:inherit;font-weight:700;color:#fff;cursor:pointer}
+.qb-qs button.no{color:var(--muted)}
+.qb-head{display:flex;gap:8px;align-items:center}.qb-head b{flex:1;font-family:var(--display);font-size:1.05rem}
+.qb-head button{font:inherit;padding:0 10px;border-radius:8px}
+.qb-list{list-style:none;margin:0;padding:0;display:grid;gap:10px;font-size:.93rem}
+.qb-list>li{display:grid;gap:3px;padding-inline-start:10px;border-inline-start:3px solid var(--qnone)}
+.qb-list>li.l-ok{border-color:var(--qok)}.qb-list>li.l-bad{border-color:var(--qbad)}
+.qb-list .t{font-weight:600}
+.qb-opts{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.qb-opts li{display:grid;grid-template-columns:1.3em 1fr}
+.qb-opts li.r{color:var(--qok);font-weight:600}.qb-opts li.x{color:var(--qbad);font-weight:600}
+.qb-opts .why{grid-column:2;color:var(--fg);font-weight:400;font-size:.9rem;background:var(--soft);border-radius:6px;padding:3px 8px;margin-top:2px}
+@media (max-width:520px){.qb-score{font-size:.82rem}}
 </style>
 </head><body>
 <main dir="rtl" lang="he">
@@ -88,7 +127,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 <script>
 (async function(){
   var app=document.getElementById('app'), sb=SITE.sb;
-  var CHAPTERS={harchakot:{title:'הרחקות',total:26},'leil-hachatuna':{title:'סדר ליל החתונה',total:15,own:true,heads:["כניסה לבית", "חופת נדה", "חופה טהורה", "סידור החדר", "כדי להימנע מאי נעימות ומכאב", "דברי אהבה וריצוי", "הביאה", "בשעת התשמיש", "בכלה בתולה", "טומאת בתולים", "לאחר שעברו את טומאת בתולים", "התארגנות שאחרי", "לבעול בזמן המוקדם האפשרי", "קשר עם המדריך/כה", "ומה עוד לגבי המשך החיים?"]}};
+  var CHAPTERS={harchakot:{title:'הרחקות',total:26,heads:["הקדמה", "סיפור מהגמרא", "האיסור הכללי", "איסור נגיעה", "הרחקות נוספות", "הנהגת האשה", "הסתכלות בה", "מסירת דבר מאחד לשני", "אכילה מצלחת אחת", "אכילה על שולחן אחד", "שיירי מאכל ומשקה", "מזיגה והושטה", "הרחקה בין המיטות", "ישיבה ושכיבה על מיטת בן הזוג", "ישיבה על ספסל אחד", "טיול", "אכילה במסעדה ושהייה במלון", "ההנהגה בין אנשים", "מתנה", "הצעת המיטה לבן הזוג", "יציקת מים", "כשאחד מבני הזוג חולה", "הליכת האשה לבית-הקברות או להלוויה", "הליכת האשה לבית-הכנסת", "חיוב האשה בתפילות וברכות", "ההנהגה ביום הכיפורים ובתשעה באב"]},'leil-hachatuna':{title:'סדר ליל החתונה',total:15,own:true,heads:["כניסה לבית", "חופת נדה", "חופה טהורה", "סידור החדר", "כדי להימנע מאי נעימות ומכאב", "דברי אהבה וריצוי", "הביאה", "בשעת התשמיש", "בכלה בתולה", "טומאת בתולים", "לאחר שעברו את טומאת בתולים", "התארגנות שאחרי", "לבעול בזמן המוקדם האפשרי", "קשר עם המדריך/כה", "ומה עוד לגבי המשך החיים?"]}};
   function esc(t){var d=document.createElement('div');d.textContent=t==null?'':t;return d.innerHTML}
   function when(t){if(!t)return'—';var d=new Date(t);return d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
   function title(path){var n=SITE.TREE.find(function(x){return x.path===path});return n?n.title:path}
@@ -154,6 +193,65 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     }).join('');
   }
 
+  // Quiz results bar for הרחקות (current round): three levels, all -> topics -> one topic's questions.
+  var QB={};
+  function qbHTML(u,ur,uq){
+    var c='harchakot', qd=(QUIZ||{})[c]||{}, heads=CHAPTERS[c].heads;
+    var cuts=RESETS.filter(function(z){return z.user_id===u.id&&z.chapter===c}).map(function(z){return z.reset_at}).sort(), from=cuts[cuts.length-1]||null;
+    var last={};uq.forEach(function(x){if(x.chapter===c&&(!from||x.taken_at>from)&&(!last[x.section]||last[x.section].taken_at<x.taken_at))last[x.section]=x});
+    var rd={};ur.forEach(function(x){if(x.chapter===c)rd[x.section]=1});
+    QB[u.id]=heads.map(function(t,i){var n=i+1,qs=qd[n]||[],r=last[n],k=[];
+      // k = one mark per question: 'ok', 'bad' or 'no'. Old results without saved answers: right ones first.
+      qs.forEach(function(q,j){k.push(!r?'no':r.answers?(r.answers[j]===q.c?'ok':'bad'):(j<r.score?'ok':'bad'))});
+      return {n:n,t:t,qs:qs,read:!!rd[n],r:r,k:k}});
+    var sc=0,tt=0;Object.keys(last).forEach(function(k){sc+=last[k].score;tt+=last[k].total});
+    QB[u.id].avg=tt?Math.round(100*sc/tt):null;
+    return '<div class="qb" data-qb="'+u.id+'" data-lv="0">'+(from?'<div class="none">סבב נוכחי, מאז '+when(from)+'</div>':'')+'<div class="qb-in">'+qbDraw(u.id,0)+'</div></div>';
+  }
+  function qbCount(secs){var o={ok:0,bad:0,no:0,read:0};secs.forEach(function(s){s.k.forEach(function(k){o[k]++});if(s.read)o.read++});o.tot=o.ok+o.bad+o.no;return o}
+  function N(t){return '<bdi dir="ltr">'+t+'</bdi>'}
+  function P(a,b){return b?Math.round(100*a/b):0}
+  function fl(c,n){return n?'<i class="'+c+'" style="flex:'+n+'"></i>':''}
+  function qbRead(a,b){return '<div class="qb-read">'+N(P(a,b)+'%')+' נקרא · '+N(a+'/'+b)+'</div>'}
+  function qbScore(o){return '<div class="qb-score"><span class="c1">'+N(P(o.ok,o.tot)+'%')+' נכון<br>'+N(o.ok+'/'+o.tot)+'</span><span class="c2">'+N(P(o.bad,o.tot)+'%')+' שגוי<br>'+N(o.bad+'/'+o.tot)+'</span><span class="c3">'+N(P(o.no,o.tot)+'%')+' לא נענה<br>'+N(o.no+'/'+o.tot)+'</span></div>'}
+  function qbDraw(uid,lv,n){
+    var secs=QB[uid], all=qbCount(secs);
+    if(lv===0)return '<div class="qb-crumbs"><b>הכל</b><span class="none">· לחיצה על הפסים פותחת את הנושאים</span></div>'+
+      '<button type="button" class="qb-hit" data-qbgo="1">'+qbRead(all.read,secs.length)+
+      '<span class="qb-thick">'+fl('rd',all.read)+fl('ur',secs.length-all.read)+'</span>'+
+      '<span class="qb-thick">'+fl('ok',all.ok)+fl('bad',all.bad)+fl('no',all.no)+'</span>'+qbScore(all)+'</button>';
+    if(lv===1)return '<div class="qb-crumbs"><button type="button" data-qbgo="0">הכל</button> › <b>נושאים</b></div>'+qbRead(all.read,secs.length)+
+      '<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg" data-qbgo="2" data-n="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>'+
+      qbScore(all)+'<div class="qb-axis"><span>נושא 1</span><span>נושא '+secs.length+'</span></div>';
+    var s=secs[n-1], o=qbCount([s]), a=s.r&&s.r.answers;
+    return '<div class="qb-crumbs"><button type="button" data-qbgo="0">הכל</button> › <button type="button" data-qbgo="1">נושאים</button> › <b>'+esc(s.n+'. '+s.t)+'</b></div>'+
+      '<div class="qb-read">'+(s.read?'נקרא':'לא נקרא')+'</div><span class="qb-thick"><i class="'+(s.read?'rd':'ur')+'" style="flex:1"></i></span>'+
+      '<div class="qb-qs">'+s.qs.map(function(q,j){return '<button type="button" class="'+s.k[j]+'" data-qbq="'+j+'">שאלה '+(j+1)+'</button>'}).join('')+'</div>'+qbScore(o)+
+      '<div class="qb-head"><b>'+esc(s.n+'. '+s.t)+'</b><button type="button" data-qbgo="2" data-n="'+Math.max(1,n-1)+'" aria-label="נושא קודם">›</button><button type="button" data-qbgo="2" data-n="'+Math.min(secs.length,n+1)+'" aria-label="נושא הבא">‹</button></div>'+
+      (s.r&&!a?'<p class="none">התשובות עצמן לא נשמרו בבחינה הזאת (לפני שהתחלנו לשמור אותן). הציון: '+s.r.score+'/'+s.r.total+'.</p>':'')+
+      '<ol class="qb-list">'+s.qs.map(function(q,j){var g=a?a[j]:null;
+        return '<li class="l-'+s.k[j]+'" data-qbi="'+j+'"><span class="t">'+(j+1)+'. '+esc(q.q)+'</span>'+(s.r?'':'<span class="none">לא נענה</span>')+
+          '<ul class="qb-opts">'+q.a.map(function(t,i){var right=i===q.c, x=a&&i===g&&!right;
+            return '<li class="'+(s.r&&right?'r':x?'x':'')+'"><span>'+(s.r&&right?'✓':x?'✗':'')+'</span><span>'+esc(t)+'</span>'+(s.r&&right&&q.why?'<span class="why">'+esc(q.why)+'</span>':'')+'</li>'}).join('')+'</ul></li>'}).join('')+'</ol>';
+  }
+  app.addEventListener('click',async function(e){
+    var rs=e.target.closest('[data-qbreset]');
+    if(rs){
+      var card=rs.closest('[data-u]'), who=card.querySelector('h3').firstChild.textContent, ch=rs.getAttribute('data-qbreset');
+      if(!confirm('לאפס את השאלון של '+who+' ב'+CHAPTERS[ch].title+'?\nזה פותח סבב חדש. התשובות הקודמות נשמרות ויופיעו ברשימת הסבבים.'))return;
+      rs.disabled=true;
+      var rr=await sb.from('quiz_resets').insert({user_id:card.getAttribute('data-u'),chapter:ch});
+      if(rr.error){alert(/row-level|policy/.test(rr.error.message)?'צריך קודם להריץ ב־Supabase את supabase/v11.sql.':rr.error.message);rs.disabled=false;return}
+      load();return;
+    }
+    var box=e.target.closest('[data-qb]');if(!box)return;
+    var go=e.target.closest('[data-qbgo]'), qq=e.target.closest('[data-qbq]');
+    if(qq){var li=box.querySelector('[data-qbi="'+qq.getAttribute('data-qbq')+'"]');if(li)li.scrollIntoView({behavior:'smooth',block:'center'});return}
+    if(!go)return;
+    var lv=+go.getAttribute('data-qbgo'), n=+go.getAttribute('data-n')||0;
+    box.querySelector('.qb-in').innerHTML=qbDraw(box.getAttribute('data-qb'),lv,n);
+  });
+
   function render(users,grants,reads,results,invites,requests){
     var others=users.filter(function(u){return !u.is_admin});
     var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id&&!isOwn(g.path)})});
@@ -196,12 +294,18 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
         var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
         if(CHAPTERS[c].own&&!n&&!all.some(function(g){return g.path===c}))return;
+        var qb=c==='harchakot'?qbHTML(u,ur,uq):'';
+        if(qb){var avg=QB[u.id].avg;
+          h+='<div class="qb-top"><b>'+esc(CHAPTERS[c].title)+'</b><button type="button" class="qb-avg" data-qbreset="'+c+'" title="איפוס השאלון של התלמיד">ממוצע '+(avg==null?'—':N(avg+'%'))+'</button></div>'+readHeads(c)+qb;return}
         h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' קטעים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
         // Which headings were read (chapters whose reading is tracked quietly).
-        if(CHAPTERS[c].heads){var got=ur.filter(function(x){return x.chapter===c}).map(function(x){return x.section});
-          h+='<details><summary>קריאה לפי כותרות</summary><ol class="none" style="margin:6px 0 0">'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
-            return '<li>'+(r?'✓ ':'○ ')+esc(t)+(r?' · '+when(r.read_at):'')+'</li>'}).join('')+'</ol></details>'}
+        h+=readHeads(c);
       });
+      function readHeads(c){
+        if(!CHAPTERS[c].heads)return '';
+        return '<details><summary>קריאה לפי כותרות</summary><ol class="none" style="margin:6px 0 0">'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
+            return '<li>'+(r?'✓ ':'○ ')+esc(t)+(r?' · '+when(r.read_at):'')+'</li>'}).join('')+'</ol></details>';
+      }
       h+=rounds(u,uq)+studentReset(u,uq);
       h+='</article>';
     });

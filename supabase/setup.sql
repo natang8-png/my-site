@@ -299,7 +299,7 @@ alter table public.quiz_resets enable row level security;
 drop policy if exists "own resets read" on public.quiz_resets;
 create policy "own resets read" on public.quiz_resets for select using (user_id = auth.uid() or public.is_admin());
 drop policy if exists "own resets write" on public.quiz_resets;
-create policy "own resets write" on public.quiz_resets for insert with check (user_id = auth.uid());
+create policy "own resets write" on public.quiz_resets for insert with check (user_id = auth.uid() or public.is_admin());  -- v12: admin too
 grant select, insert on public.quiz_resets to authenticated;
 grant usage, select on all sequences in schema public to authenticated;
 drop policy if exists "own resets delete" on public.quiz_resets;
