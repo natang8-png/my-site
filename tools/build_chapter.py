@@ -26,7 +26,7 @@ CHAPTERS = {
          noquiz=True, back="/halacha/maagal-hachaim/#leida", note="לידה",
          credit="מתוך הספר \"חוסן ישועות\" · הלכות טהרת המשפחה",
          part_titles=True,
-         groups=[(1, 5, "חלק א' – הקדמה עיונית"), (6, 12, "חלק ב' – דיני יולדת ומפלת"), (13, 17, "חלק ג' – ההלכות בקצרה")]),
+         groups=[(1, 5, "חלק א' - הקדמה עיונית"), (6, 12, "חלק ב' - דיני יולדת ומפלת"), (13, 17, "חלק ג' - ההלכות בקצרה")]),
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=3, path="leil-hachatuna", private=True,
          # Natan, 2026-10-28: three tabs. The first two have no text yet (None = empty tab).
          # The third holds the whole order, read as one long page (flow); the menu scrolls to a heading.
@@ -175,7 +175,7 @@ if groups:
             return (f'<details class="grp" name="grp"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span></summary>'
                     '<p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>')
         return (f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
-                f'<small>{"סעיפים "+str(a)+"–"+str(b) if b > a else "סעיף "+str(a)}</small></summary>'
+                f'<small>{"סעיפים "+str(a)+"-"+str(b) if b > a else "סעיף "+str(a)}</small></summary>'
                 f'<ol>{items(a, b, sub)}</ol></details>')
     toc_html = '<div class="grps">' + "".join(grp(g, *x) for g, x in enumerate(groups, 1)) + '</div>'
     # A sub-topic title above its first section on the page (shown only once inside the long page).
