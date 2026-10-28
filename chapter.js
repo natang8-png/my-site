@@ -26,6 +26,9 @@ if(PROOF){document.documentElement.classList.add('proof');
   // The headings list stays open: it is a plain list, not a button.
   toc.open=true;toc.querySelector('summary').addEventListener('click',function(e){e.preventDefault()});
   toc.querySelector('summary span').textContent='תוכן עניינים';
+  // Topic tabs open one at a time: opening one closes the others.
+  [].forEach.call(toc.querySelectorAll('.grp'),function(g){g.addEventListener('toggle',function(){
+    if(g.open)[].forEach.call(toc.querySelectorAll('.grp[open]'),function(o){if(o!==g)o.open=false})})});
   window.addEventListener('hashchange',function(){show();var t=document.getElementById(location.hash.slice(1));var cur=document.querySelector('.sec:not([hidden])');
     if(!cur){scrollTo(0,0);return}
     ((t&&t.closest('.sec'))?t:cur).scrollIntoView({block:'start'})});

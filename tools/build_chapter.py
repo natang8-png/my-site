@@ -147,7 +147,7 @@ groups = ch.get("groups")
 if groups:
     assert groups[0][0] == 1 and groups[-1][1] == n and all(a[1] + 1 == b[0] for a, b in zip(groups, groups[1:]))
     toc_html = '<div class="grps">' + "".join(
-        f'<details class="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
+        f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
         f'<small>{"סעיפים "+str(a)+"–"+str(b) if b > a else "סעיף "+str(a)}</small></summary>'
         f'<ol>{"".join(toc[a-1:b])}</ol></details>'
         for g, (a, b, t) in enumerate(groups, 1)) + '</div>'
