@@ -19,10 +19,11 @@
       <details class="grp" name="grp" id="leida"><summary><span class="num">2</span><span class="g-title">לידה</span></summary><div class="leida-go">
         <p>דיני יולדת ומפלת, מתוך הספר "חוסן ישועות": 17 עמודים בשלושה חלקים, כמו בהרחקות. פתוח למשתמשים רשומים שההרחקות פתוחות להם.</p>
         <ol class="parts">
-          <li><a href="/halacha/yoledet/#s1"><span class="num">1</span>הקדמה עיונית<small>עמודים 1–5</small></a></li>
-          <li><a href="/halacha/yoledet/#s6"><span class="num">2</span>דיני יולדת ומפלת<small>עמודים 6–12</small></a></li>
-          <li><a href="/halacha/yoledet/#s13"><span class="num">3</span>ההלכות בקצרה<small>עמודים 13–17</small></a></li>
+          <li><a href="/halacha/yoledet/#s1"><span class="num">1</span>חלק א' - הקדמה עיונית<small>עמודים 1-5</small></a></li>
+          <li><a href="/halacha/yoledet/#s6"><span class="num">2</span>חלק ב' - דיני יולדת ומפלת<small>עמודים 6-12</small></a></li>
+          <li><a href="/halacha/yoledet/#s13"><span class="num">3</span>חלק ג' - ההלכות בקצרה<small>עמודים 13-17</small></a></li>
         </ol>
+        <div class="qsum" data-qsum="yoledet" data-path="halacha/family/yoledet" data-quiz="/halacha/yoledet/quiz.json" hidden></div>
         <a class="primary go-ch" href="/halacha/yoledet/">לפתיחת הפרק</a>
       </div></details>
       <details class="grp" name="grp" id="hanaka"><summary><span class="num">3</span><span class="g-title">הנקה</span></summary><p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>
@@ -44,6 +45,29 @@
   gs.forEach(function(g){g.addEventListener('toggle',function(){if(g.open)gs.forEach(function(o){if(o!==g)o.open=false})})});
   function fromHash(){var g=document.getElementById(location.hash.slice(1));if(g&&g.classList.contains('grp')){g.open=true;g.scrollIntoView({block:'start'})}}
   fromHash();addEventListener('hashchange',fromHash);
+})();
+</script>
+<script>
+// Quiz score under each chapter: questions answered out of all, and the score in percent. Resetting lives in /me/ and /admin/ only.
+(function(){
+  if(!window.SITE)return;
+  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+  SITE.ready.then(function(st){
+    [].forEach.call(document.querySelectorAll('[data-qsum]'),async function(box){
+      var ch=box.getAttribute('data-qsum'), a=SITE.access(box.getAttribute('data-path'));
+      if(a!=='study'&&a!=='quiz')return;
+      var data=await fetch(box.getAttribute('data-quiz')).then(function(r){return r.json()}).catch(function(){return null});
+      if(!data)return;
+      var all=0;Object.keys(data).forEach(function(k){all+=(data[k]||[]).length});
+      var rows=[];
+      if(st.user){var r=await SITE.loadQuiz(ch);rows=r?r.rows:[]}
+      else try{var o=JSON.parse(localStorage.getItem('iq:'+ch))||{};if(!Array.isArray(o))rows=Object.keys(o).map(function(k){return o[k]}).filter(function(x){return x.t!=null}).map(function(x){return {score:x.s,total:x.t}})}catch(e){}
+      var s=0,t=0;rows.forEach(function(x){s+=x.score;t+=x.total});
+      box.innerHTML='<span>שאלון: <b>ענית על '+t+'</b> מתוך '+all+' שאלות'+(t?' · <span class="nw">ציון <b>'+Math.round(100*s/t)+'%</b></span>':'')+'</span>'+
+        '';
+      box.hidden=false;
+    });
+  });
 })();
 </script>
 </body></html>

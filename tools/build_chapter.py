@@ -13,17 +13,17 @@ import os, sys, html, hashlib
 CHAPTERS = {
     # One version only (Natan, 2026-10-24): icons for each section, and each section's questions on the same page
     # below the text, after a blank gap. "הבא" in the bottom bar opens only once they are all answered.
-    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=3, path="halacha/family/harchakot",
+    "harchakot": dict(title="הרחקות", subtitle="פרק ב - האיסורים הנוהגים בזמן נדתה", num=1, of=3, path="halacha/family/harchakot",
          graphic=True, inline_quiz=True, quiz="/halacha/harchakot/quiz.json",
          # Natan's split into 7 topics (2026-10-28): first section, last section, title.
          groups=[(1, 4, "כללי"), (5, 8, "חיי היום יום"), (9, 12, "אכילה ושתייה"), (13, 14, "חדר השינה"),
                  (15, 18, "מחוץ לבית"), (19, 21, "הנהגה אישית"), (22, 26, "מצבים מיוחדים")],
-         credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
+         credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ&quot;ז אדר א&#39; תשע&quot;ד'),
     # דיני יולדת (Natan, 2026-10-28): built like הרחקות, inside מעגל החיים > לידה. Three parts: a theoretical introduction,
     # the chapter itself, and the halachot in brief. Opens with the הרחקות permission (auth.js TREE "with").
     # Questions come once the vocalized text is in (noquiz until then).
     "yoledet": dict(title="דיני יולדת ומפלת", subtitle="מעגל החיים · לידה", num=3, of=3, path="halacha/family/yoledet",
-         noquiz=True, back="/halacha/maagal-hachaim/#leida", note="לידה",
+         inline_quiz=True, quiz="/halacha/yoledet/quiz.json", back="/halacha/maagal-hachaim/#leida", note="לידה",
          credit="מתוך הספר \"חוסן ישועות\" · הלכות טהרת המשפחה",
          part_titles=True,
          groups=[(1, 5, "חלק א' - הקדמה עיונית"), (6, 12, "חלק ב' - דיני יולדת ומפלת"), (13, 17, "חלק ג' - ההלכות בקצרה")]),
