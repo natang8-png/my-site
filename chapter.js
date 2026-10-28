@@ -142,7 +142,7 @@ if(PROOF){document.documentElement.classList.add('proof');
     num.hidden=!sec;
     if(!sec){bar.querySelector('.cb-sname').textContent='תוכן עניינים';return}
     var i=sec.id.slice(1);
-    bar.querySelector('.cb-sname').textContent=sec.querySelector('h2').textContent;
+    bar.querySelector('.cb-sname').textContent=sec.querySelector('.sec-head h2').textContent;
     num.textContent='קטע '+i+'/'+total;num.setAttribute('aria-label','קטע '+i+' מתוך '+total);
   }
   window.addEventListener('hashchange',function(){setTimeout(current,0)});document.addEventListener('sec-change',current);current();
