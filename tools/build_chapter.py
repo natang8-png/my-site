@@ -20,8 +20,9 @@ CHAPTERS = {
                  (15, 18, "מחוץ לבית"), (19, 21, "הנהגה אישית"), (22, 26, "מצבים מיוחדים")],
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=2, path="leil-hachatuna", private=True,
-         # Proposed split (2026-10-28); טומאת בתולים is one of the tabs, as Natan asked.
-         groups=[(1, 4, "ההכנות"), (5, 9, "ליל החתונה"), (10, 11, "טומאת בתולים"), (12, 15, "אחרי ליל החתונה")]),
+         # Natan, 2026-10-28: three tabs. The first two have no text yet (None = empty tab).
+         # The third holds the whole order, read as one long page (flow); the menu scrolls to a heading.
+         flow=True, groups=[(None, None, "הלכות צניעות"), (None, None, "ההבדל בין גברים לנשים"), (1, 15, "כשמגיעים הביתה")]),
 }
 
 slug = sys.argv[1]
@@ -147,12 +148,16 @@ for i, h in enumerate(heads, 1):
 # The headings list: one plain list, or, when the chapter has topics, one tab per topic that opens its own list.
 groups = ch.get("groups")
 if groups:
-    assert groups[0][0] == 1 and groups[-1][1] == n and all(a[1] + 1 == b[0] for a, b in zip(groups, groups[1:]))
-    toc_html = '<div class="grps">' + "".join(
-        f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
-        f'<small>{"סעיפים "+str(a)+"–"+str(b) if b > a else "סעיף "+str(a)}</small></summary>'
-        f'<ol>{"".join(toc[a-1:b])}</ol></details>'
-        for g, (a, b, t) in enumerate(groups, 1)) + '</div>'
+    full = [x for x in groups if x[0] is not None]
+    assert full[0][0] == 1 and full[-1][1] == n and all(a[1] + 1 == b[0] for a, b in zip(full, full[1:]))
+    def grp(g, a, b, t):
+        if a is None:  # a tab whose text has not been written yet
+            return (f'<details class="grp" name="grp"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span></summary>'
+                    '<p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>')
+        return (f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
+                f'<small>{"סעיפים "+str(a)+"–"+str(b) if b > a else "סעיף "+str(a)}</small></summary>'
+                f'<ol>{"".join(toc[a-1:b])}</ol></details>')
+    toc_html = '<div class="grps">' + "".join(grp(g, *x) for g, x in enumerate(groups, 1)) + '</div>'
 else:
     toc_html = "<ol>\n      " + chr(10).join("      "+t for t in toc).strip() + "\n    </ol>"
 
@@ -166,7 +171,7 @@ page = f'''<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
 <link rel="stylesheet" href="/style.css?v={ver("style.css")}">
-{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}>
+{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}{" data-flow" if ch.get("flow") else ""}>
   <header>
     <a class="back" href="/halacha/">→ חזרה להלכה</a>
     <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>

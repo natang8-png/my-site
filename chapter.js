@@ -10,19 +10,31 @@ if(PROOF){document.documentElement.classList.add('proof');
   if(!secs.length)return;
   var toc=document.getElementById('toc');
   if(PROOF){toc.open=true;return}
+  // "Flow" chapters (data-flow): once inside, every section shows on one long page; the menu and the arrows scroll to a heading.
+  var FLOW=document.querySelector('main.chapter[data-flow]')!==null;
+  if(FLOW)document.documentElement.classList.add('flow');
   document.documentElement.classList.add('one-sec');
   function show(){
     var id=(location.hash||'').slice(1), found=false;
     var el=id&&document.getElementById(id), host=el&&el.closest&&el.closest('.sec');
     if(host)id=host.id;
-    secs.forEach(function(s){var on=s.id===id;s.hidden=!on;if(on)found=true});
+    secs.forEach(function(s){if(s.id===id)found=true});
+    secs.forEach(function(s){s.hidden=FLOW?!found:s.id!==id});
     // No section in the address: the chapter's own opening page, "תוכן עניינים" (title, credit and the headings list).
     // Each section, from 1 (הקדמה) on, is a page of its own without that opening.
     document.documentElement.classList.toggle('later-sec',found);
-    [].forEach.call(toc.querySelectorAll('a'),function(a){a.classList.toggle('current',a.getAttribute('href')==='#'+id)});
+    mark(id);
     // Topic tabs: the one holding the current section stays open.
     var c=toc.querySelector('a.current'), g=c&&c.closest('.grp'); if(g)g.open=true;
   }
+  function mark(id){[].forEach.call(toc.querySelectorAll('a'),function(a){a.classList.toggle('current',a.getAttribute('href')==='#'+id)})}
+  // The section being read: the only one shown, or in a flow chapter the last heading scrolled past.
+  window.curSec=function(){
+    if(!FLOW)return document.querySelector('.sec:not([hidden])');
+    if(secs[0].hidden)return null;
+    var c=secs[0];secs.forEach(function(s){if(s.getBoundingClientRect().top<=120)c=s});return c;
+  };
+  if(FLOW){var last=null;addEventListener('scroll',function(){var c=curSec(), id=c&&c.id;if(id===last)return;last=id;mark(id);document.dispatchEvent(new Event('sec-change'))},{passive:true})}
   // The headings list stays open: it is a plain list, not a button.
   toc.open=true;toc.querySelector('summary').addEventListener('click',function(e){e.preventDefault()});
   toc.querySelector('summary span').textContent='תוכן עניינים';
@@ -101,12 +113,13 @@ if(PROOF){document.documentElement.classList.add('proof');
   document.documentElement.classList.add('has-tbar');
   var panel=bar.querySelector('.cb-panel');
   // The menu lists every heading; a chapter split into topics gets a title line before each topic.
-  var grps=toc.querySelectorAll('.grp');
-  if(grps.length){var ol=document.createElement('ol');
-    [].forEach.call(grps,function(g){var h=document.createElement('li');h.className='m-grp';
+  var grps=[].filter.call(toc.querySelectorAll('.grp'),function(g){return g.querySelector('ol > li')}); // topics with headings
+  if(grps.length>1){var ol=document.createElement('ol');
+    grps.forEach(function(g){var h=document.createElement('li');h.className='m-grp';
       h.textContent=g.querySelector('.num').textContent+'. '+g.querySelector('.g-title').textContent;ol.appendChild(h);
       [].forEach.call(g.querySelectorAll('ol > li'),function(li){ol.appendChild(li.cloneNode(true))})});
     panel.appendChild(ol)}
+  else if(grps.length)panel.appendChild(grps[0].querySelector('ol').cloneNode(true));
   else panel.appendChild(toc.querySelector('ol').cloneNode(true));
   function sync(){ // read marks and current section mirror the main menu
     var src=toc.querySelectorAll('a'), dst=panel.querySelectorAll('a');
@@ -119,7 +132,7 @@ if(PROOF){document.documentElement.classList.add('proof');
   document.addEventListener('click',function(e){if(e.target===bar||!bar.contains(e.target))setOpen(false)});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')setOpen(false)});
   function current(){
-    var sec=document.querySelector('.sec:not([hidden])'), num=bar.querySelector('.cb-snum');
+    var sec=window.curSec?curSec():document.querySelector('.sec:not([hidden])'), num=bar.querySelector('.cb-snum');
     // Graphic chapters: the section's icon sits between the back arrow and the two title lines.
     var ico=bar.querySelector('.cb-ico'), si=sec&&sec.querySelector('.sec-ico');
     ico.innerHTML=si?si.innerHTML:'';ico.hidden=!si;
@@ -129,7 +142,7 @@ if(PROOF){document.documentElement.classList.add('proof');
     bar.querySelector('.cb-sname').textContent=sec.querySelector('h2').textContent;
     num.textContent='קטע '+i+'/'+total;num.setAttribute('aria-label','קטע '+i+' מתוך '+total);
   }
-  window.addEventListener('hashchange',function(){setTimeout(current,0)});current();
+  window.addEventListener('hashchange',function(){setTimeout(current,0)});document.addEventListener('sec-change',current);current();
 })();
 
 // One heading size for every section of the chapter: the largest size at which the longest title still fits on one line.
@@ -252,9 +265,11 @@ if(PROOF){document.documentElement.classList.add('proof');
   dlg.innerHTML='<p>אחרי הקריאה, תוכל למלא את השאלון המופיע בהמשך העמוד, למטה.<br>לאחר מילוי השאלון - כפתור "הבא" יהפוך לפעיל.</p><button type="button" class="primary" data-close>הבנתי</button>';
   document.body.appendChild(dlg);
   dlg.addEventListener('click',function(e){if(e.target===dlg||e.target.closest('[data-close]'))dlg.close()});
-  function cur(){var s=document.querySelector('.sec:not([hidden])');return s?+s.id.slice(1):0} // 0 = תוכן עניינים
+  function cur(){var s=window.curSec?curSec():document.querySelector('.sec:not([hidden])');return s?+s.id.slice(1):0} // 0 = תוכן עניינים
   function gated(i){return !!window.iqOpen&&i>0&&!iqOpen(i)}
-  function go(i){var back=main.querySelector('header .back');if(i<0||i>n){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}location.hash='#s'+i}
+  function go(i){var back=main.querySelector('header .back');if(i<0||i>n){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}
+    if(location.hash==='#s'+i){document.getElementById('s'+i).scrollIntoView({block:'start'});return} // flow page: already there by address, scrolled away
+    location.hash='#s'+i}
   function paint(){
     var i=cur(), done=toc.querySelectorAll('a.done').length, nx=bar.querySelector('.rb-next'), g=gated(i);
     // The opening page (תוכן עניינים) has no "הקודם".
@@ -312,6 +327,6 @@ if(PROOF){document.documentElement.classList.add('proof');
   new MutationObserver(paint).observe(toc,{subtree:true,attributes:true,attributeFilter:['class']});
   new MutationObserver(paint).observe(main,{attributes:true,attributeFilter:['class']}); // access level arrives later
   window.addEventListener('hashchange',function(){setTimeout(paint,0)});
-  document.addEventListener('iq-change',paint);
+  document.addEventListener('iq-change',paint);document.addEventListener('sec-change',paint);
   paint();
 })();

@@ -374,3 +374,7 @@ html.has-rbar.has-dots body{padding-bottom:calc(104px + env(safe-area-inset-bott
 .cb-panel li.m-grp{margin:12px 8px 2px;padding-bottom:4px;border-bottom:1px solid var(--line);color:var(--accent);font-weight:700;font-family:var(--display)}
 .cb-panel li.m-grp:first-child{margin-top:2px}
 .nw{white-space:nowrap}
+.grp-empty{margin:0;padding:0 14px 14px;color:var(--muted)}
+/* Flow chapter: every section on one page, under the fixed top bar. */
+html.flow .sec{scroll-margin-top:70px}
+html.flow .sec + .sec{border-top:1px solid var(--line);padding-top:28px}
