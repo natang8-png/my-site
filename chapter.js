@@ -32,8 +32,11 @@ if(PROOF){document.documentElement.classList.add('proof');
   window.curSec=function(){
     if(!FLOW)return document.querySelector('.sec:not([hidden])');
     if(secs[0].hidden)return null;
-    var c=secs[0];secs.forEach(function(s){if(s.getBoundingClientRect().top<=120)c=s});return c;
+    var c=secs[0];secs.forEach(function(s){if(top(s).getBoundingClientRect().top<=120)c=s});return c;
   };
+  // Where a section starts on a flow page: its sub-topic title, when one stands above it.
+  function top(s){var p=s.previousElementSibling;return p&&p.classList.contains('part-head')?p:s}
+  window.secTop=top;
   if(FLOW){var last=null;addEventListener('scroll',function(){var c=curSec(), id=c&&c.id;if(id===last)return;last=id;mark(id);document.dispatchEvent(new Event('sec-change'))},{passive:true})}
   // The headings list stays open: it is a plain list, not a button.
   toc.open=true;toc.querySelector('summary').addEventListener('click',function(e){e.preventDefault()});
@@ -43,10 +46,10 @@ if(PROOF){document.documentElement.classList.add('proof');
     if(g.open)[].forEach.call(toc.querySelectorAll('.grp[open]'),function(o){if(o!==g)o.open=false})})});
   window.addEventListener('hashchange',function(){show();var t=document.getElementById(location.hash.slice(1));var cur=document.querySelector('.sec:not([hidden])');
     if(!cur){scrollTo(0,0);return}
-    ((t&&t.closest('.sec'))?t:cur).scrollIntoView({block:'start'})});
+    var el=(t&&t.closest('.sec'))?t:cur;(el.classList.contains('sec')?top(el):el).scrollIntoView({block:'start'})});
   [].forEach.call(document.querySelectorAll('[data-open-toc]'),function(b){b.addEventListener('click',function(){toc.open=true;toc.scrollIntoView({block:'start'});var c=toc.querySelector('a.current');if(c)c.focus()})});
   show();
-  if(location.hash){var cur=document.querySelector('.sec:not([hidden])');if(cur)cur.scrollIntoView({block:'start'})}
+  if(location.hash){var t0=document.getElementById(location.hash.slice(1)), cur=t0&&t0.closest&&t0.closest('.sec')||document.querySelector('.sec:not([hidden])');if(cur)top(cur).scrollIntoView({block:'start'})}
 })();
 
 // "קראתי" marks: saved to the account when logged in, otherwise in this browser
@@ -268,7 +271,7 @@ if(PROOF){document.documentElement.classList.add('proof');
   function cur(){var s=window.curSec?curSec():document.querySelector('.sec:not([hidden])');return s?+s.id.slice(1):0} // 0 = תוכן עניינים
   function gated(i){return !!window.iqOpen&&i>0&&!iqOpen(i)}
   function go(i){var back=main.querySelector('header .back');if(i<0||i>n){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}
-    if(location.hash==='#s'+i){document.getElementById('s'+i).scrollIntoView({block:'start'});return} // flow page: already there by address, scrolled away
+    if(location.hash==='#s'+i){var el=document.getElementById('s'+i);(window.secTop?secTop(el):el).scrollIntoView({block:'start'});return} // flow page: already there by address, scrolled away
     location.hash='#s'+i}
   function paint(){
     var i=cur(), done=toc.querySelectorAll('a.done').length, nx=bar.querySelector('.rb-next'), g=gated(i);

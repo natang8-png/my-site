@@ -22,7 +22,9 @@ CHAPTERS = {
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=2, path="leil-hachatuna", private=True,
          # Natan, 2026-10-28: three tabs. The first two have no text yet (None = empty tab).
          # The third holds the whole order, read as one long page (flow); the menu scrolls to a heading.
-         flow=True, groups=[(None, None, "הלכות צניעות"), (None, None, "ההבדל בין גברים לנשים"), (1, 15, "כשמגיעים הביתה")]),
+         flow=True, groups=[(None, None, "הלכות צניעות"), (None, None, "ההבדל בין גברים לנשים"), (1, 15, "כשמגיעים הביתה",
+                 # Inside it, the four topics from the first split, as headings in the list, the menu and the page.
+                 [(1, 4, "ההכנות"), (5, 9, "ליל החתונה"), (10, 11, "טומאת בתולים"), (12, 15, "אחרי ליל החתונה")])]),
 }
 
 slug = sys.argv[1]
@@ -150,14 +152,27 @@ groups = ch.get("groups")
 if groups:
     full = [x for x in groups if x[0] is not None]
     assert full[0][0] == 1 and full[-1][1] == n and all(a[1] + 1 == b[0] for a, b in zip(full, full[1:]))
-    def grp(g, a, b, t):
+    subs = {}  # first section of a sub-topic -> its title
+    def items(a, b, sub):
+        out = []
+        for i in range(a, b + 1):
+            for x in sub:
+                if x[0] == i:
+                    subs[i] = x[2]
+                    out.append(f'<li class="toc-sub">{html.escape(x[2])}</li>')
+            out.append(toc[i - 1])
+        return "".join(out)
+    def grp(g, a, b, t, sub=()):
         if a is None:  # a tab whose text has not been written yet
             return (f'<details class="grp" name="grp"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span></summary>'
                     '<p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>')
         return (f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
                 f'<small>{"סעיפים "+str(a)+"–"+str(b) if b > a else "סעיף "+str(a)}</small></summary>'
-                f'<ol>{"".join(toc[a-1:b])}</ol></details>')
+                f'<ol>{items(a, b, sub)}</ol></details>')
     toc_html = '<div class="grps">' + "".join(grp(g, *x) for g, x in enumerate(groups, 1)) + '</div>'
+    # A sub-topic title above its first section on the page (shown only once inside the long page).
+    for i, t in subs.items():
+        secs[i - 1] = f'  <h2 class="part-head">{html.escape(t)}</h2>\n' + secs[i - 1]
 else:
     toc_html = "<ol>\n      " + chr(10).join("      "+t for t in toc).strip() + "\n    </ol>"
 

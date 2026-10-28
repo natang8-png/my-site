@@ -378,3 +378,10 @@ html.has-rbar.has-dots body{padding-bottom:calc(104px + env(safe-area-inset-bott
 /* Flow chapter: every section on one page, under the fixed top bar. */
 html.flow .sec{scroll-margin-top:70px}
 html.flow .sec + .sec{border-top:1px solid var(--line);padding-top:28px}
+/* Sub-topic titles: in the headings list, the menu, and above their first section in a flow page. */
+.toc li.toc-sub,.cb-panel li.toc-sub{margin:12px 8px 2px;padding-bottom:4px;border-bottom:1px solid var(--line);color:var(--accent);font-weight:700;font-family:var(--display)}
+.toc li.toc-sub:first-child,.cb-panel li.toc-sub:first-child{margin-top:2px}
+.part-head{display:none;margin:0;font-family:var(--display);font-size:1.6rem;color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:6px}
+html.flow.later-sec .part-head{display:block}
+html.flow .part-head + .sec{border-top:0;padding-top:0}
+html.flow .part-head{scroll-margin-top:70px}
