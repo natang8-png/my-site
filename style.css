@@ -360,3 +360,17 @@ html.has-rbar.has-dots body{padding-bottom:calc(104px + env(safe-area-inset-bott
 .qreset{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:6px 0 2px}
 .qreset .qmsg{color:#b3261e}
 .rb-dot.unk{background:var(--soft);border-color:var(--muted);color:var(--muted);font-size:1.3rem}
+
+/* A chapter split into topics: one tab per topic on the chapter's opening page, each opening its own headings. */
+.grps{display:grid;gap:8px;padding:4px 10px 12px}
+.grp{border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.grp summary{display:flex;align-items:baseline;gap:8px;padding:12px 14px;cursor:pointer;list-style:none;font-weight:600}
+.grp summary::-webkit-details-marker{display:none}
+.grp summary::after{content:"▾";color:var(--accent);margin-inline-start:6px}
+.grp[open] summary::after{content:"▴"}
+.grp summary .g-title{font-family:var(--display);font-size:1.15rem}
+.grp summary small{color:var(--muted);font-weight:400;margin-inline-start:auto}
+.grp ol{padding:0 6px 10px}
+.cb-panel li.m-grp{margin:12px 8px 2px;padding-bottom:4px;border-bottom:1px solid var(--line);color:var(--accent);font-weight:700;font-family:var(--display)}
+.cb-panel li.m-grp:first-child{margin-top:2px}
+.nw{white-space:nowrap}

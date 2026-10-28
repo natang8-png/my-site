@@ -20,6 +20,8 @@ if(PROOF){document.documentElement.classList.add('proof');
     // Each section, from 1 (הקדמה) on, is a page of its own without that opening.
     document.documentElement.classList.toggle('later-sec',found);
     [].forEach.call(toc.querySelectorAll('a'),function(a){a.classList.toggle('current',a.getAttribute('href')==='#'+id)});
+    // Topic tabs: the one holding the current section stays open.
+    var c=toc.querySelector('a.current'), g=c&&c.closest('.grp'); if(g)g.open=true;
   }
   // The headings list stays open: it is a plain list, not a button.
   toc.open=true;toc.querySelector('summary').addEventListener('click',function(e){e.preventDefault()});
@@ -95,7 +97,14 @@ if(PROOF){document.documentElement.classList.add('proof');
   document.body.appendChild(bar);
   document.documentElement.classList.add('has-tbar');
   var panel=bar.querySelector('.cb-panel');
-  panel.appendChild(toc.querySelector('ol').cloneNode(true));
+  // The menu lists every heading; a chapter split into topics gets a title line before each topic.
+  var grps=toc.querySelectorAll('.grp');
+  if(grps.length){var ol=document.createElement('ol');
+    [].forEach.call(grps,function(g){var h=document.createElement('li');h.className='m-grp';
+      h.textContent=g.querySelector('.num').textContent+'. '+g.querySelector('.g-title').textContent;ol.appendChild(h);
+      [].forEach.call(g.querySelectorAll('ol > li'),function(li){ol.appendChild(li.cloneNode(true))})});
+    panel.appendChild(ol)}
+  else panel.appendChild(toc.querySelector('ol').cloneNode(true));
   function sync(){ // read marks and current section mirror the main menu
     var src=toc.querySelectorAll('a'), dst=panel.querySelectorAll('a');
     [].forEach.call(src,function(a,i){if(dst[i])dst[i].className=a.className});

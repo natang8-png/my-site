@@ -15,6 +15,9 @@ CHAPTERS = {
     # below the text, after a blank gap. "הבא" in the bottom bar opens only once they are all answered.
     "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
          graphic=True, inline_quiz=True, quiz="/halacha/harchakot/quiz.json",
+         # Natan's split into 7 topics (2026-10-28): first section, last section, title.
+         groups=[(1, 4, "כללי"), (5, 8, "חיי היום יום"), (9, 12, "אכילה ושתייה"), (13, 14, "חדר השינה"),
+                 (15, 18, "מחוץ לבית"), (19, 21, "הנהגה אישית"), (22, 26, "מצבים מיוחדים")],
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=3, of=3, path="leil-hachatuna", private=True),
 }
@@ -139,6 +142,18 @@ for i, h in enumerate(heads, 1):
     </div>
   </section>''')
 
+# The headings list: one plain list, or, when the chapter has topics, one tab per topic that opens its own list.
+groups = ch.get("groups")
+if groups:
+    assert groups[0][0] == 1 and groups[-1][1] == n and all(a[1] + 1 == b[0] for a, b in zip(groups, groups[1:]))
+    toc_html = '<div class="grps">' + "".join(
+        f'<details class="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
+        f'<small>{"סעיפים "+str(a)+"–"+str(b) if b > a else "סעיף "+str(a)}</small></summary>'
+        f'<ol>{"".join(toc[a-1:b])}</ol></details>'
+        for g, (a, b, t) in enumerate(groups, 1)) + '</div>'
+else:
+    toc_html = "<ol>\n      " + chr(10).join("      "+t for t in toc).strip() + "\n    </ol>"
+
 def ver(name):
     # A short fingerprint of the file, so phones fetch the new style.css / chapter.js right after a change instead of a cached copy.
     return hashlib.md5(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', name), 'rb').read()).hexdigest()[:8]
@@ -163,9 +178,7 @@ page = f'''<!doctype html>
   <details class="toc" id="toc">
     <summary><span>תוכן עניינים</span><span class="toc-count" data-total="{n}">{n} קטעים</span></summary>
     {WHO_KEY}
-    <ol>
-      {chr(10).join("      "+t for t in toc).strip()}
-    </ol>
+    {toc_html}
   </details>
 
 {chr(10).join(secs)}
