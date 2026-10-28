@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מעגל החיים · הלכה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head><body>
+<main dir="rtl" lang="he">
+  <header>
+    <a class="back" href="/halacha/">→ חזרה להלכה</a>
+    <div class="eyebrow">הלכה · פרק 3 מתוך 3</div>
+    <h1>מעגל החיים</h1>
+    <p class="lead">הריון, לידה והנקה</p>
+  </header>
+
+  <section class="toc" aria-label="נושאים">
+    <div class="grps">
+      <details class="grp" name="grp" id="herayon"><summary><span class="num">1</span><span class="g-title">הריון</span></summary><p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>
+      <details class="grp" name="grp" id="leida"><summary><span class="num">2</span><span class="g-title">לידה</span></summary><p class="grp-empty">כאן ייכנסו דיני יולדת.</p></details>
+      <details class="grp" name="grp" id="hanaka"><summary><span class="num">3</span><span class="g-title">הנקה</span></summary><p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>
+    </div>
+  </section>
+
+  <footer>
+    <span>נבנה בהדרגה, צעד אחר צעד.</span>
+    <button id="theme" type="button">מצב כהה</button>
+  </footer>
+</main>
+<script src="/site.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
+<script>
+// One tab open at a time; an address like #leida opens that tab.
+(function(){
+  var gs=[].slice.call(document.querySelectorAll('.grp'));
+  gs.forEach(function(g){g.addEventListener('toggle',function(){if(g.open)gs.forEach(function(o){if(o!==g)o.open=false})})});
+  function fromHash(){var g=document.getElementById(location.hash.slice(1));if(g&&g.classList.contains('grp')){g.open=true;g.scrollIntoView({block:'start'})}}
+  fromHash();addEventListener('hashchange',fromHash);
+})();
+</script>
+</body></html>

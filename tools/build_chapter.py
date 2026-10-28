@@ -13,13 +13,13 @@ import os, sys, html, hashlib
 CHAPTERS = {
     # One version only (Natan, 2026-10-24): icons for each section, and each section's questions on the same page
     # below the text, after a blank gap. "הבא" in the bottom bar opens only once they are all answered.
-    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
+    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=3, path="halacha/family/harchakot",
          graphic=True, inline_quiz=True, quiz="/halacha/harchakot/quiz.json",
          # Natan's split into 7 topics (2026-10-28): first section, last section, title.
          groups=[(1, 4, "כללי"), (5, 8, "חיי היום יום"), (9, 12, "אכילה ושתייה"), (13, 14, "חדר השינה"),
                  (15, 18, "מחוץ לבית"), (19, 21, "הנהגה אישית"), (22, 26, "מצבים מיוחדים")],
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
-    "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=2, path="leil-hachatuna", private=True,
+    "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=3, path="leil-hachatuna", private=True,
          # Natan, 2026-10-28: three tabs. The first two have no text yet (None = empty tab).
          # The third holds the whole order, read as one long page (flow); the menu scrolls to a heading.
          flow=True, groups=[(None, None, "הלכות צניעות"), (None, None, "ההבדל בין גברים לנשים"), (1, 15, "כשמגיעים הביתה",

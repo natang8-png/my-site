@@ -368,7 +368,7 @@ html.has-rbar.has-dots body{padding-bottom:calc(104px + env(safe-area-inset-bott
 .grp summary::-webkit-details-marker{display:none}
 .grp summary::after{content:"▾";color:var(--accent);margin-inline-start:6px}
 .grp[open] summary::after{content:"▴"}
-.grp summary .g-title{font-family:var(--display);font-size:1.15rem}
+.grp summary .g-title{font-family:var(--display);font-size:1.15rem;flex:1}
 .grp summary small{color:var(--muted);font-weight:400;margin-inline-start:auto}
 .grp ol{padding:0 6px 10px}
 .cb-panel li.m-grp{margin:12px 8px 2px;padding-bottom:4px;border-bottom:1px solid var(--line);color:var(--accent);font-weight:700;font-family:var(--display)}
