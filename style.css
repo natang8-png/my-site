@@ -90,7 +90,7 @@ sup.fn a{color:var(--accent);text-decoration:none;font-family:var(--body);font-s
 .credit a{color:var(--accent)}
 ol.notes li p{margin:0}
 ol.notes li p+p{margin-top:4px}
-a.nb{text-decoration:none;color:var(--accent);margin-inline-start:4px}
+a.nb{text-decoration:none;color:var(--accent);margin-inline-start:6px;font-size:.85em;border:1px solid var(--line);border-radius:999px;padding:0 8px;background:var(--bg);white-space:nowrap}
 /* Bottom bar of each section: read mark, self-quiz, and the pager stay stuck to the screen bottom */
 .sec-foot{position:sticky;bottom:0;z-index:5;display:grid;gap:8px;padding:10px 0 12px;background:var(--bg);border-top:1px solid var(--line);margin-top:-8px}
 .sec-tools{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -392,5 +392,5 @@ html.flow .part-head{scroll-margin-top:70px}
 .y-text h3.y-ch small{font-size:.6em;color:var(--muted);font-weight:500}
 .y-text h4.y-h{margin:.4em 0 0;font-size:1.25rem;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:4px}
 .y-text .orn{text-align:center;color:var(--accent);letter-spacing:.4em;font-size:.8em}
-.toc .y-text a{display:inline;padding:0;border-radius:0}.toc .y-text a:hover{background:none}
+.toc .y-text a:not(.nb){display:inline;padding:0;border-radius:0}.toc .y-text a.nb{display:inline}.toc .y-text a:hover{background:none}
 .toc .y-text ol.notes{list-style:decimal;padding:16px 1.4em 0 0;max-height:none;overflow:visible}
