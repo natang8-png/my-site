@@ -53,6 +53,7 @@
   // Chapters the site has. Progress is counted per chapter key.
   var CHAPTERS=[
     {path:'halacha/family/harchakot', title:'הרחקות', url:'/halacha/harchakot/', key:'harchakot', total:26, quiz:'/halacha/harchakot/quiz.json'},
+    {path:'halacha/family/yoledet', title:'דיני יולדת ומפלת', url:'/halacha/yoledet/', key:'yoledet', total:17},
     {path:'leil-hachatuna', title:'סדר ליל החתונה', url:'/halacha/leil-hachatuna/', key:'leil-hachatuna', total:15}
   ];
   var LEVEL={study:'קריאה ושאלונים', read:'קריאה בלבד', quiz:'שאלונים בלבד'};
@@ -75,7 +76,9 @@
       if(!SITE.live(g))return;
       if(path===g.path||(!own&&path.indexOf(g.path+'/')===0)){if(!best||!g.expires_at||(best.expires_at&&g.expires_at>best.expires_at))best=g}
     });
-    return best;
+    // A chapter that opens together with another one (יולדת with הרחקות) shows that chapter's grant when it has none of its own.
+    var n=SITE.TREE.find(function(x){return x.path===path});
+    return best||(n&&n.with?grantOf(n.with):null);
   }
   var open=CHAPTERS.filter(function(c){return c.adminOnly?admin:!!SITE.access(c.path)});
   document.getElementById('none').hidden=open.length>0;

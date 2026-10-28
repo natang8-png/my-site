@@ -10,6 +10,8 @@
     {path:'halacha', title:'הלכה'},
     {path:'halacha/family', title:'טהרת המשפחה'},
     {path:'halacha/family/harchakot', title:'הרחקות'},
+    // Opens together with הרחקות: a grant on הרחקות opens it too (it can also have a grant of its own).
+    {path:'halacha/family/yoledet', title:'יולדת', with:'halacha/family/harchakot'},
     // Opens only with its own grant (a wider grant does not cover it), for one week at a time.
     {path:'tumat-betulim', title:'טומאת בתולים', own:true, days:7},
     {path:'leil-hachatuna', title:'סדר ליל החתונה', own:true, days:7}
@@ -53,6 +55,8 @@
       if(!live(g)) return;
       if(path===g.path||(!own&&path.indexOf(g.path+'/')===0)){ var rank={study:3,read:2,quiz:1}; if((rank[g.mode]||0)>(rank[best]||0)) best=g.mode }
     });
+    var node=TREE.find(function(n){return n.path===path});
+    if(node&&node.with){ var w=access(node.with), rank={study:3,read:2,quiz:1}; if((rank[w]||0)>(rank[best]||0)) best=w }
     return best;
   }
 

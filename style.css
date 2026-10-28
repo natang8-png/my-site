@@ -394,3 +394,10 @@ html.flow .part-head{scroll-margin-top:70px}
 .y-text .orn{text-align:center;color:var(--accent);letter-spacing:.4em;font-size:.8em}
 .toc .y-text a:not(.nb){display:inline;padding:0;border-radius:0}.toc .y-text a.nb{display:inline}.toc .y-text a:hover{background:none}
 .toc .y-text ol.notes{list-style:decimal;padding:16px 1.4em 0 0;max-height:none;overflow:visible}
+/* לידה tab: a short note and the three parts of the יולדת chapter. */
+.leida-go{display:grid;gap:12px;padding:0 14px 16px}
+.leida-go p{margin:0;color:var(--muted)}
+.leida-go ol.parts{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.toc .leida-go ol.parts a{display:flex;align-items:baseline;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--soft);font-weight:600}
+.leida-go ol.parts small{margin-inline-start:auto;color:var(--muted);font-weight:400}
+.toc .leida-go a.go-ch{display:block;text-align:center;text-decoration:none;border-radius:999px;padding:10px 16px}

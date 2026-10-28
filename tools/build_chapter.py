@@ -19,6 +19,13 @@ CHAPTERS = {
          groups=[(1, 4, "כללי"), (5, 8, "חיי היום יום"), (9, 12, "אכילה ושתייה"), (13, 14, "חדר השינה"),
                  (15, 18, "מחוץ לבית"), (19, 21, "הנהגה אישית"), (22, 26, "מצבים מיוחדים")],
          credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
+    # דיני יולדת (Natan, 2026-10-28): built like הרחקות, inside מעגל החיים > לידה. Three parts: a theoretical introduction,
+    # the chapter itself, and the halachot in brief. Opens with the הרחקות permission (auth.js TREE "with").
+    # Questions come once the vocalized text is in (noquiz until then).
+    "yoledet": dict(title="דיני יולדת ומפלת", subtitle="מעגל החיים · לידה", num=3, of=3, path="halacha/family/yoledet",
+         noquiz=True, back="/halacha/maagal-hachaim/#leida", note="לידה",
+         credit="מתוך הספר \"חוסן ישועות\" · הלכות טהרת המשפחה",
+         groups=[(1, 5, "הקדמה עיונית"), (6, 12, "דיני יולדת ומפלת"), (13, 17, "ההלכות בקצרה")]),
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=3, path="leil-hachatuna", private=True,
          # Natan, 2026-10-28: three tabs. The first two have no text yet (None = empty tab).
          # The third holds the whole order, read as one long page (flow); the menu scrolls to a heading.
@@ -133,7 +140,7 @@ for i, h in enumerate(heads, 1):
         filled = False
     toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{i}</span>{ico(i, "ico")}{html.escape(h)}{hw}</a></li>')
     prev = (f'<a class="pn prev" href="#s{i-1}"><small>הקודם</small>{html.escape(heads[i-2])}</a>' if i > 1
-            else '<a class="pn prev" href="/halacha/"><small>חזרה</small>לתפריט הלכה</a>')
+            else f'<a class="pn prev" href="{ch.get("back", "/halacha/")}"><small>חזרה</small>לתפריט הלכה</a>')
     mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
     nxt = f'<a class="pn next" href="#s{i+1}"><small>הבא</small>{html.escape(heads[i])}</a>' if i < n else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
@@ -142,7 +149,7 @@ for i, h in enumerate(heads, 1):
 {body}
     </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
     <div class="sec-foot">
-      {"" if private else f'<div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label>{"" if inline else f'<button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button>'}</div>'}
+      {"" if private else f'<div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label>{"" if inline or ch.get("noquiz") else f'<button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button>'}</div>'}
       <nav class="pager" aria-label="ניווט בין קטעים">{prev}{mid}{nxt}</nav>
     </div>
   </section>''')
@@ -188,7 +195,7 @@ page = f'''<!doctype html>
 <link rel="stylesheet" href="/style.css?v={ver("style.css")}">
 {PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}{" data-flow" if ch.get("flow") else ""}>
   <header>
-    <a class="back" href="/halacha/">→ חזרה להלכה</a>
+    <a class="back" href="{ch.get("back", "/halacha/")}">→ חזרה{" ללידה" if ch.get("back") else " להלכה"}</a>
     <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>
     <h1>{ch["title"]}</h1>
     {f'<p class="lead">{ch["subtitle"]}</p>' if ch.get("subtitle") else ""}
