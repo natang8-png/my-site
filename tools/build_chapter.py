@@ -25,7 +25,8 @@ CHAPTERS = {
     "yoledet": dict(title="דיני יולדת ומפלת", subtitle="מעגל החיים · לידה", num=3, of=3, path="halacha/family/yoledet",
          noquiz=True, back="/halacha/maagal-hachaim/#leida", note="לידה",
          credit="מתוך הספר \"חוסן ישועות\" · הלכות טהרת המשפחה",
-         groups=[(1, 5, "הקדמה עיונית"), (6, 12, "דיני יולדת ומפלת"), (13, 17, "ההלכות בקצרה")]),
+         part_titles=True,
+         groups=[(1, 5, "חלק א' – הקדמה עיונית"), (6, 12, "חלק ב' – דיני יולדת ומפלת"), (13, 17, "חלק ג' – ההלכות בקצרה")]),
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=3, path="leil-hachatuna", private=True,
          # Natan, 2026-10-28: three tabs. The first two have no text yet (None = empty tab).
          # The third holds the whole order, read as one long page (flow); the menu scrolls to a heading.
@@ -178,6 +179,12 @@ if groups:
                 f'<ol>{items(a, b, sub)}</ol></details>')
     toc_html = '<div class="grps">' + "".join(grp(g, *x) for g, x in enumerate(groups, 1)) + '</div>'
     # A sub-topic title above its first section on the page (shown only once inside the long page).
+    # A big centered part title at the top of the first section of each part.
+    if ch.get("part_titles"):
+        for x in full:
+            a, t = x[0], x[2]
+            head, rest = secs[a - 1].split("\n", 1)
+            secs[a - 1] = f'{head}\n    <h2 class="part-title">{html.escape(t)}</h2>\n{rest}'
     for i, t in subs.items():
         secs[i - 1] = f'  <h2 class="part-head">{html.escape(t)}</h2>\n' + secs[i - 1]
 else:
