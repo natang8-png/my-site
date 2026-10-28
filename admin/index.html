@@ -23,6 +23,9 @@ main{max-width:52rem}
 .chip button{padding:0 7px;border-radius:999px;font-size:.8rem}
 .none{color:var(--muted);font-size:.9rem}
 .add{display:flex;gap:8px;flex-wrap:wrap}
+.share{margin-top:10px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;gap:10px;background:var(--soft)}
+.share-url{font-weight:600;user-select:all;word-break:break-all}
+.share a.btn{display:inline-flex;align-items:center;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;color:var(--fg);background:var(--bg)}
 .add select{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
 .prog{display:grid;gap:6px;font-size:.92rem}
 .bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
@@ -252,6 +255,26 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     box.querySelector('.qb-in').innerHTML=qbDraw(box.getAttribute('data-qb'),lv,n);
   });
 
+  // Share the site's address: copy, WhatsApp, email (and the phone's own share menu where there is one).
+  var SITE_URL='https://my-site-c18.pages.dev/', SHARE_TEXT='הלכה בבית';
+  function shareBox(){
+    var msg=SHARE_TEXT+'\n'+SITE_URL;
+    return '<div class="share" id="sharebox" hidden><div class="share-url" dir="ltr">'+SITE_URL+'</div><div class="add">'+
+      '<button type="button" class="primary" data-copyurl>העתקת קישור</button>'+
+      '<a class="btn" href="https://wa.me/?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener">וואטסאפ</a>'+
+      '<a class="btn" href="mailto:?subject='+encodeURIComponent(SHARE_TEXT)+'&body='+encodeURIComponent(msg)+'">אימייל</a>'+
+      (navigator.share?'<button type="button" data-nshare>עוד…</button>':'')+
+      '<span class="none" data-copied role="status"></span></div></div>';
+  }
+  app.addEventListener('click',async function(e){
+    if(e.target.closest('[data-share]')){var b=e.target.closest('[data-share]'),x=document.getElementById('sharebox');x.hidden=!x.hidden;b.setAttribute('aria-expanded',!x.hidden);return}
+    if(e.target.closest('[data-copyurl]')){var st=document.querySelector('[data-copied]');
+      try{await navigator.clipboard.writeText(SITE_URL);st.textContent='הקישור הועתק ✓'}
+      catch(_){var r=document.createRange();r.selectNodeContents(document.querySelector('.share-url'));var w=getSelection();w.removeAllRanges();w.addRange(r);st.textContent='הקישור מסומן, אפשר להעתיק'}
+      return}
+    if(e.target.closest('[data-nshare]')){try{await navigator.share({title:SHARE_TEXT,text:SHARE_TEXT,url:SITE_URL})}catch(_){}}
+  });
+
   function render(users,grants,reads,results,invites,requests){
     var others=users.filter(function(u){return !u.is_admin});
     var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id&&!isOwn(g.path)})});
@@ -263,7 +286,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       '<div class="stat"><b>'+active.length+'</b><span>נכנסו השבוע</span></div>'+
       '<div class="stat"><b>'+results.filter(function(x){return others.some(function(u){return u.id===x.user_id})}).length+'</b><span>בחינות שנעשו</span></div></div>';
     // Adding a student lives at the bottom; up here only a button that scrolls down to it.
-    h+='<div class="add" style="margin-top:16px"><button type="button" class="primary" data-goinv>+ הוספת תלמיד</button></div>';
+    h+='<div class="add" style="margin-top:16px"><button type="button" class="primary" data-goinv>+ הוספת תלמיד</button><button type="button" data-share aria-expanded="false">שיתוף האתר</button></div>'+shareBox();
     h+='<h2 style="margin-top:32px">השאלון שלי</h2><p class="help">איפוס השאלון של הרחקות בחשבון שלך (סבב חדש). אפשר לבטל את האיפוס האחרון.</p><div id="myreset"></div>';
     h+=requestBlock(requests,users);
     h+='<h2 style="margin-top:32px">משתמשים</h2><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
