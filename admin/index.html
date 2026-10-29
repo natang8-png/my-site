@@ -72,9 +72,10 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .rsec{padding:8px 0;border-bottom:1px dashed var(--line)}
 .ans{margin:6px 0 0;padding-inline-start:1.2em;display:grid;gap:6px}.ans li.ok{color:var(--fg)}.ans li.bad{color:#b3261e}.ans small{color:var(--muted)}
 /* Quiz results bar: all -> topics -> questions. Blue = read (striped = not read), green/red/gray = right/wrong/not answered. */
-.qb{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px;--qok:#2e8b57;--qbad:#c8463d;--qnone:var(--line);--qread:#3d6fa3}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .qb{--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
-:root[data-theme="dark"] .qb{--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
+.qb{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.user{--qok:#2e8b57;--qbad:#c8463d;--qnone:var(--line);--qread:#3d6fa3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .user{--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
+:root[data-theme="dark"] .user{--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
 .qb-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px}.qb-top b{font-size:1.05rem}
 .qb-avg{font:inherit;font-weight:600;padding:4px 14px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);background:var(--soft);cursor:pointer;font-variant-numeric:tabular-nums}
 .qb{border-top:0;padding-top:0}
@@ -84,6 +85,13 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb-hit:focus-visible,.qb-seg:focus-visible,.qb-seg.on{outline:2px solid var(--fg);outline-offset:2px}
 .qb-thick{display:flex;gap:2px;height:14px;width:100%}
 .qb-thick i{border-radius:3px;min-width:0}
+.qb-big{height:auto;min-height:1.9em}
+.qb-big i{flex-basis:0;min-width:max-content;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:.85rem;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;color:#fff}
+.qb-big i.no{color:var(--fg)}
+.qb-big i.ur span{color:var(--qread);background:var(--bg);border-radius:4px;padding:0 5px}
+.qb-pie{display:inline-block;width:1.2em;height:1.2em;border-radius:50%;vertical-align:-.15em;margin-inline-end:6px;flex:none}
+.qb-heads{list-style:none;padding:0}.qb-heads li{display:flex;align-items:baseline;gap:4px}
+.qb-heads .nopie{display:inline-block;width:1.2em;margin-inline-end:6px}
 .qb .ok{background:var(--qok)}.qb .bad{background:var(--qbad)}.qb .no{background:var(--qnone)}
 .qb .rd{background:var(--qread)}
 .qb .ur{background:repeating-linear-gradient(135deg,var(--qread) 0 2px,transparent 2px 6px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--qread) 45%,transparent)}
@@ -216,20 +224,24 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   function N(t){return '<bdi dir="ltr">'+t+'</bdi>'}
   function P(a,b){return b?Math.round(100*a/b):0}
   function fl(c,n){return n?'<i class="'+c+'" style="flex:'+n+'"></i>':''}
+  function ft(c,n,t,tip){return n?'<i class="'+c+'" style="flex-grow:'+n+'" title="'+tip+'"><span>'+t+'</span></i>':''}
+  // A circle cut into one slice per question, in order from the top: green right, red wrong, gray not answered.
+  function qbPie(k){var n=k.length, st=360/n, g=n>1?3:0, C={ok:'var(--qok)',bad:'var(--qbad)',no:'var(--qnone)'};
+    return '<span class="qb-pie" title="'+k.filter(function(x){return x==='ok'}).length+'/'+n+' נכון" style="background:conic-gradient('+k.map(function(x,j){return C[x]+' '+(j*st)+'deg '+((j+1)*st-g)+'deg,transparent '+((j+1)*st-g)+'deg '+((j+1)*st)+'deg'}).join(',')+')"></span>'}
   function qbRead(a,b){return '<div class="qb-read">'+N(P(a,b)+'%')+' נקרא · '+N(a+'/'+b)+'</div>'}
   function qbScore(o){return '<div class="qb-score"><span class="c1">'+N(P(o.ok,o.tot)+'%')+' נכון<br>'+N(o.ok+'/'+o.tot)+'</span><span class="c2">'+N(P(o.bad,o.tot)+'%')+' שגוי<br>'+N(o.bad+'/'+o.tot)+'</span><span class="c3">'+N(P(o.no,o.tot)+'%')+' לא נענה<br>'+N(o.no+'/'+o.tot)+'</span></div>'}
   function qbDraw(uid,lv,n){
     var secs=QB[uid], all=qbCount(secs);
     if(lv===0)return '<div class="qb-crumbs"><b>הכל</b><span class="none">· לחיצה על הפסים פותחת את הנושאים</span></div>'+
-      '<button type="button" class="qb-hit" data-qbgo="1">'+qbRead(all.read,secs.length)+
-      '<span class="qb-thick">'+fl('rd',all.read)+fl('ur',secs.length-all.read)+'</span>'+
-      '<span class="qb-thick">'+fl('ok',all.ok)+fl('bad',all.bad)+fl('no',all.no)+'</span>'+qbScore(all)+'</button>';
+      '<button type="button" class="qb-hit" data-qbgo="1">'+
+      '<span class="qb-thick qb-big">'+ft('rd',all.read,N(P(all.read,secs.length)+'%')+' נקרא · '+N(all.read+'/'+secs.length),'נקרא')+ft('ur',secs.length-all.read,'לא נקרא '+N(secs.length-all.read),'לא נקרא')+'</span>'+
+      '<span class="qb-thick qb-big">'+ft('ok',all.ok,N(P(all.ok,all.tot)+'%')+' נכון · '+N(all.ok+'/'+all.tot),'נכון')+ft('bad',all.bad,N(P(all.bad,all.tot)+'%')+' · '+N(all.bad+'/'+all.tot),'שגוי')+ft('no',all.no,N(P(all.no,all.tot)+'%')+' · '+N(all.no+'/'+all.tot),'לא נענה')+'</span></button>';
     if(lv===1)return '<div class="qb-crumbs"><button type="button" data-qbgo="0">הכל</button> › <b>נושאים</b></div>'+qbRead(all.read,secs.length)+
       '<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg" data-qbgo="2" data-n="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>'+
       qbScore(all)+'<div class="qb-axis"><span>נושא 1</span><span>נושא '+secs.length+'</span></div>';
     var s=secs[n-1], o=qbCount([s]), a=s.r&&s.r.answers;
     return '<div class="qb-crumbs"><button type="button" data-qbgo="0">הכל</button> › <button type="button" data-qbgo="1">נושאים</button> › <b>'+esc(s.n+'. '+s.t)+'</b></div>'+
-      '<div class="qb-read">'+(s.read?'נקרא':'לא נקרא')+'</div><span class="qb-thick"><i class="'+(s.read?'rd':'ur')+'" style="flex:1"></i></span>'+
+      '<span class="qb-thick qb-big">'+ft(s.read?'rd':'ur',1,s.read?'נקרא':'לא נקרא',s.read?'נקרא':'לא נקרא')+'</span>'+
       '<div class="qb-qs">'+s.qs.map(function(q,j){return '<button type="button" class="'+s.k[j]+'" data-qbq="'+j+'">שאלה '+(j+1)+'</button>'}).join('')+'</div>'+qbScore(o)+
       '<div class="qb-head"><b>'+esc(s.n+'. '+s.t)+'</b><button type="button" data-qbgo="2" data-n="'+Math.max(1,n-1)+'" aria-label="נושא קודם">›</button><button type="button" data-qbgo="2" data-n="'+Math.min(secs.length,n+1)+'" aria-label="נושא הבא">‹</button></div>'+
       (s.r&&!a?'<p class="none">התשובות עצמן לא נשמרו בבחינה הזאת (לפני שהתחלנו לשמור אותן). הציון: '+s.r.score+'/'+s.r.total+'.</p>':'')+
@@ -328,8 +340,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       });
       function readHeads(c){
         if(!CHAPTERS[c].heads)return '';
-        return '<details><summary>קריאה לפי כותרות</summary><ol class="none" style="margin:6px 0 0">'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
-            return '<li>'+(r?'✓ ':'○ ')+esc(t)+(r?' · '+when(r.read_at):'')+'</li>'}).join('')+'</ol></details>';
+        var qs=QB[u.id+'|'+c];
+        return '<details><summary>קריאה לפי כותרות</summary><ol class="none qb-heads" style="margin:6px 0 0">'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
+            return '<li>'+(qs&&qs[i]&&qs[i].k.length?qbPie(qs[i].k):'<span class="nopie"></span>')+'<span>'+(i+1)+'. '+(r?'✓ ':'○ ')+esc(t)+(r?' · '+when(r.read_at):'')+'</span></li>'}).join('')+'</ol></details>';
       }
       h+=rounds(u,uq)+studentReset(u,uq);
       h+='</article>';
