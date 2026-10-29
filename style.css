@@ -2,10 +2,12 @@
 :root{
   --bg:#f6f8f5; --fg:#1d2420; --muted:#5d6b62; --line:#d9e1db; --accent:#2f6b4f; --soft:#e7efe9;
   --display:"Frank Ruhl Libre",Georgia,serif; --body:"Assistant",system-ui,sans-serif;
+  /* Natan's own notes, in handwriting (Gveret Levin, chosen 2026-10-29) */
+  --hand:"Gveret Levin",cursive; --hand-c:#8a4a12;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#121614; --fg:#e6ebe7; --muted:#97a69c; --line:#27302b; --accent:#7cc39d; --soft:#1a221e; color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#121614; --fg:#e6ebe7; --muted:#97a69c; --line:#27302b; --accent:#7cc39d; --soft:#1a221e; color-scheme:dark}
+  --bg:#121614; --fg:#e6ebe7; --muted:#97a69c; --line:#27302b; --accent:#7cc39d; --soft:#1a221e; --hand-c:#e0a56b; color-scheme:dark}}
+:root[data-theme="dark"]{--hand-c:#e0a56b; --bg:#121614; --fg:#e6ebe7; --muted:#97a69c; --line:#27302b; --accent:#7cc39d; --soft:#1a221e; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:1.075rem;line-height:1.7;padding:0 20px}
 main{max-width:40rem;margin:0 auto;padding-block:clamp(48px,10vw,110px) 64px;display:grid;gap:56px}
@@ -88,6 +90,8 @@ sup.fn a{color:var(--accent);text-decoration:none;font-family:var(--body);font-s
 @media (max-width:520px){.pager{grid-template-columns:1fr 1fr}.pn.mid{grid-column:1/-1;grid-row:2}}
 .credit{font-size:.85rem;color:var(--muted);margin:8px 0 0}
 .credit a{color:var(--accent)}
+.credit b{color:var(--fg)}
+.hand{font-family:var(--hand);color:var(--hand-c);font-size:1.3em;line-height:1.5}
 ol.notes li p{margin:0}
 ol.notes li p+p{margin-top:4px}
 a.nb{text-decoration:none;color:var(--accent);margin-inline-start:6px;font-size:.85em;border:1px solid var(--line);border-radius:999px;padding:0 8px;background:var(--bg);white-space:nowrap}
