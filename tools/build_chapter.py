@@ -18,7 +18,9 @@ CHAPTERS = {
          # Natan's split into 7 topics (2026-10-28): first section, last section, title.
          groups=[(1, 4, "כללי"), (5, 8, "חיי היום יום"), (9, 12, "אכילה ושתייה"), (13, 14, "חדר השינה"),
                  (15, 18, "מחוץ לבית"), (19, 21, "הנהגה אישית"), (22, 26, "מצבים מיוחדים")],
-         credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ&quot;ז אדר א&#39; תשע&quot;ד'),
+         # Natan, 2026-10-29: the book's name in bold; the second line in his handwriting font (.hand), the font of his own notes.
+         credit='מתוך הספר <b>חוסן ישועות</b> מאת הרב דב טברדוביץ שליט&quot;א. באדיבות המחבר'
+                '<br><span class="hand">ההערות ב&quot;כתב יד&quot; - מאת הרב נתן גלבשטיין</span>'),
     # דיני יולדת (Natan, 2026-10-28): built like הרחקות, inside מעגל החיים > לידה. Three parts: a theoretical introduction,
     # the chapter itself, and the halachot in brief. Opens with the הרחקות permission (auth.js TREE "with").
     # Questions come once the vocalized text is in (noquiz until then).
@@ -211,7 +213,7 @@ page = f'''<!doctype html>
 <html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{ch["title"]} · הלכה</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&family=Gveret+Levin&display=swap">
 <link rel="stylesheet" href="/style.css?v={ver("style.css")}">
 {PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}{" data-flow" if ch.get("flow") else ""}>
   <header>
