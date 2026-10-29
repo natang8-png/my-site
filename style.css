@@ -412,3 +412,14 @@ html.flow .part-head{scroll-margin-top:70px}
 html.flow.later-sec .part-title.flow-pt{display:block}
 html.flow .part-title.flow-pt + .part-head{margin-top:0}
 .content h3.sub-h{font-family:var(--display);font-size:1.2rem;color:var(--accent);margin:1.3em 0 .3em}
+
+/* Light bottom-bar buttons (menu, accessibility): same size as "הבא", light with a thin border; icon on the right, two words stacked on its left */
+.rb-row{gap:6px;justify-content:center}
+.rb-pill,.rb-lite{flex:1 1 0;width:auto;max-width:6.6rem;min-width:0;height:2.75rem}
+.rb-lite{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 6px;border-radius:999px;
+  background:var(--bg);color:var(--accent);border:1px solid var(--line);cursor:pointer;font:inherit}
+.rb-lite:hover{background:var(--soft)}
+.rb-ic{width:1.55rem;height:1.55rem;flex:none}
+.rb-tx{display:grid;justify-items:start;line-height:1.1;font-size:.74rem;color:var(--fg);white-space:nowrap}
+.rb-tx b{font-weight:600}
+.rb-tx .rb-count{font-size:.68rem;color:var(--muted);font-variant-numeric:tabular-nums}

@@ -256,11 +256,14 @@ if(PROOF){document.documentElement.classList.add('proof');
   function step(i,d){var k=at(i)+d;return k<=0?(k<0?-1:0):k>n?n+1:ORD[k-1]}
   // A solid arrow (filled shape, not a text character) for the two big buttons.
   function ARROW(d){return '<svg class="rb-arr" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="'+(d==='r'?'M13 4.5 21 12l-8 7.5V15H4.5a1.5 1.5 0 0 1-1.5-1.5v-3A1.5 1.5 0 0 1 4.5 9H13z':'M11 4.5 3 12l8 7.5V15h8.5a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 19.5 9H11z')+'"/></svg>'}
+  // Light buttons: the accessibility figure in a double circle, and three lines for the menu.
+  var A11Y='<svg class="rb-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="6.6" r="1.7" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M7.2 9.6h9.6M12 9.6v4.2M12 13.8l-1.9 4.5M12 13.8l1.9 4.5"/></svg>';
+  var MENU='<svg class="rb-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 7h14M5 12h14M5 17h14"/></svg>';
   var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט בפרק');
   bar.innerHTML='<div class="rb-row">'+
     '<button type="button" class="rb-pill rb-prev" data-go="-1">'+ARROW('r')+'<span>הקודם</span></button>'+
-    '<button type="button" class="rb-b" data-rb="menu"><i>☰</i><span class="rb-count"></span></button>'+
-    '<button type="button" class="rb-b" data-rb="design"><i>♿</i><span>נגישות</span></button>'+
+    '<button type="button" class="rb-lite" data-rb="menu" aria-label="תפריט כותרות">'+MENU+'<span class="rb-tx"><b>תפריט</b><span class="rb-count"></span></span></button>'+
+    '<button type="button" class="rb-lite" data-rb="design" aria-label="נגישות ועיצוב">'+A11Y+'<span class="rb-tx"><b>נגישות</b><b>ועיצוב</b></span></button>'+
     '<button type="button" class="rb-pill rb-next" data-go="1"><span>הבא</span>'+ARROW('l')+'</button>'+
     '</div>';
   document.body.appendChild(bar);
