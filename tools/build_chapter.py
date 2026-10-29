@@ -26,7 +26,9 @@ CHAPTERS = {
     # Questions come once the vocalized text is in (noquiz until then).
     "yoledet": dict(title="דיני יולדת ומפלת", subtitle="מעגל החיים · לידה", num=3, of=3, path="halacha/family/yoledet",
          inline_quiz=True, quiz="/halacha/yoledet/quiz.json", back="/halacha/maagal-hachaim/#leida", note="לידה",
-         credit="מתוך הספר \"חוסן ישועות\" · הלכות טהרת המשפחה",
+         # Natan, 2026-10-29: the same two credit lines as הרחקות.
+         credit='מתוך הספר <b>חוסן ישועות</b> מאת הרב דב טברדוביץ שליט&quot;א. באדיבות המחבר'
+                '<br><span class="hand">ההערות ב&quot;כתב יד&quot; - מאת הרב נתן גלבשטיין</span>',
          part_titles=True,
          groups=[(1, 5, "חלק א' - הקדמה עיונית"), (6, 12, "חלק ב' - דיני יולדת ומפלת"), (13, 17, "חלק ג' - ההלכות בקצרה")]),
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=3, path="leil-hachatuna", private=True,

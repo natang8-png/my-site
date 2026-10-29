@@ -3,11 +3,11 @@
   --bg:#f6f8f5; --fg:#1d2420; --muted:#5d6b62; --line:#d9e1db; --accent:#2f6b4f; --soft:#e7efe9;
   --display:"Frank Ruhl Libre",Georgia,serif; --body:"Assistant",system-ui,sans-serif;
   /* Natan's own notes, in handwriting (Gveret Levin, chosen 2026-10-29) */
-  --hand:"Gveret Levin",cursive; --hand-c:#8a4a12;
+  --hand:"Gveret Levin",cursive; --hand-c:#1f4fa8; /* blue (Natan, 2026-10-29) */
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#121614; --fg:#e6ebe7; --muted:#97a69c; --line:#27302b; --accent:#7cc39d; --soft:#1a221e; --hand-c:#e0a56b; color-scheme:dark}}
-:root[data-theme="dark"]{--hand-c:#e0a56b; --bg:#121614; --fg:#e6ebe7; --muted:#97a69c; --line:#27302b; --accent:#7cc39d; --soft:#1a221e; color-scheme:dark}
+  --bg:#121614; --fg:#e6ebe7; --muted:#97a69c; --line:#27302b; --accent:#7cc39d; --soft:#1a221e; --hand-c:#8fb4f0; color-scheme:dark}}
+:root[data-theme="dark"]{--hand-c:#8fb4f0; --bg:#121614; --fg:#e6ebe7; --muted:#97a69c; --line:#27302b; --accent:#7cc39d; --soft:#1a221e; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:1.075rem;line-height:1.7;padding:0 20px}
 main{max-width:40rem;margin:0 auto;padding-block:clamp(48px,10vw,110px) 64px;display:grid;gap:56px}
@@ -423,3 +423,40 @@ html.flow .part-title.flow-pt + .part-head{margin-top:0}
 .rb-tx{display:grid;justify-items:start;line-height:1.1;font-size:.74rem;color:var(--fg);white-space:nowrap}
 .rb-tx b{font-weight:600}
 .rb-tx .rb-count{font-size:.68rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* Edit mode (?edit, admin only; edit.js). */
+.edit-link{display:inline-block;margin-top:10px;font-size:.9rem;color:var(--muted)}
+.edit-note{background:#e8effc;color:#1f3f7a;border-radius:10px;padding:8px 12px;margin:14px 0 0;font-size:.95rem}
+:root[data-theme="dark"] .edit-note{background:#1b2740;color:#c9d8f5}
+html.editing body{padding-bottom:70px}
+html.editing [data-ek]{cursor:pointer;border-radius:4px}
+html.editing [data-ek]:hover{background:color-mix(in srgb,var(--hand-c) 7%,transparent)}
+.e-cur{outline:2px solid var(--hand-c);outline-offset:3px}
+.e-editing{outline:2px dashed var(--hand-c);outline-offset:3px;background:var(--bg);cursor:text!important}
+.e-changed{background:color-mix(in srgb,#f5c518 22%,transparent)!important}
+.e-changed-c{box-shadow:0 0 0 3px #f5c518}
+.e-flash{animation:eflash 1.5s}
+@keyframes eflash{from{background:color-mix(in srgb,var(--hand-c) 30%,transparent)}}
+.e-orig{display:none;color:var(--muted);text-decoration:line-through;font-size:.9em;margin:4px 0 8px}
+.e-orig small{text-decoration:none;display:inline-block}
+html.show-orig .e-orig{display:block}
+.e-hand{font-family:var(--hand);color:var(--hand-c);font-size:1.15rem;line-height:1.5;margin:6px 0 12px;padding:2px 10px;
+  border-inline-start:3px solid var(--hand-c);white-space:pre-wrap;min-height:1.6em;cursor:pointer}
+.e-hand:empty::before{content:"כתוב כאן את ההערה...";opacity:.5}
+.e-menu,.e-tools{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px;font-family:var(--body);font-size:.9rem}
+.e-menu button,.e-tools button{padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--soft);color:var(--fg);cursor:pointer;font:inherit}
+.e-tools .primary{background:var(--hand-c);border-color:var(--hand-c);color:#fff}
+.edit-bar{position:fixed;inset:auto 0 0 0;z-index:60;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;
+  background:var(--bg);border-top:2px solid var(--hand-c);font-size:.92rem}
+.edit-bar .eb-save{color:var(--muted)}.edit-bar .eb-save.bad{color:#b3261e}
+.edit-bar .eb-list{margin-inline-start:auto;padding:6px 14px;border-radius:999px;border:1px solid var(--hand-c);background:var(--hand-c);color:#fff;font:inherit;cursor:pointer}
+.edit-dlg{max-width:36rem;width:calc(100% - 32px);border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--fg);padding:18px}
+.edit-dlg::backdrop{background:rgb(0 0 0/.35)}
+.edit-dlg h3{margin:0 0 10px}
+.edit-dlg ol{padding-inline-start:20px;display:grid;gap:12px}
+.edit-dlg .was{color:var(--muted);text-decoration:line-through}
+.edit-dlg .now{background:color-mix(in srgb,#f5c518 22%,transparent)}
+.edit-dlg .primary{width:100%;padding:10px;margin-top:12px}
+@media print{.edit-bar,.e-menu,.e-tools,.edit-note{display:none}}
+html.editing .qq .opts,html.editing .qq .opts button{pointer-events:auto!important}
+.edit-dlg li > a{display:block}
