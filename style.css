@@ -45,7 +45,7 @@ a.topic:hover{border-color:var(--accent)}
 a.topic:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .topic h3{font-family:var(--display);font-weight:700;font-size:1.35rem;margin:0}
 .topic p{grid-column:1;color:var(--muted);margin:0;font-size:.95rem}
-.topic .go{grid-row:1/3;grid-column:2;color:var(--accent);font-size:1.3rem}
+.topic .go{grid-row:1/-1;grid-column:2;color:var(--accent);font-size:1.3rem}
 .topic.soon{background:transparent;border-style:dashed;color:var(--muted)}
 .topic.soon h3{font-weight:500;font-size:1.1rem}
 ol.topics{list-style:none;margin:0;padding:0;display:grid;gap:12px}
@@ -90,7 +90,7 @@ sup.fn a{color:var(--accent);text-decoration:none;font-family:var(--body);font-s
 .credit a{color:var(--accent)}
 ol.notes li p{margin:0}
 ol.notes li p+p{margin-top:4px}
-a.nb{text-decoration:none;color:var(--accent);margin-inline-start:4px}
+a.nb{text-decoration:none;color:var(--accent);margin-inline-start:6px;font-size:.85em;border:1px solid var(--line);border-radius:999px;padding:0 8px;background:var(--bg);white-space:nowrap}
 /* Bottom bar of each section: read mark, self-quiz, and the pager stay stuck to the screen bottom */
 .sec-foot{position:sticky;bottom:0;z-index:5;display:grid;gap:8px;padding:10px 0 12px;background:var(--bg);border-top:1px solid var(--line);margin-top:-8px}
 .sec-tools{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -299,6 +299,18 @@ dialog.rb-dlg .primary{width:100%;padding:10px 16px}
 .qsum{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 14px 0;color:var(--muted);font-size:.95rem}
 .qsum b{color:var(--fg)}
 .qsum .qmsg{color:#b3261e}
+/* Inside a chapter card: the quiz line sits under the description. */
+.topic .qsum{grid-column:1;padding:6px 0 0}
+/* A card with tabs inside: the title link covers the whole card, the tabs sit above it. */
+.topic.has-sub{position:relative}
+.topic.has-sub:hover{border-color:var(--accent)}
+.topic .stretch{text-decoration:none;color:inherit}
+.topic .stretch::after{content:"";position:absolute;inset:0;border-radius:14px}
+.topic .stretch:focus-visible{outline:none}
+.topic .stretch:focus-visible::after{outline:2px solid var(--accent);outline-offset:2px}
+.subtabs{grid-column:1;display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.subtabs a{position:relative;z-index:1;padding:4px 14px;border:1px solid var(--line);border-radius:999px;background:var(--bg);text-decoration:none;font-size:.92rem}
+.subtabs a:hover{border-color:var(--accent);color:var(--accent)}
 
 /* Man / woman icon beside a halacha that is mainly about one of them, and the key above the headings list. */
 :root{--who-m:#2d5f93;--who-w:#a8436a}
@@ -348,3 +360,49 @@ html.has-rbar.has-dots body{padding-bottom:calc(104px + env(safe-area-inset-bott
 .qreset{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:6px 0 2px}
 .qreset .qmsg{color:#b3261e}
 .rb-dot.unk{background:var(--soft);border-color:var(--muted);color:var(--muted);font-size:1.3rem}
+
+/* A chapter split into topics: one tab per topic on the chapter's opening page, each opening its own headings. */
+.grps{display:grid;gap:8px;padding:4px 10px 12px}
+.grp{border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.grp summary{display:flex;align-items:baseline;gap:8px;padding:12px 14px;cursor:pointer;list-style:none;font-weight:600}
+.grp summary::-webkit-details-marker{display:none}
+.grp summary::after{content:"▾";color:var(--accent);margin-inline-start:6px}
+.grp[open] summary::after{content:"▴"}
+.grp summary .g-title{font-family:var(--display);font-size:1.15rem;flex:1}
+.grp summary small{color:var(--muted);font-weight:400;margin-inline-start:auto}
+.grp ol{padding:0 6px 10px}
+.cb-panel li.m-grp{margin:12px 8px 2px;padding-bottom:4px;border-bottom:1px solid var(--line);color:var(--accent);font-weight:700;font-family:var(--display)}
+.cb-panel li.m-grp:first-child{margin-top:2px}
+.nw{white-space:nowrap}
+.grp-empty{margin:0;padding:0 14px 14px;color:var(--muted)}
+/* Flow chapter: every section on one page, under the fixed top bar. */
+html.flow .sec{scroll-margin-top:70px}
+html.flow .sec + .sec{border-top:1px solid var(--line);padding-top:28px}
+/* Sub-topic titles: in the headings list, the menu, and above their first section in a flow page. */
+.toc li.toc-sub,.cb-panel li.toc-sub{margin:12px 8px 2px;padding-bottom:4px;border-bottom:1px solid var(--line);color:var(--accent);font-weight:700;font-family:var(--display)}
+.toc li.toc-sub:first-child,.cb-panel li.toc-sub:first-child{margin-top:2px}
+.part-head{display:none;margin:0;font-family:var(--display);font-size:1.6rem;color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:6px}
+html.flow.later-sec .part-head{display:block}
+html.flow .part-head + .sec{border-top:0;padding-top:0}
+html.flow .part-head{scroll-margin-top:70px}
+/* A tab holding a full text (דיני יולדת in מעגל החיים). */
+.grp .y-text{padding:4px 16px 18px;font-size:1.12rem}
+.y-text .y-src{font-family:var(--body);font-size:.8rem;color:var(--muted)}
+.y-text h3.y-ch{margin:.6em 0 0;font-size:1.55rem;color:var(--accent);display:grid;line-height:1.3}
+.y-text h3.y-ch small{font-size:.6em;color:var(--muted);font-weight:500}
+.y-text h4.y-h{margin:.4em 0 0;font-size:1.25rem;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:4px}
+.y-text .orn{text-align:center;color:var(--accent);letter-spacing:.4em;font-size:.8em}
+.toc .y-text a:not(.nb){display:inline;padding:0;border-radius:0}.toc .y-text a.nb{display:inline}.toc .y-text a:hover{background:none}
+.toc .y-text ol.notes{list-style:decimal;padding:16px 1.4em 0 0;max-height:none;overflow:visible}
+/* לידה tab: a short note and the three parts of the יולדת chapter. */
+.leida-go{display:grid;gap:12px;padding:0 14px 16px}
+.leida-go p{margin:0;color:var(--muted)}
+.leida-go ol.parts{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.toc .leida-go ol.parts a{display:flex;align-items:baseline;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--soft);font-weight:600}
+.leida-go ol.parts small{margin-inline-start:auto;color:var(--muted);font-weight:400}
+.toc .leida-go a.go-ch{display:block;text-align:center;text-decoration:none;border-radius:999px;padding:10px 16px}
+.part-title{margin:0 0 14px;text-align:center;font-family:var(--display);font-weight:700;font-size:1.7rem;color:var(--accent);line-height:1.4}
+.part-title.flow-pt{display:none;margin:28px 0 10px;scroll-margin-top:70px}
+html.flow.later-sec .part-title.flow-pt{display:block}
+html.flow .part-title.flow-pt + .part-head{margin-top:0}
+.content h3.sub-h{font-family:var(--display);font-size:1.2rem;color:var(--accent);margin:1.3em 0 .3em}

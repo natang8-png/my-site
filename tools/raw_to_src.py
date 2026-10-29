@@ -46,7 +46,7 @@ def convert(chapter, raw):
                 continue
             n, t = m.groups()
             ps = [s.strip() for s in t.split('¶')]
-            ps[-1] += f' <a class="nb" href="#r{n}" aria-label="חזרה לטקסט">↩</a>'
+            ps[-1] += f' <a class="nb" href="#r{n}" aria-label="חזרה לטקסט">↑ לטקסט</a>'
             items.append(f'<li id="n{n}" value="{n}">' + ''.join(f'<p>{s}</p>' for s in ps) + '</li>')
         if items:
             html += '\n<ol class="notes">\n' + '\n'.join(items) + '\n</ol>'

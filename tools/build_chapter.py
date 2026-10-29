@@ -13,10 +13,28 @@ import os, sys, html, hashlib
 CHAPTERS = {
     # One version only (Natan, 2026-10-24): icons for each section, and each section's questions on the same page
     # below the text, after a blank gap. "הבא" in the bottom bar opens only once they are all answered.
-    "harchakot": dict(title="הרחקות", subtitle="פרק ב – האיסורים הנוהגים בזמן נדתה", num=1, of=2, path="halacha/family/harchakot",
+    "harchakot": dict(title="הרחקות", subtitle="פרק ב - האיסורים הנוהגים בזמן נדתה", num=1, of=3, path="halacha/family/harchakot",
          graphic=True, inline_quiz=True, quiz="/halacha/harchakot/quiz.json",
-         credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ״ז אדר א׳ תשע״ד'),
-    "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=3, of=3, path="leil-hachatuna", private=True),
+         # Natan's split into 7 topics (2026-10-28): first section, last section, title.
+         groups=[(1, 4, "כללי"), (5, 8, "חיי היום יום"), (9, 12, "אכילה ושתייה"), (13, 14, "חדר השינה"),
+                 (15, 18, "מחוץ לבית"), (19, 21, "הנהגה אישית"), (22, 26, "מצבים מיוחדים")],
+         credit='מאת הרב דב טברדוביץ · פורסם באתר <a href="https://abc770.org/article_node_2420/" rel="noopener">אור אין סוף</a>, כ&quot;ז אדר א&#39; תשע&quot;ד'),
+    # דיני יולדת (Natan, 2026-10-28): built like הרחקות, inside מעגל החיים > לידה. Three parts: a theoretical introduction,
+    # the chapter itself, and the halachot in brief. Opens with the הרחקות permission (auth.js TREE "with").
+    # Questions come once the vocalized text is in (noquiz until then).
+    "yoledet": dict(title="דיני יולדת ומפלת", subtitle="מעגל החיים · לידה", num=3, of=3, path="halacha/family/yoledet",
+         inline_quiz=True, quiz="/halacha/yoledet/quiz.json", back="/halacha/maagal-hachaim/#leida", note="לידה",
+         credit="מתוך הספר \"חוסן ישועות\" · הלכות טהרת המשפחה",
+         part_titles=True,
+         groups=[(1, 5, "חלק א' - הקדמה עיונית"), (6, 12, "חלק ב' - דיני יולדת ומפלת"), (13, 17, "חלק ג' - ההלכות בקצרה")]),
+    "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=3, path="leil-hachatuna", private=True,
+         # Natan, 2026-10-28: three tabs. The first two have no text yet (None = empty tab).
+         # The third holds the whole order, read as one long page (flow); the menu scrolls to a heading.
+         flow=True, part_titles=True,
+         # Sections 16-23 were added later (2026-10-29) and show before 1-15, in the order of the tabs: the numbers stay, so saved reads stay valid.
+         groups=[(None, None, "הלכות צניעות"), (16, 17, "ההבדל בין גברים לנשים"), (18, 23, "מקרבה נפשית - לבשר אחד", [(21, 23, "גירויה של האשה")]), (1, 15, "כשמגיעים הביתה",
+                 # Inside it, the four topics from the first split, as headings in the list, the menu and the page.
+                 [(1, 4, "ההכנות"), (5, 9, "ליל החתונה"), (10, 11, "טומאת בתולים"), (12, 15, "אחרי ליל החתונה")])]),
 }
 
 slug = sys.argv[1]
@@ -108,6 +126,12 @@ INLINE_Q = f"""
     <div class="q-gap">{"".join('<span>↓ השאלון למטה ↓</span>' for _ in range(4))}</div>
     <div class="iq" data-iq="{{i}}" id="q{{i}}"></div>"""
 
+# Reading order: the order of the tabs (a section outside every tab comes after, by number).
+order = [i for g in ch.get("groups", []) if g[0] is not None for i in range(g[0], g[1] + 1)]
+order += [i for i in range(1, len(heads) + 1) if i not in order]
+assert sorted(order) == list(range(1, len(heads) + 1))
+pos = {i: k for k, i in enumerate(order)}  # 0-based place in the reading order
+
 toc, secs, private_rows = [], [], []
 for i, h in enumerate(heads, 1):
     path = f"{src}/{i:02d}.html"
@@ -124,20 +148,60 @@ for i, h in enumerate(heads, 1):
         hw = ""
         filled = False
     toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{i}</span>{ico(i, "ico")}{html.escape(h)}{hw}</a></li>')
-    prev = (f'<a class="pn prev" href="#s{i-1}"><small>הקודם</small>{html.escape(heads[i-2])}</a>' if i > 1
-            else '<a class="pn prev" href="/halacha/"><small>חזרה</small>לתפריט הלכה</a>')
+    k = pos[i]; pi = order[k - 1] if k > 0 else None; ni = order[k + 1] if k + 1 < n else None
+    prev = (f'<a class="pn prev" href="#s{pi}"><small>הקודם</small>{html.escape(heads[pi-1])}</a>' if pi
+            else f'<a class="pn prev" href="{ch.get("back", "/halacha/")}"><small>חזרה</small>לתפריט הלכה</a>')
     mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
-    nxt = f'<a class="pn next" href="#s{i+1}"><small>הבא</small>{html.escape(heads[i])}</a>' if i < n else '<span></span>'
+    nxt = f'<a class="pn next" href="#s{ni}"><small>הבא</small>{html.escape(heads[ni-1])}</a>' if ni else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
-    <div class="sec-head">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {i} מתוך {n}">{i}/{n}</span></div>
+    <div class="sec-head">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {k+1} מתוך {n}">{k+1}/{n}</span></div>
     <div class="content">
 {body}
     </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
     <div class="sec-foot">
-      {"" if private else f'<div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label>{"" if inline else f'<button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button>'}</div>'}
+      {"" if private else f'<div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label>{"" if inline or ch.get("noquiz") else f'<button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button>'}</div>'}
       <nav class="pager" aria-label="ניווט בין קטעים">{prev}{mid}{nxt}</nav>
     </div>
   </section>''')
+
+# The headings list: one plain list, or, when the chapter has topics, one tab per topic that opens its own list.
+groups = ch.get("groups")
+if groups:
+    full = [x for x in groups if x[0] is not None]
+    rng = sorted(full)
+    assert rng[0][0] == 1 and rng[-1][1] == n and all(a[1] + 1 == b[0] for a, b in zip(rng, rng[1:]))
+    subs = {}  # first section of a sub-topic -> its title
+    def items(a, b, sub):
+        out = []
+        for i in range(a, b + 1):
+            for x in sub:
+                if x[0] == i:
+                    subs[i] = x[2]
+                    out.append(f'<li class="toc-sub">{html.escape(x[2])}</li>')
+            out.append(toc[i - 1])
+        return "".join(out)
+    def grp(g, a, b, t, sub=()):
+        if a is None:  # a tab whose text has not been written yet
+            return (f'<details class="grp" name="grp"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span></summary>'
+                    '<p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>')
+        return (f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
+                f'<small>{"סעיפים "+str(a)+"-"+str(b) if b > a else "סעיף "+str(a)}</small></summary>'
+                f'<ol>{items(a, b, sub)}</ol></details>')
+    toc_html = '<div class="grps">' + "".join(grp(g, *x) for g, x in enumerate(groups, 1)) + '</div>'
+    # A sub-topic title above its first section on the page (shown only once inside the long page).
+    for i, t in subs.items():
+        secs[i - 1] = f'  <h2 class="part-head">{html.escape(t)}</h2>\n' + secs[i - 1]
+    # A big centered part title at the top of the first section of each part.
+    if ch.get("part_titles"):
+        for x in full:
+            a, t = x[0], x[2]
+            if ch.get("flow"):  # one long page: the tab title stands above the section (and its sub-topic title)
+                secs[a - 1] = f'  <h2 class="part-title flow-pt">{html.escape(t)}</h2>\n' + secs[a - 1]
+                continue
+            head, rest = secs[a - 1].split("\n", 1)
+            secs[a - 1] = f'{head}\n    <h2 class="part-title">{html.escape(t)}</h2>\n{rest}'
+else:
+    toc_html = "<ol>\n      " + chr(10).join("      "+t for t in toc).strip() + "\n    </ol>"
 
 def ver(name):
     # A short fingerprint of the file, so phones fetch the new style.css / chapter.js right after a change instead of a cached copy.
@@ -149,9 +213,9 @@ page = f'''<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
 <link rel="stylesheet" href="/style.css?v={ver("style.css")}">
-{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}>
+{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}{" data-flow" if ch.get("flow") else ""}>
   <header>
-    <a class="back" href="/halacha/">→ חזרה להלכה</a>
+    <a class="back" href="{ch.get("back", "/halacha/")}">→ חזרה{" ללידה" if ch.get("back") else " להלכה"}</a>
     <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>
     <h1>{ch["title"]}</h1>
     {f'<p class="lead">{ch["subtitle"]}</p>' if ch.get("subtitle") else ""}
@@ -163,12 +227,10 @@ page = f'''<!doctype html>
   <details class="toc" id="toc">
     <summary><span>תוכן עניינים</span><span class="toc-count" data-total="{n}">{n} קטעים</span></summary>
     {WHO_KEY}
-    <ol>
-      {chr(10).join("      "+t for t in toc).strip()}
-    </ol>
+    {toc_html}
   </details>
 
-{chr(10).join(secs)}
+{chr(10).join(secs[i - 1] for i in order)}
 
   <footer>
     <span>נבנה בהדרגה, צעד אחר צעד.</span>

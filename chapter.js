@@ -10,26 +10,46 @@ if(PROOF){document.documentElement.classList.add('proof');
   if(!secs.length)return;
   var toc=document.getElementById('toc');
   if(PROOF){toc.open=true;return}
+  // "Flow" chapters (data-flow): once inside, every section shows on one long page; the menu and the arrows scroll to a heading.
+  var FLOW=document.querySelector('main.chapter[data-flow]')!==null;
+  if(FLOW)document.documentElement.classList.add('flow');
   document.documentElement.classList.add('one-sec');
   function show(){
     var id=(location.hash||'').slice(1), found=false;
     var el=id&&document.getElementById(id), host=el&&el.closest&&el.closest('.sec');
     if(host)id=host.id;
-    secs.forEach(function(s){var on=s.id===id;s.hidden=!on;if(on)found=true});
+    secs.forEach(function(s){if(s.id===id)found=true});
+    secs.forEach(function(s){s.hidden=FLOW?!found:s.id!==id});
     // No section in the address: the chapter's own opening page, "תוכן עניינים" (title, credit and the headings list).
     // Each section, from 1 (הקדמה) on, is a page of its own without that opening.
     document.documentElement.classList.toggle('later-sec',found);
-    [].forEach.call(toc.querySelectorAll('a'),function(a){a.classList.toggle('current',a.getAttribute('href')==='#'+id)});
+    mark(id);
+    // Topic tabs: the one holding the current section stays open.
+    var c=toc.querySelector('a.current'), g=c&&c.closest('.grp'); if(g)g.open=true;
   }
+  function mark(id){[].forEach.call(toc.querySelectorAll('a'),function(a){a.classList.toggle('current',a.getAttribute('href')==='#'+id)})}
+  // The section being read: the only one shown, or in a flow chapter the last heading scrolled past.
+  window.curSec=function(){
+    if(!FLOW)return document.querySelector('.sec:not([hidden])');
+    if(secs[0].hidden)return null;
+    var c=secs[0];secs.forEach(function(s){if(top(s).getBoundingClientRect().top<=120)c=s});return c;
+  };
+  // Where a section starts on a flow page: its sub-topic title, when one stands above it.
+  function top(s){var t=s,p=s.previousElementSibling;while(p&&(p.classList.contains('part-head')||p.classList.contains('part-title'))){t=p;p=p.previousElementSibling}return t}
+  window.secTop=top;
+  if(FLOW){var last=null;addEventListener('scroll',function(){var c=curSec(), id=c&&c.id;if(id===last)return;last=id;mark(id);document.dispatchEvent(new Event('sec-change'))},{passive:true})}
   // The headings list stays open: it is a plain list, not a button.
   toc.open=true;toc.querySelector('summary').addEventListener('click',function(e){e.preventDefault()});
   toc.querySelector('summary span').textContent='תוכן עניינים';
+  // Topic tabs open one at a time: opening one closes the others.
+  [].forEach.call(toc.querySelectorAll('.grp'),function(g){g.addEventListener('toggle',function(){
+    if(g.open)[].forEach.call(toc.querySelectorAll('.grp[open]'),function(o){if(o!==g)o.open=false})})});
   window.addEventListener('hashchange',function(){show();var t=document.getElementById(location.hash.slice(1));var cur=document.querySelector('.sec:not([hidden])');
     if(!cur){scrollTo(0,0);return}
-    ((t&&t.closest('.sec'))?t:cur).scrollIntoView({block:'start'})});
+    var el=(t&&t.closest('.sec'))?t:cur;(el.classList.contains('sec')?top(el):el).scrollIntoView({block:'start'})});
   [].forEach.call(document.querySelectorAll('[data-open-toc]'),function(b){b.addEventListener('click',function(){toc.open=true;toc.scrollIntoView({block:'start'});var c=toc.querySelector('a.current');if(c)c.focus()})});
   show();
-  if(location.hash){var cur=document.querySelector('.sec:not([hidden])');if(cur)cur.scrollIntoView({block:'start'})}
+  if(location.hash){var t0=document.getElementById(location.hash.slice(1)), cur=t0&&t0.closest&&t0.closest('.sec')||document.querySelector('.sec:not([hidden])');if(cur)top(cur).scrollIntoView({block:'start'})}
 })();
 
 // "קראתי" marks: saved to the account when logged in, otherwise in this browser
@@ -95,7 +115,15 @@ if(PROOF){document.documentElement.classList.add('proof');
   document.body.appendChild(bar);
   document.documentElement.classList.add('has-tbar');
   var panel=bar.querySelector('.cb-panel');
-  panel.appendChild(toc.querySelector('ol').cloneNode(true));
+  // The menu lists every heading; a chapter split into topics gets a title line before each topic.
+  var grps=[].filter.call(toc.querySelectorAll('.grp'),function(g){return g.querySelector('ol > li')}); // topics with headings
+  if(grps.length>1){var ol=document.createElement('ol');
+    grps.forEach(function(g){var h=document.createElement('li');h.className='m-grp';
+      h.textContent=g.querySelector('.num').textContent+'. '+g.querySelector('.g-title').textContent;ol.appendChild(h);
+      [].forEach.call(g.querySelectorAll('ol > li'),function(li){ol.appendChild(li.cloneNode(true))})});
+    panel.appendChild(ol)}
+  else if(grps.length)panel.appendChild(grps[0].querySelector('ol').cloneNode(true));
+  else panel.appendChild(toc.querySelector('ol').cloneNode(true));
   function sync(){ // read marks and current section mirror the main menu
     var src=toc.querySelectorAll('a'), dst=panel.querySelectorAll('a');
     [].forEach.call(src,function(a,i){if(dst[i])dst[i].className=a.className});
@@ -107,17 +135,17 @@ if(PROOF){document.documentElement.classList.add('proof');
   document.addEventListener('click',function(e){if(e.target===bar||!bar.contains(e.target))setOpen(false)});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')setOpen(false)});
   function current(){
-    var sec=document.querySelector('.sec:not([hidden])'), num=bar.querySelector('.cb-snum');
+    var sec=window.curSec?curSec():document.querySelector('.sec:not([hidden])'), num=bar.querySelector('.cb-snum');
     // Graphic chapters: the section's icon sits between the back arrow and the two title lines.
     var ico=bar.querySelector('.cb-ico'), si=sec&&sec.querySelector('.sec-ico');
     ico.innerHTML=si?si.innerHTML:'';ico.hidden=!si;
     num.hidden=!sec;
     if(!sec){bar.querySelector('.cb-sname').textContent='תוכן עניינים';return}
-    var i=sec.id.slice(1);
-    bar.querySelector('.cb-sname').textContent=sec.querySelector('h2').textContent;
+    var i=[].indexOf.call(document.querySelectorAll('.sec'),sec)+1; // place on the page, not the section's number
+    bar.querySelector('.cb-sname').textContent=sec.querySelector('.sec-head h2').textContent;
     num.textContent='קטע '+i+'/'+total;num.setAttribute('aria-label','קטע '+i+' מתוך '+total);
   }
-  window.addEventListener('hashchange',function(){setTimeout(current,0)});current();
+  window.addEventListener('hashchange',function(){setTimeout(current,0)});document.addEventListener('sec-change',current);current();
 })();
 
 // One heading size for every section of the chapter: the largest size at which the longest title still fits on one line.
@@ -222,6 +250,10 @@ if(PROOF){document.documentElement.classList.add('proof');
   if(!main||!toc||!secs.length) return;
   if(PROOF) return;
   var priv=main.hasAttribute('data-track'), n=secs.length;
+  // Reading order = the order on the page (a chapter may show later-added sections first, by tab).
+  var ORD=secs.map(function(s){return +s.id.slice(1)});
+  function at(i){return i>0?ORD.indexOf(i)+1:0} // place 1..n, 0 = תוכן עניינים
+  function step(i,d){var k=at(i)+d;return k<=0?(k<0?-1:0):k>n?n+1:ORD[k-1]}
   // A solid arrow (filled shape, not a text character) for the two big buttons.
   function ARROW(d){return '<svg class="rb-arr" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="'+(d==='r'?'M13 4.5 21 12l-8 7.5V15H4.5a1.5 1.5 0 0 1-1.5-1.5v-3A1.5 1.5 0 0 1 4.5 9H13z':'M11 4.5 3 12l8 7.5V15h8.5a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 19.5 9H11z')+'"/></svg>'}
   var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט בפרק');
@@ -240,17 +272,19 @@ if(PROOF){document.documentElement.classList.add('proof');
   dlg.innerHTML='<p>אחרי הקריאה, תוכל למלא את השאלון המופיע בהמשך העמוד, למטה.<br>לאחר מילוי השאלון - כפתור "הבא" יהפוך לפעיל.</p><button type="button" class="primary" data-close>הבנתי</button>';
   document.body.appendChild(dlg);
   dlg.addEventListener('click',function(e){if(e.target===dlg||e.target.closest('[data-close]'))dlg.close()});
-  function cur(){var s=document.querySelector('.sec:not([hidden])');return s?+s.id.slice(1):0} // 0 = תוכן עניינים
+  function cur(){var s=window.curSec?curSec():document.querySelector('.sec:not([hidden])');return s?+s.id.slice(1):0} // 0 = תוכן עניינים
   function gated(i){return !!window.iqOpen&&i>0&&!iqOpen(i)}
-  function go(i){var back=main.querySelector('header .back');if(i<0||i>n){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}location.hash='#s'+i}
+  function go(i){var back=main.querySelector('header .back');if(i<0||i>n){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}
+    if(location.hash==='#s'+i){var el=document.getElementById('s'+i);(window.secTop?secTop(el):el).scrollIntoView({block:'start'});return} // flow page: already there by address, scrolled away
+    location.hash='#s'+i}
   function paint(){
     var i=cur(), done=toc.querySelectorAll('a.done').length, nx=bar.querySelector('.rb-next'), g=gated(i);
     // The opening page (תוכן עניינים) has no "הקודם".
-    var pv=bar.querySelector('.rb-prev');pv.classList.toggle('none',i===0);pv.querySelector('span').textContent=i>1?'הקודם':'תוכן';
-    nx.querySelector('span').textContent=i>=n?'סיום':'הבא';
+    var pv=bar.querySelector('.rb-prev');pv.classList.toggle('none',i===0);pv.querySelector('span').textContent=at(i)>1?'הקודם':'תוכן';
+    nx.querySelector('span').textContent=at(i)>=n?'סיום':'הבא';
     nx.classList.toggle('off',g);nx.setAttribute('aria-disabled',g?'true':'false');
     bar.querySelector('.rb-count').textContent=priv?'כותרות':'✓ '+done+'/'+n;
-    prog.firstChild.style.width=(100*(priv?i:done)/n)+'%';
+    prog.firstChild.style.width=(100*(priv?at(i):done)/n)+'%';
   }
   // Answer marks: one smiley per question of the current section, in the bottom bar. Empty until answered:
   // a green happy face for a right answer, a red sad face for a wrong one. The question number is on its right, a "." on its left.
@@ -282,9 +316,9 @@ if(PROOF){document.documentElement.classList.add('proof');
       if(gated(i)){dlg.showModal();return}
       // Sections without questions (or readers without a quiz) count as read when moving on.
       if(i>0&&!priv&&window.markRead&&!toc.querySelector('a[href="#s'+i+'"].done'))markRead(String(i),true);
-      return go(i+1);
+      return go(step(i,1));
     }
-    if(g)return go(i-1);
+    if(g)return go(step(i,-1));
     if(k==='menu'){if(window.openChapterMenu)openChapterMenu();else{toc.open=true;toc.scrollIntoView({block:'start'})}}
     if(k==='design'){var t=document.getElementById('theme');if(t)t.click()}
   });
@@ -295,11 +329,11 @@ if(PROOF){document.documentElement.classList.add('proof');
     if(sx===null)return;var t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;sx=null;
     if(Math.abs(dx)<70||Math.abs(dy)>Math.abs(dx)*0.6)return;
     if(String(window.getSelection&&getSelection())!=='')return;
-    var i=cur();if(dx>0&&i<n&&!gated(i))go(i+1);else if(dx<0&&i>=1)go(i-1);
+    var i=cur();if(dx>0&&at(i)<n&&!gated(i))go(step(i,1));else if(dx<0&&i>=1)go(step(i,-1));
   },{passive:true});
   new MutationObserver(paint).observe(toc,{subtree:true,attributes:true,attributeFilter:['class']});
   new MutationObserver(paint).observe(main,{attributes:true,attributeFilter:['class']}); // access level arrives later
   window.addEventListener('hashchange',function(){setTimeout(paint,0)});
-  document.addEventListener('iq-change',paint);
+  document.addEventListener('iq-change',paint);document.addEventListener('sec-change',paint);
   paint();
 })();

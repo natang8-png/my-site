@@ -3,7 +3,7 @@
 <title>הלכה · הלכה בבית</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/style.css?v=7">
 </head><body>
 <main dir="rtl" lang="he" class="home">
   <header>
@@ -14,10 +14,13 @@
   <section aria-labelledby="sub-h">
     <h2 id="sub-h">תתי־נושאים</h2>
     <ol class="topics">
-      <li><a class="topic" href="/halacha/harchakot/"><h3><span class="num">1</span>הרחקות</h3><p>האיסורים הנוהגים בזמן נדתה: 26 קטעים, מהקדמה ועד יום הכיפורים.</p><span class="go" aria-hidden="true">←</span></a>
-        <div class="qsum" data-qsum="harchakot" data-path="halacha/family/harchakot" data-quiz="/halacha/harchakot/quiz.json" hidden></div></li>
-      <li><a class="topic" href="/halacha/tumat-betulim/" data-lock="tumat-betulim"><h3><span class="num">2</span>טומאת בתולים<span class="lock" aria-label="בהרשאה אישית">🔒</span></h3><p>נפתח בהרשאה אישית לשבוע.</p><span class="go" aria-hidden="true">←</span></a></li>
-      <li><a class="topic" href="/halacha/leil-hachatuna/" data-lock="leil-hachatuna"><h3><span class="num">3</span>סדר ליל החתונה<span class="lock" aria-label="בהרשאה אישית">🔒</span></h3><p>נפתח בהרשאה אישית לשבוע.</p><span class="go" aria-hidden="true">←</span></a></li>
+      <li><a class="topic" href="/halacha/harchakot/"><h3><span class="num">1</span>הרחקות</h3><p>האיסורים הנוהגים בזמן נידתה <span class="nw">-&nbsp;7 נושאים</span></p>
+        <div class="qsum" data-qsum="harchakot" data-path="halacha/family/harchakot" data-quiz="/halacha/harchakot/quiz.json" hidden></div><span class="go" aria-hidden="true">←</span></a></li>
+      <li><div class="topic has-sub" data-lock="leil-hachatuna"><h3><a class="stretch" href="/halacha/leil-hachatuna/" data-lock="leil-hachatuna"><span class="num">2</span>סדר ליל החתונה<span class="lock" aria-label="בהרשאה אישית">🔒</span></a></h3><p>נפתח בהרשאה אישית לשבוע.</p>
+        <nav class="subtabs" aria-label="בתוך הפרק"><a href="/halacha/leil-hachatuna/#s10" data-lock="leil-hachatuna">טומאת בתולים</a></nav><span class="go" aria-hidden="true">←</span></div></li>
+      <li><div class="topic has-sub"><h3><a class="stretch" href="/halacha/maagal-hachaim/"><span class="num">3</span>מעגל החיים</a></h3><p>הריון, לידה והנקה.</p>
+        <nav class="subtabs" aria-label="בתוך הפרק"><a href="/halacha/maagal-hachaim/#herayon">הריון</a><a href="/halacha/maagal-hachaim/#leida">לידה</a><a href="/halacha/maagal-hachaim/#hanaka">הנקה</a></nav>
+        <div class="qsum" data-qsum="yoledet" data-path="halacha/family/yoledet" data-quiz="/halacha/yoledet/quiz.json" data-label="דיני יולדת" hidden></div><span class="go" aria-hidden="true">←</span></div></li>
     </ol>
   </section>
 
@@ -46,7 +49,7 @@
       if(st.user){var r=await SITE.loadQuiz(ch);rows=r?r.rows:[]}
       else try{var o=JSON.parse(localStorage.getItem('iq:'+ch))||{};if(!Array.isArray(o))rows=Object.keys(o).map(function(k){return o[k]}).filter(function(x){return x.t!=null}).map(function(x){return {score:x.s,total:x.t}})}catch(e){}
       var s=0,t=0;rows.forEach(function(x){s+=x.score;t+=x.total});
-      box.innerHTML='<span>שאלון: <b>ענית על '+t+'</b> מתוך '+all+' שאלות'+(t?' · ציון <b>'+Math.round(100*s/t)+'%</b>':'')+'</span>'+
+      box.innerHTML='<span>'+(box.getAttribute('data-label')?esc(box.getAttribute('data-label'))+' · ':'')+'שאלון: <b>ענית על '+t+'</b> מתוך '+all+' שאלות'+(t?' · <span class="nw">ציון <b>'+Math.round(100*s/t)+'%</b></span>':'')+'</span>'+
         '';
       box.hidden=false;
     });
