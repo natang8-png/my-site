@@ -30,7 +30,9 @@ CHAPTERS = {
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=3, path="leil-hachatuna", private=True,
          # Natan, 2026-10-28: three tabs. The first two have no text yet (None = empty tab).
          # The third holds the whole order, read as one long page (flow); the menu scrolls to a heading.
-         flow=True, groups=[(None, None, "הלכות צניעות"), (None, None, "ההבדל בין גברים לנשים"), (1, 15, "כשמגיעים הביתה",
+         flow=True, part_titles=True,
+         # Sections 16-23 were added later (2026-10-29) and show before 1-15, in the order of the tabs: the numbers stay, so saved reads stay valid.
+         groups=[(None, None, "הלכות צניעות"), (16, 17, "ההבדל בין גברים לנשים"), (18, 23, "מקרבה נפשית - לבשר אחד", [(21, 23, "גירויה של האשה")]), (1, 15, "כשמגיעים הביתה",
                  # Inside it, the four topics from the first split, as headings in the list, the menu and the page.
                  [(1, 4, "ההכנות"), (5, 9, "ליל החתונה"), (10, 11, "טומאת בתולים"), (12, 15, "אחרי ליל החתונה")])]),
 }
@@ -124,6 +126,12 @@ INLINE_Q = f"""
     <div class="q-gap">{"".join('<span>↓ השאלון למטה ↓</span>' for _ in range(4))}</div>
     <div class="iq" data-iq="{{i}}" id="q{{i}}"></div>"""
 
+# Reading order: the order of the tabs (a section outside every tab comes after, by number).
+order = [i for g in ch.get("groups", []) if g[0] is not None for i in range(g[0], g[1] + 1)]
+order += [i for i in range(1, len(heads) + 1) if i not in order]
+assert sorted(order) == list(range(1, len(heads) + 1))
+pos = {i: k for k, i in enumerate(order)}  # 0-based place in the reading order
+
 toc, secs, private_rows = [], [], []
 for i, h in enumerate(heads, 1):
     path = f"{src}/{i:02d}.html"
@@ -140,12 +148,13 @@ for i, h in enumerate(heads, 1):
         hw = ""
         filled = False
     toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{i}</span>{ico(i, "ico")}{html.escape(h)}{hw}</a></li>')
-    prev = (f'<a class="pn prev" href="#s{i-1}"><small>הקודם</small>{html.escape(heads[i-2])}</a>' if i > 1
+    k = pos[i]; pi = order[k - 1] if k > 0 else None; ni = order[k + 1] if k + 1 < n else None
+    prev = (f'<a class="pn prev" href="#s{pi}"><small>הקודם</small>{html.escape(heads[pi-1])}</a>' if pi
             else f'<a class="pn prev" href="{ch.get("back", "/halacha/")}"><small>חזרה</small>לתפריט הלכה</a>')
     mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
-    nxt = f'<a class="pn next" href="#s{i+1}"><small>הבא</small>{html.escape(heads[i])}</a>' if i < n else '<span></span>'
+    nxt = f'<a class="pn next" href="#s{ni}"><small>הבא</small>{html.escape(heads[ni-1])}</a>' if ni else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
-    <div class="sec-head">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {i} מתוך {n}">{i}/{n}</span></div>
+    <div class="sec-head">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {k+1} מתוך {n}">{k+1}/{n}</span></div>
     <div class="content">
 {body}
     </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
@@ -159,7 +168,8 @@ for i, h in enumerate(heads, 1):
 groups = ch.get("groups")
 if groups:
     full = [x for x in groups if x[0] is not None]
-    assert full[0][0] == 1 and full[-1][1] == n and all(a[1] + 1 == b[0] for a, b in zip(full, full[1:]))
+    rng = sorted(full)
+    assert rng[0][0] == 1 and rng[-1][1] == n and all(a[1] + 1 == b[0] for a, b in zip(rng, rng[1:]))
     subs = {}  # first section of a sub-topic -> its title
     def items(a, b, sub):
         out = []
@@ -179,14 +189,17 @@ if groups:
                 f'<ol>{items(a, b, sub)}</ol></details>')
     toc_html = '<div class="grps">' + "".join(grp(g, *x) for g, x in enumerate(groups, 1)) + '</div>'
     # A sub-topic title above its first section on the page (shown only once inside the long page).
+    for i, t in subs.items():
+        secs[i - 1] = f'  <h2 class="part-head">{html.escape(t)}</h2>\n' + secs[i - 1]
     # A big centered part title at the top of the first section of each part.
     if ch.get("part_titles"):
         for x in full:
             a, t = x[0], x[2]
+            if ch.get("flow"):  # one long page: the tab title stands above the section (and its sub-topic title)
+                secs[a - 1] = f'  <h2 class="part-title flow-pt">{html.escape(t)}</h2>\n' + secs[a - 1]
+                continue
             head, rest = secs[a - 1].split("\n", 1)
             secs[a - 1] = f'{head}\n    <h2 class="part-title">{html.escape(t)}</h2>\n{rest}'
-    for i, t in subs.items():
-        secs[i - 1] = f'  <h2 class="part-head">{html.escape(t)}</h2>\n' + secs[i - 1]
 else:
     toc_html = "<ol>\n      " + chr(10).join("      "+t for t in toc).strip() + "\n    </ol>"
 
@@ -217,7 +230,7 @@ page = f'''<!doctype html>
     {toc_html}
   </details>
 
-{chr(10).join(secs)}
+{chr(10).join(secs[i - 1] for i in order)}
 
   <footer>
     <span>נבנה בהדרגה, צעד אחר צעד.</span>

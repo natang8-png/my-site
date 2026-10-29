@@ -402,3 +402,7 @@ html.flow .part-head{scroll-margin-top:70px}
 .leida-go ol.parts small{margin-inline-start:auto;color:var(--muted);font-weight:400}
 .toc .leida-go a.go-ch{display:block;text-align:center;text-decoration:none;border-radius:999px;padding:10px 16px}
 .part-title{margin:0 0 14px;text-align:center;font-family:var(--display);font-weight:700;font-size:1.7rem;color:var(--accent);line-height:1.4}
+.part-title.flow-pt{display:none;margin:28px 0 10px;scroll-margin-top:70px}
+html.flow.later-sec .part-title.flow-pt{display:block}
+html.flow .part-title.flow-pt + .part-head{margin-top:0}
+.content h3.sub-h{font-family:var(--display);font-size:1.2rem;color:var(--accent);margin:1.3em 0 .3em}

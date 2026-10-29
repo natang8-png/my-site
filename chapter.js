@@ -35,7 +35,7 @@ if(PROOF){document.documentElement.classList.add('proof');
     var c=secs[0];secs.forEach(function(s){if(top(s).getBoundingClientRect().top<=120)c=s});return c;
   };
   // Where a section starts on a flow page: its sub-topic title, when one stands above it.
-  function top(s){var p=s.previousElementSibling;return p&&p.classList.contains('part-head')?p:s}
+  function top(s){var t=s,p=s.previousElementSibling;while(p&&(p.classList.contains('part-head')||p.classList.contains('part-title'))){t=p;p=p.previousElementSibling}return t}
   window.secTop=top;
   if(FLOW){var last=null;addEventListener('scroll',function(){var c=curSec(), id=c&&c.id;if(id===last)return;last=id;mark(id);document.dispatchEvent(new Event('sec-change'))},{passive:true})}
   // The headings list stays open: it is a plain list, not a button.
@@ -141,7 +141,7 @@ if(PROOF){document.documentElement.classList.add('proof');
     ico.innerHTML=si?si.innerHTML:'';ico.hidden=!si;
     num.hidden=!sec;
     if(!sec){bar.querySelector('.cb-sname').textContent='תוכן עניינים';return}
-    var i=sec.id.slice(1);
+    var i=[].indexOf.call(document.querySelectorAll('.sec'),sec)+1; // place on the page, not the section's number
     bar.querySelector('.cb-sname').textContent=sec.querySelector('.sec-head h2').textContent;
     num.textContent='קטע '+i+'/'+total;num.setAttribute('aria-label','קטע '+i+' מתוך '+total);
   }
@@ -250,6 +250,10 @@ if(PROOF){document.documentElement.classList.add('proof');
   if(!main||!toc||!secs.length) return;
   if(PROOF) return;
   var priv=main.hasAttribute('data-track'), n=secs.length;
+  // Reading order = the order on the page (a chapter may show later-added sections first, by tab).
+  var ORD=secs.map(function(s){return +s.id.slice(1)});
+  function at(i){return i>0?ORD.indexOf(i)+1:0} // place 1..n, 0 = תוכן עניינים
+  function step(i,d){var k=at(i)+d;return k<=0?(k<0?-1:0):k>n?n+1:ORD[k-1]}
   // A solid arrow (filled shape, not a text character) for the two big buttons.
   function ARROW(d){return '<svg class="rb-arr" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="'+(d==='r'?'M13 4.5 21 12l-8 7.5V15H4.5a1.5 1.5 0 0 1-1.5-1.5v-3A1.5 1.5 0 0 1 4.5 9H13z':'M11 4.5 3 12l8 7.5V15h8.5a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 19.5 9H11z')+'"/></svg>'}
   var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט בפרק');
@@ -276,11 +280,11 @@ if(PROOF){document.documentElement.classList.add('proof');
   function paint(){
     var i=cur(), done=toc.querySelectorAll('a.done').length, nx=bar.querySelector('.rb-next'), g=gated(i);
     // The opening page (תוכן עניינים) has no "הקודם".
-    var pv=bar.querySelector('.rb-prev');pv.classList.toggle('none',i===0);pv.querySelector('span').textContent=i>1?'הקודם':'תוכן';
-    nx.querySelector('span').textContent=i>=n?'סיום':'הבא';
+    var pv=bar.querySelector('.rb-prev');pv.classList.toggle('none',i===0);pv.querySelector('span').textContent=at(i)>1?'הקודם':'תוכן';
+    nx.querySelector('span').textContent=at(i)>=n?'סיום':'הבא';
     nx.classList.toggle('off',g);nx.setAttribute('aria-disabled',g?'true':'false');
     bar.querySelector('.rb-count').textContent=priv?'כותרות':'✓ '+done+'/'+n;
-    prog.firstChild.style.width=(100*(priv?i:done)/n)+'%';
+    prog.firstChild.style.width=(100*(priv?at(i):done)/n)+'%';
   }
   // Answer marks: one smiley per question of the current section, in the bottom bar. Empty until answered:
   // a green happy face for a right answer, a red sad face for a wrong one. The question number is on its right, a "." on its left.
@@ -312,9 +316,9 @@ if(PROOF){document.documentElement.classList.add('proof');
       if(gated(i)){dlg.showModal();return}
       // Sections without questions (or readers without a quiz) count as read when moving on.
       if(i>0&&!priv&&window.markRead&&!toc.querySelector('a[href="#s'+i+'"].done'))markRead(String(i),true);
-      return go(i+1);
+      return go(step(i,1));
     }
-    if(g)return go(i-1);
+    if(g)return go(step(i,-1));
     if(k==='menu'){if(window.openChapterMenu)openChapterMenu();else{toc.open=true;toc.scrollIntoView({block:'start'})}}
     if(k==='design'){var t=document.getElementById('theme');if(t)t.click()}
   });
@@ -325,7 +329,7 @@ if(PROOF){document.documentElement.classList.add('proof');
     if(sx===null)return;var t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;sx=null;
     if(Math.abs(dx)<70||Math.abs(dy)>Math.abs(dx)*0.6)return;
     if(String(window.getSelection&&getSelection())!=='')return;
-    var i=cur();if(dx>0&&i<n&&!gated(i))go(i+1);else if(dx<0&&i>=1)go(i-1);
+    var i=cur();if(dx>0&&at(i)<n&&!gated(i))go(step(i,1));else if(dx<0&&i>=1)go(step(i,-1));
   },{passive:true});
   new MutationObserver(paint).observe(toc,{subtree:true,attributes:true,attributeFilter:['class']});
   new MutationObserver(paint).observe(main,{attributes:true,attributeFilter:['class']}); // access level arrives later
