@@ -1,7 +1,10 @@
 // Proofreading page (?proof): the whole chapter in one scroll, a red line between sections, every question open
 // with its right answer and explanation, and a zigzag where the blank gap before the questions was left out.
-window.PROOF=/[?&]proof\b/.test(location.search)&&!!document.querySelector('main.chapter');
-if(PROOF){document.documentElement.classList.add('proof');
+// Edit mode (?edit, admin only): the proofreading page plus editing text, handwritten notes and answer fixes (edit.js).
+window.EDIT=/[?&]edit\b/.test(location.search)&&!!document.querySelector('main.chapter');
+window.PROOF=EDIT||/[?&]proof\b/.test(location.search)&&!!document.querySelector('main.chapter');
+if(EDIT){document.documentElement.classList.add('proof');var es=document.createElement('script');es.src='/edit.js?v=1';document.body.appendChild(es)}
+else if(PROOF){document.documentElement.classList.add('proof');
   var pn=document.createElement('p');pn.className='proof-note';
   pn.textContent='דף הגהה: כל הקטעים ברצף. קו אדום מפריד בין קטעים, וזיג־זג מסמן את המרווח שהושמט לפני השאלות. בשאלות מסומנת התשובה הנכונה עם ההסבר.';
   var hd=document.querySelector('main.chapter > header');if(hd)hd.appendChild(pn)}
@@ -237,6 +240,7 @@ if(PROOF){document.documentElement.classList.add('proof');
     if(r[1]){online=true;saved={};r[1].rows.forEach(function(x){if(!x.answers&&data&&(data[x.section]||[]).length!==x.total)return;saved[x.section]={a:x.answers||null,s:x.score,t:x.total}})}
     loaded=true;
     if(data)[].forEach.call(document.querySelectorAll('[data-iq]'),render);
+    window.IQ_READY=true;document.dispatchEvent(new Event('iq-rendered'));
     changed();
   });
 })();
@@ -339,4 +343,15 @@ if(PROOF){document.documentElement.classList.add('proof');
   window.addEventListener('hashchange',function(){setTimeout(paint,0)});
   document.addEventListener('iq-change',paint);document.addEventListener('sec-change',paint);
   paint();
+})();
+
+// The admin sees a small "מצב עריכה" link under the chapter's title.
+(function(){
+  var main=document.querySelector('main.chapter'), head=main&&main.querySelector('header');
+  if(!head||PROOF||!window.SITE)return;
+  SITE.ready.then(function(st){
+    if(!(st.profile&&st.profile.is_admin))return;
+    var a=document.createElement('a');a.className='edit-link';a.href=location.pathname+'?edit';a.textContent='✎ מצב עריכה (רק למנהל)';
+    head.appendChild(a);
+  }).catch(function(){});
 })();
