@@ -105,6 +105,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb-list>li{display:grid;gap:3px;padding-inline-start:10px;border-inline-start:3px solid var(--qnone)}
 .qb-list>li.l-ok{border-color:var(--qok)}.qb-list>li.l-bad{border-color:var(--qbad)}
 .qb-list .t{font-weight:600}
+.qb-gave{color:var(--qbad);font-weight:700;background:color-mix(in srgb,var(--qbad) 12%,transparent);border-radius:6px;padding:2px 8px;justify-self:start}
 .qb-opts{list-style:none;margin:0;padding:0;display:grid;gap:2px}
 .qb-opts li{display:grid;grid-template-columns:1.3em 1fr}
 .qb-opts li.r{color:var(--qok);font-weight:600}.qb-opts li.x{color:var(--qbad);font-weight:600}
@@ -198,18 +199,18 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 
   // Quiz results bar for הרחקות (current round): three levels, all -> topics -> one topic's questions.
   var QB={};
-  function qbHTML(u,ur,uq){
-    var c='harchakot', qd=(QUIZ||{})[c]||{}, heads=CHAPTERS[c].heads;
+  function qbHTML(u,ur,uq,c){
+    var key=u.id+'|'+c, qd=(QUIZ||{})[c]||{}, heads=CHAPTERS[c].heads;
     var cuts=RESETS.filter(function(z){return z.user_id===u.id&&z.chapter===c}).map(function(z){return z.reset_at}).sort(), from=cuts[cuts.length-1]||null;
     var last={};uq.forEach(function(x){if(x.chapter===c&&(!from||x.taken_at>from)&&(!last[x.section]||last[x.section].taken_at<x.taken_at))last[x.section]=x});
     var rd={};ur.forEach(function(x){if(x.chapter===c)rd[x.section]=1});
-    QB[u.id]=heads.map(function(t,i){var n=i+1,qs=qd[n]||[],r=last[n],k=[];
+    QB[key]=heads.map(function(t,i){var n=i+1,qs=qd[n]||[],r=last[n],k=[];
       // k = one mark per question: 'ok', 'bad' or 'no'. Old results without saved answers: right ones first.
       qs.forEach(function(q,j){k.push(!r?'no':r.answers?(r.answers[j]===q.c?'ok':'bad'):(j<r.score?'ok':'bad'))});
       return {n:n,t:t,qs:qs,read:!!rd[n],r:r,k:k}});
     var sc=0,tt=0;Object.keys(last).forEach(function(k){sc+=last[k].score;tt+=last[k].total});
-    QB[u.id].avg=tt?Math.round(100*sc/tt):null;
-    return '<div class="qb" data-qb="'+u.id+'" data-lv="0">'+(from?'<div class="none">סבב נוכחי, מאז '+when(from)+'</div>':'')+'<div class="qb-in">'+qbDraw(u.id,0)+'</div></div>';
+    QB[key].avg=tt?Math.round(100*sc/tt):null;
+    return '<div class="qb" data-qb="'+key+'" data-lv="0">'+(from?'<div class="none">סבב נוכחי, מאז '+when(from)+'</div>':'')+'<div class="qb-in">'+qbDraw(key,0)+'</div></div>';
   }
   function qbCount(secs){var o={ok:0,bad:0,no:0,read:0};secs.forEach(function(s){s.k.forEach(function(k){o[k]++});if(s.read)o.read++});o.tot=o.ok+o.bad+o.no;return o}
   function N(t){return '<bdi dir="ltr">'+t+'</bdi>'}
@@ -234,6 +235,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       (s.r&&!a?'<p class="none">התשובות עצמן לא נשמרו בבחינה הזאת (לפני שהתחלנו לשמור אותן). הציון: '+s.r.score+'/'+s.r.total+'.</p>':'')+
       '<ol class="qb-list">'+s.qs.map(function(q,j){var g=a?a[j]:null;
         return '<li class="l-'+s.k[j]+'" data-qbi="'+j+'"><span class="t">'+(j+1)+'. '+esc(q.q)+'</span>'+(s.r?'':'<span class="none">לא נענה</span>')+
+          (a&&g!=null&&g!==q.c&&q.a[g]!=null?'<span class="qb-gave">✗ התלמיד ענה: '+esc(q.a[g])+'</span>':'')+
           '<ul class="qb-opts">'+q.a.map(function(t,i){var right=i===q.c, x=a&&i===g&&!right;
             return '<li class="'+(s.r&&right?'r':x?'x':'')+'"><span>'+(s.r&&right?'✓':x?'✗':'')+'</span><span>'+esc(t)+'</span>'+(s.r&&right&&q.why?'<span class="why">'+esc(q.why)+'</span>':'')+'</li>'}).join('')+'</ul></li>'}).join('')+'</ol>';
   }
@@ -317,8 +319,8 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
         var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
         if(CHAPTERS[c].own&&!n&&!all.some(function(g){return g.path===c}))return;
-        var qb=c==='harchakot'?qbHTML(u,ur,uq):'';
-        if(qb){var avg=QB[u.id].avg;
+        var qb=(QUIZ||{})[c]&&CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
+        if(qb){var avg=QB[u.id+'|'+c].avg;
           h+='<div class="qb-top"><b>'+esc(CHAPTERS[c].title)+'</b><button type="button" class="qb-avg" data-qbreset="'+c+'" title="איפוס השאלון של התלמיד">ממוצע '+(avg==null?'—':N(avg+'%'))+'</button></div>'+readHeads(c)+qb;return}
         h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' קטעים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
         // Which headings were read (chapters whose reading is tracked quietly).
