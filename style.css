@@ -91,7 +91,7 @@ sup.fn a{color:var(--accent);text-decoration:none;font-family:var(--body);font-s
 .credit{font-size:.85rem;color:var(--muted);margin:8px 0 0}
 .credit a{color:var(--accent)}
 .credit b{color:var(--fg)}
-.hand{font-family:var(--hand);color:var(--hand-c);font-size:1.3em;line-height:1.5}
+.hand{font-family:var(--hand);color:var(--hand-c);font-size:1.1em;line-height:1.5}
 ol.notes li p{margin:0}
 ol.notes li p+p{margin-top:4px}
 a.nb{text-decoration:none;color:var(--accent);margin-inline-start:6px;font-size:.85em;border:1px solid var(--line);border-radius:999px;padding:0 8px;background:var(--bg);white-space:nowrap}
