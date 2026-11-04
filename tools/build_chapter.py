@@ -127,7 +127,7 @@ PRIVATE_TAIL = f"""<script src="/private.js"></script>
 
 # Inline questions: a blank gap after the text (styled later), then the section's questions, filled in by chapter.js.
 INLINE_Q = f"""
-    <div class="q-gap">{"".join('<span>↓ השאלון למטה ↓</span>' for _ in range(4))}</div>
+    <div class="q-gap"><button type="button" class="to-quiz" data-quiz-open="{{i}}">לשאלון</button></div>
     <div class="iq" data-iq="{{i}}" id="q{{i}}"></div>"""
 
 # Reading order: the order of the tabs (a section outside every tab comes after, by number).
