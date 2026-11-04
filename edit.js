@@ -116,7 +116,7 @@
   function openMenu(el){
     closeMenu();cur=el;el.classList.add('e-cur');
     var key=el.getAttribute('data-ek'), kind=el.getAttribute('data-et');
-    var h='<button type="button" data-a="edit">✎ עריכת טקסט</button><button type="button" data-a="note">✍ הערה בכתב יד</button>';
+    var h='<button type="button" data-a="edit">✎ '+({question:'עריכת השאלה',answer:'עריכת התשובה',why:'עריכת ההסבר'}[kind]||'עריכת טקסט')+'</button><button type="button" data-a="note">✍ הערה בכתב יד</button>';
     if(kind==='answer')h+='<button type="button" data-a="right">✓ זו התשובה הנכונה</button>';
     if(rows[key+'|text'])h+='<button type="button" data-a="undo">↺ החזר למקור</button>';
     h+='<button type="button" data-a="x" aria-label="סגירה">✕</button>';
@@ -140,7 +140,23 @@
 
   // Editing a line: it becomes editable, with שמירה / ביטול / מודגש under it.
   var tools=document.createElement('div');tools.className='e-tools';tools.dir='rtl';
+  // Questions, answers and explanations are edited in a text box: an answer is a button, and on phones
+  // (iPhone above all) a button can't be typed into directly.
+  function startBox(el){
+    stop();editing=el;var key=el.getAttribute('data-ek'), b=blocks[key];
+    el.classList.add('e-editing');
+    var ta=document.createElement('textarea');ta.className='e-box';ta.dir='rtl';ta.value=el.textContent;ta.rows=Math.max(2,Math.ceil(ta.value.length/38));
+    tools.innerHTML='';tools.appendChild(ta);
+    tools.insertAdjacentHTML('beforeend','<button type="button" class="primary" data-a="ok">שמירה</button><button type="button" data-a="no">ביטול</button>');
+    anchor(el).insertAdjacentElement('afterend',tools);tools.onmousedown=null;ta.focus();
+    tools.onclick=function(e){var a=e.target.closest('button');if(!a)return;var act=a.getAttribute('data-a');
+      var v=ta.value.replace(/\s+/g,' ').trim();stop();
+      if(act==='no'){paint(key);return}
+      save({key:key,kind:'text',sec:b.sec,orig:plain(b.orig),val:!v||v===plain(b.orig)?null:esc(v)});paint(key);
+    };
+  }
   function startText(el){
+    if(el.closest('.qq'))return startBox(el);
     stop();editing=el;var key=el.getAttribute('data-ek'), b=blocks[key], before=el.innerHTML;
     el.contentEditable='true';el.classList.add('e-editing');el.focus();
     tools.innerHTML='<button type="button" class="primary" data-a="ok">שמירה</button><button type="button" data-a="bold"><b>מודגש</b></button><button type="button" data-a="no">ביטול</button>';

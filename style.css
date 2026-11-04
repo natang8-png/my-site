@@ -460,3 +460,4 @@ html.show-orig .e-orig{display:block}
 @media print{.edit-bar,.e-menu,.e-tools,.edit-note{display:none}}
 html.editing .qq .opts,html.editing .qq .opts button{pointer-events:auto!important}
 .edit-dlg li > a{display:block}
+.e-tools .e-box{flex-basis:100%;width:100%;font:inherit;font-size:1rem;line-height:1.6;padding:8px 10px;border:2px solid var(--hand-c);border-radius:10px;background:var(--bg);color:var(--fg);resize:vertical}

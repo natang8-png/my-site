@@ -3,7 +3,7 @@
 // Edit mode (?edit, admin only): the proofreading page plus editing text, handwritten notes and answer fixes (edit.js).
 window.EDIT=/[?&]edit\b/.test(location.search)&&!!document.querySelector('main.chapter');
 window.PROOF=EDIT||/[?&]proof\b/.test(location.search)&&!!document.querySelector('main.chapter');
-if(EDIT){document.documentElement.classList.add('proof');var es=document.createElement('script');es.src='/edit.js?v=1';document.body.appendChild(es)}
+if(EDIT){document.documentElement.classList.add('proof');var es=document.createElement('script');es.src='/edit.js?v=2';document.body.appendChild(es)}
 else if(PROOF){document.documentElement.classList.add('proof');
   var pn=document.createElement('p');pn.className='proof-note';
   pn.textContent='דף הגהה: כל הקטעים ברצף. קו אדום מפריד בין קטעים, וזיג־זג מסמן את המרווח שהושמט לפני השאלות. בשאלות מסומנת התשובה הנכונה עם ההסבר.';
