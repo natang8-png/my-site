@@ -1,9 +1,10 @@
 // Proofreading page (?proof): the whole chapter in one scroll, a red line between sections, every question open
 // with its right answer and explanation, and a zigzag where the blank gap before the questions was left out.
-// Edit mode (?edit, admin only): the proofreading page plus editing text, handwritten notes and answer fixes (edit.js).
-window.EDIT=/[?&]edit\b/.test(location.search)&&!!document.querySelector('main.chapter');
-window.PROOF=EDIT||/[?&]proof\b/.test(location.search)&&!!document.querySelector('main.chapter');
-if(EDIT){document.documentElement.classList.add('proof');var es=document.createElement('script');es.src='/edit.js?v=2';document.body.appendChild(es)}
+// Edit mode (window.EDIT, set by auth.js; admin only): the site works as usual, every line can be edited or get a
+// handwritten note (edit.js), and the questions show their right answers. ?edit opens this page in one scroll, like ?proof.
+window.EDIT=!!window.EDIT;
+window.PROOF=/[?&](proof|edit)\b/.test(location.search)&&!!document.querySelector('main.chapter');
+if(PROOF&&/[?&]edit\b/.test(location.search)){document.documentElement.classList.add('proof')}
 else if(PROOF){document.documentElement.classList.add('proof');
   var pn=document.createElement('p');pn.className='proof-note';
   pn.textContent='דף הגהה: כל הקטעים ברצף. קו אדום מפריד בין קטעים, וזיג־זג מסמן את המרווח שהושמט לפני השאלות. בשאלות מסומנת התשובה הנכונה עם ההסבר.';
@@ -187,7 +188,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
   // Open = "הבא" may be pressed: this section's questions are all answered, or it has none,
   // or this reader has no quiz (reading only, or no access yet).
   window.iqOpen=function(i){
-    if(main.classList.contains('read-only')||main.classList.contains('locked'))return true;
+    if(EDIT||main.classList.contains('read-only')||main.classList.contains('locked'))return true;
     if(!loaded)return false;
     return !data||!(data[i]||[]).length||!!saved[i];
   };
@@ -211,7 +212,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
       return ok;
     }
     // Proofreading: every question shows its right answer and explanation, nothing is saved.
-    if(PROOF){[].forEach.call(box.querySelectorAll('.qq'),function(f){mark(f,qs[+f.getAttribute('data-k')],null)});return}
+    if(PROOF||EDIT){[].forEach.call(box.querySelectorAll('.qq'),function(f){mark(f,qs[+f.getAttribute('data-k')],null)});return}
     // Answered before: show the saved answers, locked.
     if(sv){
       if(sv.t!=null){box.setAttribute('data-s',sv.s);box.setAttribute('data-t',sv.t)}
@@ -350,8 +351,8 @@ else if(PROOF){document.documentElement.classList.add('proof');
   var main=document.querySelector('main.chapter'), head=main&&main.querySelector('header');
   if(!head||PROOF||!window.SITE)return;
   SITE.ready.then(function(st){
-    if(!(st.profile&&st.profile.is_admin))return;
-    var a=document.createElement('a');a.className='edit-link';a.href=location.pathname+'?edit';a.textContent='✎ מצב עריכה (רק למנהל)';
+    if(!(st.profile&&st.profile.is_admin)||EDIT)return;
+    var a=document.createElement('button');a.type='button';a.className='edit-link link';a.textContent='✎ מצב עריכה (רק למנהל)';a.onclick=function(){SITE.setEdit(true)};
     head.appendChild(a);
   }).catch(function(){});
 })();

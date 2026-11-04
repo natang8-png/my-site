@@ -17,6 +17,17 @@
     {path:'leil-hachatuna', title:'סדר ליל החתונה', own:true, days:7}
   ];
 
+  // Edit mode (admin only): on for this device until switched off from the warning line at the top.
+  // ?edit in an address turns it on too. edit.js does the work once the account is known to be the admin's.
+  var EDIT=false;
+  try{ if(/[?&]edit\b/.test(location.search)) localStorage.setItem('editMode','1'); EDIT=localStorage.getItem('editMode')==='1' }catch(e){}
+  window.EDIT=EDIT;
+  function setEdit(on){
+    try{ on?localStorage.setItem('editMode','1'):localStorage.removeItem('editMode') }catch(e){}
+    var q=on?location.search:location.search.replace(/[?&]edit\b[^&]*/,'').replace(/^&/,'?');
+    if(q!==location.search) location.replace(location.pathname+q+location.hash); else location.reload();
+  }
+
   var sb=null;
   try{ if(window.supabase) sb=window.supabase.createClient(URL,KEY) }catch(e){}
 
@@ -73,9 +84,10 @@
     var bar=document.createElement('div'); bar.className='acct';
     var next=encodeURIComponent(location.pathname+location.hash);
     if(state.user){
-      bar.innerHTML=(state.profile&&state.profile.is_admin?'<a href="/admin/">ניהול</a><span>·</span>':'')+
+      bar.innerHTML=(state.profile&&state.profile.is_admin?'<a href="/admin/">ניהול</a><span>·</span>'+(EDIT?'':'<button type="button" class="link" data-edit-on>מצב עריכה</button><span>·</span>'):'')+
         '<a class="acct-name" href="/me/" title="האזור האישי"></a>'+(incomplete()?'<span>·</span><a href="/login/?complete=1&next='+next+'">השלמת פרטים</a>':'')+'<span>·</span><button type="button" class="link" data-out>יציאה</button>';
       bar.querySelector('.acct-name').textContent=name();
+      var eo=bar.querySelector('[data-edit-on]'); if(eo) eo.onclick=function(){setEdit(true)};
       bar.querySelector('[data-out]').onclick=async function(){await sb.auth.signOut();location.reload()};
     } else {
       bar.innerHTML='<a href="/login/?next='+next+'">כניסה / הרשמה</a>';
@@ -87,9 +99,12 @@
     // A student the admin added still has the default password: change it before anything else.
     if(state.profile&&state.profile.must_change_pw){ location.replace('/login/?change=1&next='+encodeURIComponent(location.pathname+location.hash)); return }
     paintBar();
+    if(!EDIT) return;
+    if(state.profile&&state.profile.is_admin){ var es=document.createElement('script'); es.src='/edit.js?v=4'; document.body.appendChild(es) }
+    else setEdit(false);
   });
 
-  window.SITE={sb:sb, ready:ready, state:state, access:access, live:live, name:name, incomplete:incomplete, GOOGLE:GOOGLE, TREE:TREE,
+  window.SITE={sb:sb, ready:ready, setEdit:setEdit, state:state, access:access, live:live, name:name, incomplete:incomplete, GOOGLE:GOOGLE, TREE:TREE,
     loadReads:async function(ch){ if(!state.user) return null; var r=await sb.from('reads').select('section').eq('user_id',state.user.id).eq('chapter',ch); return r.error?null:(r.data||[]).map(function(x){return String(x.section)}) },
     saveRead:function(ch,sec,on){ if(!state.user) return; var q=on?sb.from('reads').upsert({user_id:state.user.id,chapter:ch,section:+sec}):sb.from('reads').delete().eq('user_id',state.user.id).eq('chapter',ch).eq('section',+sec); q.then(function(){}) },
     // A section's quiz: the score and the chosen answers (the answers column comes with supabase/v8.sql; without it, score only).
