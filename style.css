@@ -461,3 +461,27 @@ html.show-orig .e-orig{display:block}
 html.editing .qq .opts,html.editing .qq .opts button{pointer-events:auto!important}
 .edit-dlg li > a{display:block}
 .e-tools .e-box{flex-basis:100%;width:100%;font:inherit;font-size:1rem;line-height:1.6;padding:8px 10px;border:2px solid var(--hand-c);border-radius:10px;background:var(--bg);color:var(--fg);resize:vertical}
+
+/* Questions in a drawer (Natan, 2026-11-04): a round "לשאלון" button at the end of the section; the drawer slides up
+   from the bottom, under the top bar, with "להלכה" fixed at its top. The bottom bar stays above it. */
+:root{--quiz-c:#2d5f93}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--quiz-c:#8fbbe8}}
+:root[data-theme="dark"]{--quiz-c:#8fbbe8}
+html.iq-drawer .q-gap{min-height:0;display:flex;justify-content:center;padding:34px 0 10px}
+html.iq-drawer main .iq{display:none}
+html.iq-drawer .qdrawer .iq{display:block}
+.to-quiz,.to-hal{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:9.5rem;padding:12px 30px;border-radius:999px;
+  border:0;background:var(--quiz-c);color:var(--bg);font:inherit;font-weight:700;font-size:1.1rem;cursor:pointer;box-shadow:0 2px 8px rgb(0 0 0/.15)}
+.to-quiz::after{content:"↓";font-size:1.05em}
+.to-hal::before{content:"↑";font-size:1.05em}
+.to-quiz:hover,.to-hal:hover{filter:brightness(1.08)}
+.qdrawer{position:fixed;inset:calc(54px + env(safe-area-inset-top)) 0 0 0;z-index:28;background:var(--bg);display:flex;flex-direction:column;
+  transform:translateY(102%);transition:transform .32s ease;visibility:hidden;border-radius:18px 18px 0 0;box-shadow:0 -6px 24px rgb(0 0 0/.18)}
+.qdrawer.open{transform:none;visibility:visible}
+.qd-top{flex:none;display:flex;justify-content:center;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg);border-radius:18px 18px 0 0}
+.qd-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:14px 20px calc(120px + env(safe-area-inset-bottom))}
+.qd-body .iq{max-width:40rem;margin:0 auto}
+html.qd-open body{overflow:hidden}
+html.proof .q-gap > *{display:none}
+dialog.rb-dlg .link{display:block;margin:10px auto 0;background:none;border:0;color:var(--muted);font:inherit;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.qdrawer{transition:none}}

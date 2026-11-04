@@ -276,7 +276,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
   (document.querySelector('.chbar')||bar).appendChild(prog);
   // Pressing "הבא" before the questions are done explains why it is not active yet.
   var dlg=document.createElement('dialog');dlg.className='rb-dlg';dlg.dir='rtl';
-  dlg.innerHTML='<p>אחרי הקריאה, תוכל למלא את השאלון המופיע בהמשך העמוד, למטה.<br>לאחר מילוי השאלון - כפתור "הבא" יהפוך לפעיל.</p><button type="button" class="primary" data-close>הבנתי</button>';
+  dlg.innerHTML='<p>אחרי הקריאה, לוחצים על הכפתור "לשאלון" בסוף הקטע וממלאים את השאלון.<br>לאחר מילוי השאלון - כפתור "הבא" יהפוך לפעיל.</p><button type="button" class="primary" data-close data-quiz-open>לשאלון</button><button type="button" class="link" data-close>הבנתי</button>';
   document.body.appendChild(dlg);
   dlg.addEventListener('click',function(e){if(e.target===dlg||e.target.closest('[data-close]'))dlg.close()});
   function cur(){var s=window.curSec?curSec():document.querySelector('.sec:not([hidden])');return s?+s.id.slice(1):0} // 0 = תוכן עניינים
@@ -312,7 +312,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
     h+='</div>'+(all?'<span class="rb-score">ציון: '+got+'/'+qq.length+' · '+Math.round(100*got/qq.length)+'%</span>':'');
     dotsEl.innerHTML=h;
   }
-  dotsPaint();
+  dotsPaint();window.iqDots=dotsPaint;
   window.addEventListener('hashchange',dotsPaint);
   new MutationObserver(dotsPaint).observe(main,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
   bar.addEventListener('click',function(e){
@@ -354,4 +354,40 @@ else if(PROOF){document.documentElement.classList.add('proof');
     var a=document.createElement('a');a.className='edit-link';a.href=location.pathname+'?edit';a.textContent='✎ מצב עריכה (רק למנהל)';
     head.appendChild(a);
   }).catch(function(){});
+})();
+
+// The section's questions open in a drawer that slides up from the bottom (Natan, 2026-11-04): a "לשאלון" button
+// at the end of the text, and in the drawer a "להלכה" button fixed at the top that slides it back down.
+(function(){
+  var main=document.querySelector('main[data-inline-quiz]');
+  if(!main||PROOF)return;
+  document.documentElement.classList.add('iq-drawer');
+  var dr=document.createElement('div');dr.className='qdrawer';dr.dir='rtl';dr.setAttribute('aria-hidden','true');
+  dr.innerHTML='<div class="qd-top"><button type="button" class="to-hal">להלכה</button></div><div class="qd-body"></div>';
+  document.body.appendChild(dr);
+  var body=dr.querySelector('.qd-body'), box=null, home=null, timer=0;
+  function curNum(){var s=window.curSec?curSec():document.querySelector('.sec:not([hidden])');return s?s.id.slice(1):''}
+  function open(i){
+    i=i||curNum();var b=document.getElementById('q'+i);if(!b)return;
+    clearTimeout(timer);putBack();
+    box=b;home=b.parentNode;body.appendChild(b);body.scrollTop=0;
+    dr.setAttribute('aria-hidden','false');document.documentElement.classList.add('qd-open');
+    requestAnimationFrame(function(){dr.classList.add('open')});
+  }
+  function putBack(){if(box&&home){var g=home.querySelector('.q-gap');g?g.insertAdjacentElement('afterend',box):home.appendChild(box)}box=home=null}
+  function close(now){
+    if(!box)return;
+    dr.classList.remove('open');dr.setAttribute('aria-hidden','true');document.documentElement.classList.remove('qd-open');
+    if(now){putBack();return}
+    timer=setTimeout(putBack,350);
+  }
+  window.openQuiz=open;
+  // Answer marks in the bottom bar follow the questions inside the drawer too.
+  new MutationObserver(function(){if(window.iqDots)iqDots()}).observe(body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+  document.addEventListener('click',function(e){
+    var o=e.target.closest('[data-quiz-open]');if(o){var d=o.closest('dialog');if(d)d.close();open(o.getAttribute('data-quiz-open'));return}
+    if(e.target.closest('.to-hal')){close();var g=document.querySelector('.sec:not([hidden]) .q-gap');if(g)g.scrollIntoView({block:'center'})}
+  });
+  window.addEventListener('hashchange',function(){close(true)});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
 })();
