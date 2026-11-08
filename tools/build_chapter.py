@@ -38,7 +38,7 @@ CHAPTERS = {
          # Sections 16-23 were added later (2026-10-29) and show before 1-15, in the order of the tabs: the numbers stay, so saved reads stay valid.
          # Natan, 2026-11-08: הלכות צניעות = קיצור שולחן ערוך סימן ק"נ with his notes, sections 24-40 (one per סעיף).
          groups=[(24, 40, "הלכות צניעות"), # Natan, 2026-11-08: the two middle tabs are one tab now, with their names as sub-topic headings inside it.
-                 (16, 23, "השקפה", [(16, 17, "ההבדל בין גברים לנשים"), (18, 20, "מקרבה נפשית - לבשר אחד"), (21, 23, "הפיוס שלפני")]), (1, 15, "סדר ליל החתונה",
+                 (16, 23, "השקפה", [(16, 17, "ההבדל בין גברים לנשים"), (18, 20, "מקרבה נפשית לבשר אחד"), (21, 23, "הפיוס שלפני")]), (1, 15, "סדר ליל החתונה",
                  # Inside it, the four topics from the first split, as headings in the list, the menu and the page.
                  [(1, 4, "ההכנות"), (5, 9, "ליל החתונה"), (10, 11, "טומאת בתולים"), (12, 15, "אחרי ליל החתונה")])]),
 }
@@ -58,6 +58,9 @@ if ch.get("graphic"):
 def ico(i, cls):
     return f'<span class="{cls}" aria-hidden="true">{icons[i]}</span>' if i in icons else ""
 heads = [h.strip() for h in open(f"{src}/headings.txt", encoding="utf-8") if h.strip()]
+# A heading that starts with "~" names the section in the lists and menu only; on the page its words open the text instead (Natan, 2026-11-08).
+quiet = {i for i, h in enumerate(heads, 1) if h.startswith("~")}
+heads = [h.lstrip("~").strip() for h in heads]
 
 # Man / woman icons beside a halacha that is mainly about one of them (src/who.txt; not listed = both, no icon).
 WHO_SVG = {
@@ -160,7 +163,7 @@ for i, h in enumerate(heads, 1):
     mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
     nxt = f'<a class="pn next" href="#s{ni}"><small>הבא</small>{html.escape(heads[ni-1])}</a>' if ni else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
-    <div class="sec-head">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {k+1} מתוך {n}">{k+1}/{n}</span></div>
+    <div class="sec-head{" no-h" if i in quiet else ""}">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {k+1} מתוך {n}">{k+1}/{n}</span></div>
     <div class="content">
 {body}
     </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}

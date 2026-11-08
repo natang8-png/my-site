@@ -507,3 +507,4 @@ html.editing .qq.done .opts button{cursor:pointer}
 /* Flow chapters (סדר ליל החתונה): no running section numbers in the headings list and menu, each tab stands alone. */
 html.flow .toc ol .num,html.flow .cb-panel li[data-g] .num{display:none}
 .cb-panel li[hidden]{display:none}
+.sec-head.no-h{display:none}
