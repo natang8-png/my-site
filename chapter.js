@@ -18,12 +18,20 @@ else if(PROOF){document.documentElement.classList.add('proof');
   var FLOW=document.querySelector('main.chapter[data-flow]')!==null;
   if(FLOW)document.documentElement.classList.add('flow');
   document.documentElement.classList.add('one-sec');
+  // Each topic tab of a flow chapter is a page of its own (Natan, 2026-11-08): only its sections show, and reading
+  // does not run on into the next tab. Tabs come from the headings list (data-from / data-to).
+  var TABS=[].map.call(toc.querySelectorAll('.grp[data-from]'),function(g){return [+g.getAttribute('data-from'),+g.getAttribute('data-to')]});
+  function tabOf(id){var k=+String(id).slice(1);for(var t=0;t<TABS.length;t++)if(k>=TABS[t][0]&&k<=TABS[t][1])return TABS[t];return null}
   function show(){
     var id=(location.hash||'').slice(1), found=false;
     var el=id&&document.getElementById(id), host=el&&el.closest&&el.closest('.sec');
     if(host)id=host.id;
     secs.forEach(function(s){if(s.id===id)found=true});
-    secs.forEach(function(s){s.hidden=FLOW?!found:s.id!==id});
+    var tab=FLOW&&found?tabOf(id):null;
+    secs.forEach(function(s){var k=+s.id.slice(1);
+      s.hidden=FLOW?(!found||!!tab&&(k<tab[0]||k>tab[1])):s.id!==id;
+      // the tab and sub-topic titles above a section go with it
+      var p=s.previousElementSibling;while(p&&(p.classList.contains('part-head')||p.classList.contains('part-title'))){p.hidden=s.hidden;p=p.previousElementSibling}});
     // No section in the address: the chapter's own opening page, "תוכן עניינים" (title, credit and the headings list).
     // Each section, from 1 (הקדמה) on, is a page of its own without that opening.
     document.documentElement.classList.toggle('later-sec',found);
@@ -35,9 +43,11 @@ else if(PROOF){document.documentElement.classList.add('proof');
   // The section being read: the only one shown, or in a flow chapter the last heading scrolled past.
   window.curSec=function(){
     if(!FLOW)return document.querySelector('.sec:not([hidden])');
-    if(secs[0].hidden)return null;
-    var c=secs[0];secs.forEach(function(s){if(top(s).getBoundingClientRect().top<=120)c=s});return c;
+    var v=visSecs();if(!v.length)return null;
+    var c=v[0];v.forEach(function(s){if(top(s).getBoundingClientRect().top<=120)c=s});return c;
   };
+  // The sections on screen now: in a flow chapter, those of the open tab.
+  window.visSecs=function(){return secs.filter(function(s){return !s.hidden})};
   // Where a section starts on a flow page: its sub-topic title, when one stands above it.
   function top(s){var t=s,p=s.previousElementSibling;while(p&&(p.classList.contains('part-head')||p.classList.contains('part-title'))){t=p;p=p.previousElementSibling}return t}
   window.secTop=top;
@@ -145,7 +155,8 @@ else if(PROOF){document.documentElement.classList.add('proof');
     ico.innerHTML=si?si.innerHTML:'';ico.hidden=!si;
     num.hidden=!sec;
     if(!sec){bar.querySelector('.cb-sname').textContent='תוכן עניינים';return}
-    var i=[].indexOf.call(document.querySelectorAll('.sec'),sec)+1; // place on the page, not the section's number
+    var all=main.hasAttribute('data-flow')&&window.visSecs?visSecs():[].slice.call(document.querySelectorAll('.sec'));
+    var i=all.indexOf(sec)+1, total=all.length; // place on the page (in a flow chapter: in the open tab), not the section's number
     bar.querySelector('.cb-sname').textContent=sec.querySelector('.sec-head h2').textContent;
     num.textContent='קטע '+i+'/'+total;num.setAttribute('aria-label','קטע '+i+' מתוך '+total);
   }
@@ -254,11 +265,13 @@ else if(PROOF){document.documentElement.classList.add('proof');
   var secs=[].slice.call(document.querySelectorAll('.sec'));
   if(!main||!toc||!secs.length) return;
   if(PROOF) return;
-  var priv=main.hasAttribute('data-track'), n=secs.length;
+  var priv=main.hasAttribute('data-track'), FLOWP=main.hasAttribute('data-flow'), n=secs.length, ORD=[];
   // Reading order = the order on the page (a chapter may show later-added sections first, by tab).
-  var ORD=secs.map(function(s){return +s.id.slice(1)});
+  // In a flow chapter only the open tab counts: its end is the end, and "סיום" goes back to the tabs.
+  function sync(){var v=FLOWP&&window.visSecs?visSecs():[];if(!v.length)v=secs;ORD=v.map(function(s){return +s.id.slice(1)});n=ORD.length}
+  sync();
   function at(i){return i>0?ORD.indexOf(i)+1:0} // place 1..n, 0 = תוכן עניינים
-  function step(i,d){var k=at(i)+d;return k<=0?(k<0?-1:0):k>n?n+1:ORD[k-1]}
+  function step(i,d){var k=at(i)+d;return k<=0?(k<0?-1:0):k>n?(FLOWP?0:n+1):ORD[k-1]}
   // A solid arrow (filled shape, not a text character) for the two big buttons.
   function ARROW(d){return '<svg class="rb-arr" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="'+(d==='r'?'M13 4.5 21 12l-8 7.5V15H4.5a1.5 1.5 0 0 1-1.5-1.5v-3A1.5 1.5 0 0 1 4.5 9H13z':'M11 4.5 3 12l8 7.5V15h8.5a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 19.5 9H11z')+'"/></svg>'}
   // Light buttons: the accessibility figure in a double circle, and three lines for the menu.
@@ -286,6 +299,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
     if(location.hash==='#s'+i){var el=document.getElementById('s'+i);(window.secTop?secTop(el):el).scrollIntoView({block:'start'});return} // flow page: already there by address, scrolled away
     location.hash='#s'+i}
   function paint(){
+    sync();
     var i=cur(), done=toc.querySelectorAll('a.done').length, nx=bar.querySelector('.rb-next'), g=gated(i);
     // The opening page (תוכן עניינים) has no "הקודם".
     var pv=bar.querySelector('.rb-prev');pv.classList.toggle('none',i===0);pv.querySelector('span').textContent=at(i)>1?'הקודם':'תוכן';

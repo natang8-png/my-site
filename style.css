@@ -501,3 +501,6 @@ html.editing.has-tbar body{padding-top:calc(54px + var(--ebh) + env(safe-area-in
 html.editing .qq.done .opts button{cursor:pointer}
 /* Natan's own handwritten note inside the text (blue, Gveret Levin), with a line on its side. */
 .content .hand-note{font-size:1.15rem;line-height:1.5;margin:0 0 14px;padding:2px 10px;border-inline-start:3px solid var(--hand-c)}
+.part-head[hidden],.part-title[hidden]{display:none!important}
+/* Natan's notes inside a running line (הלכות צניעות): handwriting, about the size of the text (his demo, 2026-10-28). */
+.content .hand.hand-in{font-size:1em;line-height:1.4}
