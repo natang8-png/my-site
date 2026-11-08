@@ -508,5 +508,3 @@ html.editing .qq.done .opts button{cursor:pointer}
 html.flow .toc ol .num,html.flow .cb-panel li[data-g] .num{display:none}
 .cb-panel li[hidden]{display:none}
 .sec-head.no-h{display:none}
-/* Sub-topic titles on a flow page look like a section heading, with the full-width line under them (Natan, 2026-11-08). */
-.part-head{font-weight:700;font-size:var(--sec-h,1.8rem)}

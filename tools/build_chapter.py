@@ -38,7 +38,7 @@ CHAPTERS = {
          # Sections 16-23 were added later (2026-10-29) and show before 1-15, in the order of the tabs: the numbers stay, so saved reads stay valid.
          # Natan, 2026-11-08: הלכות צניעות = קיצור שולחן ערוך סימן ק"נ with his notes, sections 24-40 (one per סעיף).
          groups=[(24, 40, "הלכות צניעות"), # Natan, 2026-11-08: the two middle tabs are one tab now, with their names as sub-topic headings inside it.
-                 (16, 23, "השקפה", [(16, 17, "ההבדל בין האיש והאשה"), (18, 20, "מקרבה נפשית לבשר אחד"), (21, 23, "הפיוס שלפני")]), (1, 15, "סדר ליל החתונה",
+                 (16, 23, "השקפה", [(16, 17, "ההבדל בין גברים לנשים"), (18, 20, "מקרבה נפשית - לבשר אחד"), (21, 23, "גירויה של האשה")]), (1, 15, "סדר ליל החתונה",
                  # Inside it, the four topics from the first split, as headings in the list, the menu and the page.
                  [(1, 4, "ההכנות"), (5, 9, "ליל החתונה"), (10, 11, "טומאת בתולים"), (12, 15, "אחרי ליל החתונה")])]),
 }
