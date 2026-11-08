@@ -132,9 +132,9 @@ else if(PROOF){document.documentElement.classList.add('proof');
   // The menu lists every heading; a chapter split into topics gets a title line before each topic.
   var grps=[].filter.call(toc.querySelectorAll('.grp'),function(g){return g.querySelector('ol > li')}); // topics with headings
   if(grps.length>1){var ol=document.createElement('ol');
-    grps.forEach(function(g){var h=document.createElement('li');h.className='m-grp';
+    grps.forEach(function(g,k){var h=document.createElement('li');h.className='m-grp';h.setAttribute('data-g',k);
       h.textContent=g.querySelector('.num').textContent+'. '+g.querySelector('.g-title').textContent;ol.appendChild(h);
-      [].forEach.call(g.querySelectorAll('ol > li'),function(li){ol.appendChild(li.cloneNode(true))})});
+      [].forEach.call(g.querySelectorAll('ol > li'),function(li){var c=li.cloneNode(true);c.setAttribute('data-g',k);ol.appendChild(c)})});
     panel.appendChild(ol)}
   else if(grps.length)panel.appendChild(grps[0].querySelector('ol').cloneNode(true));
   else panel.appendChild(toc.querySelector('ol').cloneNode(true));
@@ -148,8 +148,15 @@ else if(PROOF){document.documentElement.classList.add('proof');
   panel.addEventListener('click',function(e){if(e.target.closest('a'))setOpen(false)});
   document.addEventListener('click',function(e){if(e.target===bar||!bar.contains(e.target))setOpen(false)});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')setOpen(false)});
+  // A flow chapter's tabs are pages of their own (Natan, 2026-11-08): the menu shows only the open tab's headings,
+  // and the top bar names the tab instead of the chapter.
+  var FLOWT=main.hasAttribute('data-flow')&&grps.length>1;
+  function tabNow(sec){if(!FLOWT||!sec)return -1;var a=toc.querySelector('a[href="#'+sec.id+'"]'), g=a&&a.closest('.grp');return grps.indexOf(g)}
   function current(){
     var sec=window.curSec?curSec():document.querySelector('.sec:not([hidden])'), num=bar.querySelector('.cb-snum');
+    if(FLOWT){var t=tabNow(sec);
+      [].forEach.call(panel.querySelectorAll('li[data-g]'),function(li){li.hidden=t>=0&&+li.getAttribute('data-g')!==t});
+      bar.querySelector('.cb-title').textContent=t>=0?grps[t].querySelector('.g-title').textContent:title}
     // Graphic chapters: the section's icon sits between the back arrow and the two title lines.
     var ico=bar.querySelector('.cb-ico'), si=sec&&sec.querySelector('.sec-ico');
     ico.innerHTML=si?si.innerHTML:'';ico.hidden=!si;
