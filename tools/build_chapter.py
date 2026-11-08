@@ -37,7 +37,8 @@ CHAPTERS = {
          flow=True, part_titles=True,
          # Sections 16-23 were added later (2026-10-29) and show before 1-15, in the order of the tabs: the numbers stay, so saved reads stay valid.
          # Natan, 2026-11-08: הלכות צניעות = קיצור שולחן ערוך סימן ק"נ with his notes, sections 24-40 (one per סעיף).
-         groups=[(24, 40, "הלכות צניעות"), (16, 17, "ההבדל בין גברים לנשים"), (18, 23, "מקרבה נפשית - לבשר אחד", [(21, 23, "גירויה של האשה")]), (1, 15, "סדר ליל החתונה",
+         groups=[(24, 40, "הלכות צניעות"), # Natan, 2026-11-08: the two middle tabs are one tab now, with their names as sub-topic headings inside it.
+                 (16, 23, "השקפה", [(16, 17, "ההבדל בין גברים לנשים"), (18, 20, "מקרבה נפשית - לבשר אחד"), (21, 23, "גירויה של האשה")]), (1, 15, "סדר ליל החתונה",
                  # Inside it, the four topics from the first split, as headings in the list, the menu and the page.
                  [(1, 4, "ההכנות"), (5, 9, "ליל החתונה"), (10, 11, "טומאת בתולים"), (12, 15, "אחרי ליל החתונה")])]),
 }
@@ -57,6 +58,9 @@ if ch.get("graphic"):
 def ico(i, cls):
     return f'<span class="{cls}" aria-hidden="true">{icons[i]}</span>' if i in icons else ""
 heads = [h.strip() for h in open(f"{src}/headings.txt", encoding="utf-8") if h.strip()]
+# A heading that starts with "~" names the section in the lists and menu only; on the page its words open the text instead (Natan, 2026-11-08).
+quiet = {i for i, h in enumerate(heads, 1) if h.startswith("~")}
+heads = [h.lstrip("~").strip() for h in heads]
 
 # Man / woman icons beside a halacha that is mainly about one of them (src/who.txt; not listed = both, no icon).
 WHO_SVG = {
@@ -110,18 +114,28 @@ PRIVATE_TAIL = f"""<script src="/private.js"></script>
   if(t.error||!(t.data||[]).length) [].forEach.call(document.querySelectorAll('.sec .content'),function(c){{
     c.innerHTML='<p class="placeholder">'+(st.profile&&st.profile.is_admin?'הטקסט עוד לא הועלה ל־Supabase. צריך להריץ שם את v5.sql ואת קובץ התוכן של הפרק.':'הטקסט לא נטען. נסה לרענן את הדף.')+'</p>'}});
   if(!st.user||st.profile&&st.profile.is_admin) return;
-  // A section counts as read when its end comes into view after at least 15 seconds on it. Only the admin sees this.
-  var done={{}}, since={{}};
+  // A section counts as read only at reading pace (Natan, 2026-11-08): it must stay in the middle of the screen
+  // long enough for its length (about a quarter second a word, at least 8 seconds), and its end must come into view.
+  // Fast scrolling past it is not counted. Only the admin sees this.
+  // The reader's own "קראתי" mark (Natan, 2026-11-08), kept apart from the measured reading: reads rows under '<chapter>:v'.
+  try{{(await SITE.loadReads(ch+':v')||[]).forEach(function(n){{var b=document.querySelector('[data-vread="'+n+'"]');if(b)b.checked=true}})}}catch(e){{}}
+  document.addEventListener('change',function(e){{var b=e.target.closest('[data-vread]');if(b)SITE.saveRead(ch+':v',b.getAttribute('data-vread'),b.checked)}});
+  var done={{}}, spent={{}}, need={{}}, ended={{}};
   try{{(await SITE.loadReads(ch)||[]).forEach(function(n){{done[n]=1}})}}catch(e){{}}
-  var io=new IntersectionObserver(function(es){{es.forEach(function(e){{
-    var n=e.target.getAttribute('data-end'), sec=e.target.closest('.sec');
-    if(!e.isIntersecting||done[n]||sec.hidden) return;
-    var wait=15000-(Date.now()-(since[n]||Date.now()));
-    setTimeout(function(){{ if(!done[n]&&!sec.hidden){{done[n]=1;SITE.saveRead(ch,n,true)}} }},Math.max(0,wait));
-  }})}},{{rootMargin:'0px 0px 30% 0px'}});
+  [].forEach.call(document.querySelectorAll('.sec'),function(sec){{var n=sec.id.slice(1), c=sec.querySelector('.content');
+    var w=((c&&c.textContent)||'').trim().split(/\\s+/).length;need[n]=Math.max(8000,w*250)}});
+  var io=new IntersectionObserver(function(es){{es.forEach(function(e){{if(e.isIntersecting)ended[e.target.getAttribute('data-end')]=1}})}});
   [].forEach.call(document.querySelectorAll('.read-end'),function(el){{io.observe(el)}});
-  function seen(){{var s=document.querySelector('.sec:not([hidden])');if(s){{var n=s.id.slice(1);if(!since[n])since[n]=Date.now()}}}}
-  seen();window.addEventListener('hashchange',seen);
+  setInterval(function(){{
+    if(document.hidden)return;
+    var h=innerHeight;
+    [].forEach.call(document.querySelectorAll('.sec:not([hidden])'),function(sec){{
+      var n=sec.id.slice(1);if(done[n])return;
+      var r=sec.getBoundingClientRect();if(r.height===0||r.bottom<h*0.2||r.top>h*0.8)return;
+      spent[n]=(spent[n]||0)+1000;
+      if(ended[n]&&spent[n]>=need[n]){{done[n]=1;SITE.saveRead(ch,n,true)}}
+    }});
+  }},1000);
 }})();
 </script>
 """
@@ -159,10 +173,10 @@ for i, h in enumerate(heads, 1):
     mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
     nxt = f'<a class="pn next" href="#s{ni}"><small>הבא</small>{html.escape(heads[ni-1])}</a>' if ni else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
-    <div class="sec-head">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {k+1} מתוך {n}">{k+1}/{n}</span></div>
+    <div class="sec-head{" no-h" if i in quiet else ""}">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {k+1} מתוך {n}">{k+1}/{n}</span></div>
     <div class="content">
 {body}
-    </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
+    </div>{f'<i class="read-end" data-end="{i}"></i><label class="v-read"><input type="checkbox" data-vread="{i}"><span>קראתי</span></label>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
     <div class="sec-foot">
       {"" if private else f'<div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label>{"" if inline or ch.get("noquiz") else f'<button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button>'}</div>'}
       <nav class="pager" aria-label="ניווט בין קטעים">{prev}{mid}{nxt}</nav>
