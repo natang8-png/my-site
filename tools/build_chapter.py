@@ -34,7 +34,8 @@ CHAPTERS = {
     "leil-hachatuna": dict(title="סדר ליל החתונה", subtitle="סדר ליל הכלולות", num=2, of=3, path="leil-hachatuna", private=True,
          # Natan, 2026-10-28: three tabs. The first two have no text yet (None = empty tab).
          # The third holds the whole order, read as one long page (flow); the menu scrolls to a heading.
-         flow=True, part_titles=True,
+         # Natan, 2026-11-08: every section heading is a page of its own (no long page), and each tab stands apart.
+         tabs_apart=True, part_titles=True,
          # Sections 16-23 were added later (2026-10-29) and show before 1-15, in the order of the tabs: the numbers stay, so saved reads stay valid.
          # Natan, 2026-11-08: הלכות צניעות = קיצור שולחן ערוך סימן ק"נ with his notes, sections 24-40 (one per סעיף).
          groups=[(24, 40, "הלכות צניעות"), # Natan, 2026-11-08: the two middle tabs are one tab now, with their names as sub-topic headings inside it.
@@ -232,7 +233,7 @@ page = f'''<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&family=Gveret+Levin&display=swap">
 <link rel="stylesheet" href="/style.css?v={ver("style.css")}">
-{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}{" data-flow" if ch.get("flow") else ""}>
+{PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}{" data-flow" if ch.get("flow") else ""}{" data-tabs-apart" if ch.get("tabs_apart") else ""}>
   <header>
     <a class="back" href="{ch.get("back", "/halacha/")}">→ חזרה{" ללידה" if ch.get("back") else " להלכה"}</a>
     <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>
