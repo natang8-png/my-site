@@ -117,6 +117,9 @@ PRIVATE_TAIL = f"""<script src="/private.js"></script>
   // A section counts as read only at reading pace (Natan, 2026-11-08): it must stay in the middle of the screen
   // long enough for its length (about a quarter second a word, at least 8 seconds), and its end must come into view.
   // Fast scrolling past it is not counted. Only the admin sees this.
+  // The reader's own "קראתי" mark (Natan, 2026-11-08), kept apart from the measured reading: reads rows under '<chapter>:v'.
+  try{{(await SITE.loadReads(ch+':v')||[]).forEach(function(n){{var b=document.querySelector('[data-vread="'+n+'"]');if(b)b.checked=true}})}}catch(e){{}}
+  document.addEventListener('change',function(e){{var b=e.target.closest('[data-vread]');if(b)SITE.saveRead(ch+':v',b.getAttribute('data-vread'),b.checked)}});
   var done={{}}, spent={{}}, need={{}}, ended={{}};
   try{{(await SITE.loadReads(ch)||[]).forEach(function(n){{done[n]=1}})}}catch(e){{}}
   [].forEach.call(document.querySelectorAll('.sec'),function(sec){{var n=sec.id.slice(1), c=sec.querySelector('.content');
@@ -173,7 +176,7 @@ for i, h in enumerate(heads, 1):
     <div class="sec-head{" no-h" if i in quiet else ""}">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {k+1} מתוך {n}">{k+1}/{n}</span></div>
     <div class="content">
 {body}
-    </div>{f'<i class="read-end" data-end="{i}"></i>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
+    </div>{f'<i class="read-end" data-end="{i}"></i><label class="v-read"><input type="checkbox" data-vread="{i}"><span>קראתי</span></label>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
     <div class="sec-foot">
       {"" if private else f'<div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label>{"" if inline or ch.get("noquiz") else f'<button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button>'}</div>'}
       <nav class="pager" aria-label="ניווט בין קטעים">{prev}{mid}{nxt}</nav>

@@ -508,3 +508,7 @@ html.editing .qq.done .opts button{cursor:pointer}
 html.flow .toc ol .num,html.flow .cb-panel li[data-g] .num{display:none}
 .cb-panel li[hidden]{display:none}
 .sec-head.no-h{display:none}
+/* The reader's own "קראתי" mark at the end of each section of a private chapter (Natan, 2026-11-08). */
+.v-read{display:flex;align-items:center;gap:8px;width:max-content;margin:18px 0 6px;padding:8px 16px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-weight:600;cursor:pointer}
+.v-read input{width:20px;height:20px;accent-color:var(--accent);margin:0}
+.v-read:has(input:checked){background:var(--soft)}
