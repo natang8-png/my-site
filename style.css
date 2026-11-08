@@ -504,3 +504,6 @@ html.editing .qq.done .opts button{cursor:pointer}
 .part-head[hidden],.part-title[hidden]{display:none!important}
 /* Natan's notes inside a running line (הלכות צניעות): handwriting, about the size of the text (his demo, 2026-10-28). */
 .content .hand.hand-in{font-size:1em;line-height:1.4}
+/* Flow chapters (סדר ליל החתונה): no running section numbers in the headings list and menu, each tab stands alone. */
+html.flow .toc ol .num,html.flow .cb-panel li[data-g] .num{display:none}
+.cb-panel li[hidden]{display:none}
