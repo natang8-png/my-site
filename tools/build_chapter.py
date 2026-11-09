@@ -229,6 +229,12 @@ if groups:
             if os.path.exists(f"halacha/{slug}/{f}"):
                 head, rest = secs[x[0] - 1].split("\n", 1)
                 secs[x[0] - 1] = f'{head}\n    <img class="cover" src="{f}" alt="" width="1024" height="572" loading="lazy">\n{rest}'
+        # Natan, 2026-11-09: a section picture under the section's heading, when pics/sN.png exists.
+        for i in range(1, n + 1):
+            f = f"pics/s{i}.png"
+            if os.path.exists(f"halacha/{slug}/{f}"):
+                a, b = secs[i - 1].split('<div class="content">', 1)
+                secs[i - 1] = f'{a}<img class="sec-pic" src="{f}" alt="" width="1024" height="572" loading="lazy">\n    <div class="content">{b}'
 else:
     toc_html = "<ol>\n      " + chr(10).join("      "+t for t in toc).strip() + "\n    </ol>"
 
