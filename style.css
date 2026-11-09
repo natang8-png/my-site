@@ -514,3 +514,4 @@ html.flow .toc ol .num,html.flow .cb-panel li[data-g] .num{display:none}
 .v-read:has(input:checked){background:var(--soft)}
 /* הרחקות: the "לשאלון" / "להלכה" buttons in the site's green (Natan, 2026-11-08). */
 html:has(main[data-chapter="harchakot"]) .to-quiz,html:has(main[data-chapter="harchakot"]) .to-hal{background:var(--accent)}
+.sec>.cover{display:block;width:100%;height:auto;aspect-ratio:1024/572;object-fit:cover;border-radius:14px;margin:0 0 16px;background:var(--soft)}
