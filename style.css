@@ -504,3 +504,13 @@ html.editing .qq.done .opts button{cursor:pointer}
 .part-head[hidden],.part-title[hidden]{display:none!important}
 /* Natan's notes inside a running line (הלכות צניעות): handwriting, about the size of the text (his demo, 2026-10-28). */
 .content .hand.hand-in{font-size:1em;line-height:1.4}
+/* Flow chapters (סדר ליל החתונה): no running section numbers in the headings list and menu, each tab stands alone. */
+html.flow .toc ol .num,html.flow .cb-panel li[data-g] .num{display:none}
+.cb-panel li[hidden]{display:none}
+.sec-head.no-h{display:none}
+/* The reader's own "קראתי" mark at the end of each section of a private chapter (Natan, 2026-11-08). */
+.v-read{display:flex;align-items:center;gap:8px;width:max-content;margin:18px 0 6px;padding:8px 16px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-weight:600;cursor:pointer}
+.v-read input{width:20px;height:20px;accent-color:var(--accent);margin:0}
+.v-read:has(input:checked){background:var(--soft)}
+/* הרחקות: the "לשאלון" / "להלכה" buttons in the site's green (Natan, 2026-11-08). */
+html:has(main[data-chapter="harchakot"]) .to-quiz,html:has(main[data-chapter="harchakot"]) .to-hal{background:var(--accent)}

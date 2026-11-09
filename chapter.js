@@ -48,6 +48,8 @@ else if(PROOF){document.documentElement.classList.add('proof');
   };
   // The sections on screen now: in a flow chapter, those of the open tab.
   window.visSecs=function(){return secs.filter(function(s){return !s.hidden})};
+  // A chapter whose tabs stand apart (data-tabs-apart): each section is its own page, and reading stays inside its tab.
+  window.tabSecs=function(sec){var t=sec&&tabOf(sec.id);if(!t)return sec?[sec]:[];return secs.filter(function(s){var k=+s.id.slice(1);return k>=t[0]&&k<=t[1]})};
   // Where a section starts on a flow page: its sub-topic title, when one stands above it.
   function top(s){var t=s,p=s.previousElementSibling;while(p&&(p.classList.contains('part-head')||p.classList.contains('part-title'))){t=p;p=p.previousElementSibling}return t}
   window.secTop=top;
@@ -132,9 +134,9 @@ else if(PROOF){document.documentElement.classList.add('proof');
   // The menu lists every heading; a chapter split into topics gets a title line before each topic.
   var grps=[].filter.call(toc.querySelectorAll('.grp'),function(g){return g.querySelector('ol > li')}); // topics with headings
   if(grps.length>1){var ol=document.createElement('ol');
-    grps.forEach(function(g){var h=document.createElement('li');h.className='m-grp';
+    grps.forEach(function(g,k){var h=document.createElement('li');h.className='m-grp';h.setAttribute('data-g',k);
       h.textContent=g.querySelector('.num').textContent+'. '+g.querySelector('.g-title').textContent;ol.appendChild(h);
-      [].forEach.call(g.querySelectorAll('ol > li'),function(li){ol.appendChild(li.cloneNode(true))})});
+      [].forEach.call(g.querySelectorAll('ol > li'),function(li){var c=li.cloneNode(true);c.setAttribute('data-g',k);ol.appendChild(c)})});
     panel.appendChild(ol)}
   else if(grps.length)panel.appendChild(grps[0].querySelector('ol').cloneNode(true));
   else panel.appendChild(toc.querySelector('ol').cloneNode(true));
@@ -148,14 +150,21 @@ else if(PROOF){document.documentElement.classList.add('proof');
   panel.addEventListener('click',function(e){if(e.target.closest('a'))setOpen(false)});
   document.addEventListener('click',function(e){if(e.target===bar||!bar.contains(e.target))setOpen(false)});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')setOpen(false)});
+  // A flow chapter's tabs are pages of their own (Natan, 2026-11-08): the menu shows only the open tab's headings,
+  // and the top bar names the tab instead of the chapter.
+  var APART=main.hasAttribute('data-flow')||main.hasAttribute('data-tabs-apart'), FLOWT=APART&&grps.length>1;
+  function tabNow(sec){if(!FLOWT||!sec)return -1;var a=toc.querySelector('a[href="#'+sec.id+'"]'), g=a&&a.closest('.grp');return grps.indexOf(g)}
   function current(){
     var sec=window.curSec?curSec():document.querySelector('.sec:not([hidden])'), num=bar.querySelector('.cb-snum');
+    if(FLOWT){var t=tabNow(sec);
+      [].forEach.call(panel.querySelectorAll('li[data-g]'),function(li){li.hidden=t>=0&&+li.getAttribute('data-g')!==t});
+      bar.querySelector('.cb-title').textContent=t>=0?grps[t].querySelector('.g-title').textContent:title}
     // Graphic chapters: the section's icon sits between the back arrow and the two title lines.
     var ico=bar.querySelector('.cb-ico'), si=sec&&sec.querySelector('.sec-ico');
     ico.innerHTML=si?si.innerHTML:'';ico.hidden=!si;
     num.hidden=!sec;
     if(!sec){bar.querySelector('.cb-sname').textContent='תוכן עניינים';return}
-    var all=main.hasAttribute('data-flow')&&window.visSecs?visSecs():[].slice.call(document.querySelectorAll('.sec'));
+    var all=main.hasAttribute('data-flow')&&window.visSecs?visSecs():APART&&window.tabSecs?tabSecs(sec):[].slice.call(document.querySelectorAll('.sec'));
     var i=all.indexOf(sec)+1, total=all.length; // place on the page (in a flow chapter: in the open tab), not the section's number
     bar.querySelector('.cb-sname').textContent=sec.querySelector('.sec-head h2').textContent;
     num.textContent='קטע '+i+'/'+total;num.setAttribute('aria-label','קטע '+i+' מתוך '+total);
@@ -265,13 +274,13 @@ else if(PROOF){document.documentElement.classList.add('proof');
   var secs=[].slice.call(document.querySelectorAll('.sec'));
   if(!main||!toc||!secs.length) return;
   if(PROOF) return;
-  var priv=main.hasAttribute('data-track'), FLOWP=main.hasAttribute('data-flow'), n=secs.length, ORD=[];
+  var priv=main.hasAttribute('data-track'), FLOWP=main.hasAttribute('data-flow')||main.hasAttribute('data-tabs-apart'), n=secs.length, ORD=[];
   // Reading order = the order on the page (a chapter may show later-added sections first, by tab).
   // In a flow chapter only the open tab counts: its end is the end, and "סיום" goes back to the tabs.
-  function sync(){var v=FLOWP&&window.visSecs?visSecs():[];if(!v.length)v=secs;ORD=v.map(function(s){return +s.id.slice(1)});n=ORD.length}
+  function sync(){var v=!FLOWP?[]:main.hasAttribute('data-flow')?visSecs():tabSecs(secs.filter(function(s){return !s.hidden})[0]);if(!v.length)v=secs;ORD=v.map(function(s){return +s.id.slice(1)});n=ORD.length}
   sync();
   function at(i){return i>0?ORD.indexOf(i)+1:0} // place 1..n, 0 = תוכן עניינים
-  function step(i,d){var k=at(i)+d;return k<=0?(k<0?-1:0):k>n?(FLOWP?0:n+1):ORD[k-1]}
+  function step(i,d){var k=at(i)+d;return k<=0?(k<0?-1:0):k>n?(FLOWP?0:-1):ORD[k-1]}
   // A solid arrow (filled shape, not a text character) for the two big buttons.
   function ARROW(d){return '<svg class="rb-arr" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="'+(d==='r'?'M13 4.5 21 12l-8 7.5V15H4.5a1.5 1.5 0 0 1-1.5-1.5v-3A1.5 1.5 0 0 1 4.5 9H13z':'M11 4.5 3 12l8 7.5V15h8.5a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 19.5 9H11z')+'"/></svg>'}
   // Light buttons: the accessibility figure in a double circle, and three lines for the menu.
@@ -295,7 +304,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
   dlg.addEventListener('click',function(e){if(e.target===dlg||e.target.closest('[data-close]'))dlg.close()});
   function cur(){var s=window.curSec?curSec():document.querySelector('.sec:not([hidden])');return s?+s.id.slice(1):0} // 0 = תוכן עניינים
   function gated(i){return !!window.iqOpen&&i>0&&!iqOpen(i)}
-  function go(i){var back=main.querySelector('header .back');if(i<0||i>n){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}
+  function go(i){var back=main.querySelector('header .back');if(i<0||i>0&&!document.getElementById('s'+i)){location.href=back?back.getAttribute('href'):'/';return}if(i===0){location.hash='#toc';return}
     if(location.hash==='#s'+i){var el=document.getElementById('s'+i);(window.secTop?secTop(el):el).scrollIntoView({block:'start'});return} // flow page: already there by address, scrolled away
     location.hash='#s'+i}
   function paint(){
