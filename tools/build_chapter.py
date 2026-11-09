@@ -16,6 +16,8 @@ CHAPTERS = {
     "harchakot": dict(title="הרחקות", subtitle="פרק ב - האיסורים הנוהגים בזמן נדתה", num=1, of=3, path="halacha/family/harchakot",
          graphic=True, inline_quiz=True, quiz="/halacha/harchakot/quiz.json",
          # Natan's split into 7 topics (2026-10-28): first section, last section, title.
+         # Natan, 2026-11-09: a soft-colored cover picture at the top of each topic (halacha/harchakot/covers/cover-N.png).
+         covers=True,
          groups=[(1, 4, "כללי"), (5, 8, "חיי היום יום"), (9, 12, "אכילה ושתייה"), (13, 14, "חדר השינה"),
                  (15, 18, "מחוץ לבית"), (19, 21, "הנהגה אישית"), (22, 26, "מצבים מיוחדים")],
          # Natan, 2026-10-29: the book's name in bold; the second line in his handwriting font (.hand), the font of his own notes.
@@ -220,6 +222,13 @@ if groups:
                 continue
             head, rest = secs[a - 1].split("\n", 1)
             secs[a - 1] = f'{head}\n    <h2 class="part-title">{html.escape(t)}</h2>\n{rest}'
+    # A cover picture at the top of the first section of each topic, when its file exists.
+    if ch.get("covers"):
+        for g, x in enumerate(full, 1):
+            f = f"covers/cover-{g}.png"
+            if os.path.exists(f"halacha/{slug}/{f}"):
+                head, rest = secs[x[0] - 1].split("\n", 1)
+                secs[x[0] - 1] = f'{head}\n    <img class="cover" src="{f}" alt="" width="1024" height="572" loading="lazy">\n{rest}'
 else:
     toc_html = "<ol>\n      " + chr(10).join("      "+t for t in toc).strip() + "\n    </ol>"
 
