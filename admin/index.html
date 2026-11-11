@@ -73,7 +73,11 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.qb,.qb-top,.qb-heads){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
 :root[data-theme="dark"] :is(.qb,.qb-top,.qb-heads){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
 .qb-top{display:flex;align-items:center;gap:16px;margin-top:4px}
-.qb-top>b{font-family:var(--display);font-size:1.75rem;line-height:1.1;white-space:nowrap}
+.qb-top>b,.qb-ttl{font-family:var(--display);font-size:1.75rem;line-height:1.1;white-space:nowrap}
+.qb-ttl{all:unset;font-family:var(--display);font-size:1.75rem;font-weight:700;line-height:1.1;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:8px}
+.qb-ttl .ar{display:inline-block;font-size:.55em;transition:transform .15s}.qb-ttl[aria-expanded="true"] .ar{transform:rotate(-90deg)}
+.qb-ttl:focus-visible{outline:2px solid var(--fg);outline-offset:3px;border-radius:4px}
+.qb-heads.nosum>summary{display:none}
 .qb{border-top:0;padding-top:0}
 /* "כפתור הציון": green fill = reading progress, snapped to the gap between words (qbSnap) */
 .qb-pill{all:unset;box-sizing:border-box;position:relative;flex:1;min-width:0;height:64px;border:1.5px solid var(--accent);border-radius:999px;overflow:hidden;cursor:pointer;background:var(--soft);color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
@@ -285,7 +289,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   }
   // A click anywhere outside an open topic (and outside the topics strip) closes it.
   document.addEventListener('click',function(e){
-    document.querySelectorAll('details.qb-heads[open]').forEach(function(d){if(!d.contains(e.target))d.open=false});
+    var tt=e.target.closest('.qb-ttl');
+    if(tt){var d=tt.parentNode.nextElementSibling;if(d&&d.matches('details.qb-heads')){d.open=!d.open;tt.setAttribute('aria-expanded',d.open)}}
+    document.querySelectorAll('details.qb-heads[open]').forEach(function(d){if(!d.contains(e.target)&&!(tt&&tt.parentNode.nextElementSibling===d)){d.open=false;var b=d.previousElementSibling&&d.previousElementSibling.querySelector('.qb-ttl');if(b)b.setAttribute('aria-expanded','false')}});
     if(e.target.closest('.qb-topic')||e.target.closest('.qb-seg'))return;
     document.querySelectorAll('.qb-topic').forEach(function(t){var box=t.closest('[data-qb]');if(box)box.querySelector('.qb-in').innerHTML=qbDraw(box.getAttribute('data-qb'),0)});
   });
@@ -350,7 +356,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         // Chapters with a quiz get the score pill, the headings list and the topics strip.
         var qb=QUIZ&&QUIZ[c]&&CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
         if(qb){
-          h+='<div class="qb-top"><b>'+esc(CHAPTERS[c].title)+'</b>'+qbPill(u.id+'|'+c,c)+'</div>'+readHeads(c,u.id+'|'+c)+qb;return}
+          h+='<div class="qb-top"><button type="button" class="qb-ttl" aria-expanded="false" title="קריאה לפי כותרות"><span class="ar">◀</span>'+esc(CHAPTERS[c].title)+'</button>'+qbPill(u.id+'|'+c,c)+'</div>'+readHeads(c,u.id+'|'+c)+qb;return}
         h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' קטעים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
         // Which headings were read (chapters whose reading is tracked quietly).
         h+=readHeads(c);
@@ -359,7 +365,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       function readHeads(c,key){
         if(!CHAPTERS[c].heads)return '';
         var secs=key&&QB[key];
-        return '<details class="qb-heads"><summary>קריאה לפי כותרות</summary><ol>'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
+        return '<details class="qb-heads'+(key?' nosum':'')+'"><summary>קריאה לפי כותרות</summary><ol>'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
             var v=ur.find(function(x){return x.chapter===c+':v'&&x.section===i+1}); // the student's own "קראתי" mark
             var mk=secs&&secs[i]?secs[i].k.map(function(k){return k==='ok'?'<i class="ok">✓</i>':k==='bad'?'<i class="bad">✗</i>':'<i class="no"></i>'}).join(''):'';
             return '<li class="'+(r?'rd':'')+'"><span>'+(i+1)+'. '+esc(t)+(r?' <small>· '+when(r.read_at)+'</small>':'')+(v?' · <b>V סימן קראתי</b>':'')+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+'</li>'}).join('')+'</ol></details>'+
@@ -369,6 +375,11 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       h+='</article>';
     });
     app.innerHTML=h+'</div>'+inviteBlock(invites);
+    // Same title width in each student card, so all score pills are equally wide.
+    (document.fonts?document.fonts.ready:Promise.resolve()).then(function(){
+      app.querySelectorAll('article').forEach(function(a){var t=a.querySelectorAll('.qb-ttl'),w=0;
+        t.forEach(function(b){b.style.minWidth='';w=Math.max(w,b.getBoundingClientRect().width)});
+        if(w&&!matchMedia('(max-width:620px)').matches)t.forEach(function(b){b.style.minWidth=Math.ceil(w)+'px'})})});
     qbSnap();
     var mr=document.getElementById('myreset');if(mr)SITE.quizResetControls(mr,'harchakot');
     window.__users=others;window.__grants=grants;
