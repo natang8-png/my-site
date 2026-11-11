@@ -76,8 +76,16 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb-top>b,.qb-ttl{font-family:var(--display);font-size:1.75rem;line-height:1.1;white-space:nowrap}
 .qb-ttl{all:unset;font-family:var(--display);font-size:1.75rem;font-weight:700;line-height:1.1;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:8px}
 .qb-ttl .ar{display:inline-block;font-size:.55em;transition:transform .15s}.qb-ttl[aria-expanded="true"] .ar{transform:rotate(-90deg)}
+.qb-top>.qb-ttl{order:-1}
 .qb-ttl:focus-visible{outline:2px solid var(--fg);outline-offset:3px;border-radius:4px}
 .qb-heads.nosum>summary{display:none}
+/* wide screens: every pill has the same width; a long chapter name wraps beside it, and a 3rd line continues under it */
+@media (min-width:621px){
+  .qb-top{display:flow-root}
+  .qb-top>.qb-pill{float:left;width:calc(100% - 10rem);margin-right:16px}
+  .qb-ttl{display:inline;white-space:normal}.qb-ttl .ar{margin-left:8px}
+  .qb-ttl.one{display:inline-block}
+}
 .qb{border-top:0;padding-top:0}
 /* "כפתור הציון": green fill = reading progress, snapped to the gap between words (qbSnap) */
 .qb-pill{all:unset;box-sizing:border-box;position:relative;flex:1;min-width:0;height:64px;border:1.5px solid var(--accent);border-radius:999px;overflow:hidden;cursor:pointer;background:var(--soft);color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
@@ -288,6 +296,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
             return '<li class="'+cls+'">'+mk+'<span>'+esc(t)+tag+'</span>'+(right&&q.why?'<span class="why">&gt; '+esc(q.why)+'</span>':'')+'</li>'}).join('')+'</ul></li>'}).join('')+'</ol></div>'+ax;
   }
   // A click anywhere outside an open topic (and outside the topics strip) closes it.
+  document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('qb-ttl')){e.preventDefault();e.target.click()}});
   document.addEventListener('click',function(e){
     var tt=e.target.closest('.qb-ttl');
     if(tt){var d=tt.parentNode.nextElementSibling;if(d&&d.matches('details.qb-heads')){d.open=!d.open;tt.setAttribute('aria-expanded',d.open)}}
@@ -356,7 +365,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         // Chapters with a quiz get the score pill, the headings list and the topics strip.
         var qb=QUIZ&&QUIZ[c]&&CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
         if(qb){
-          h+='<div class="qb-top"><button type="button" class="qb-ttl" aria-expanded="false" title="קריאה לפי כותרות"><span class="ar">◀</span>'+esc(CHAPTERS[c].title)+'</button>'+qbPill(u.id+'|'+c,c)+'</div>'+readHeads(c,u.id+'|'+c)+qb;return}
+          h+='<div class="qb-top">'+qbPill(u.id+'|'+c,c)+'<span class="qb-ttl" role="button" tabindex="0" aria-expanded="false" title="קריאה לפי כותרות"><span class="ar">◀</span>'+esc(CHAPTERS[c].title)+'</span></div>'+readHeads(c,u.id+'|'+c)+qb;return}
         h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' קטעים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
         // Which headings were read (chapters whose reading is tracked quietly).
         h+=readHeads(c);
@@ -375,11 +384,12 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       h+='</article>';
     });
     app.innerHTML=h+'</div>'+inviteBlock(invites);
-    // Same title width in each student card, so all score pills are equally wide.
+    // A one-line chapter name sits in the middle of the pill's height.
     (document.fonts?document.fonts.ready:Promise.resolve()).then(function(){
-      app.querySelectorAll('article').forEach(function(a){var t=a.querySelectorAll('.qb-ttl'),w=0;
-        t.forEach(function(b){b.style.minWidth='';w=Math.max(w,b.getBoundingClientRect().width)});
-        if(w&&!matchMedia('(max-width:620px)').matches)t.forEach(function(b){b.style.minWidth=Math.ceil(w)+'px'})})});
+      if(matchMedia('(max-width:620px)').matches)return;
+      app.querySelectorAll('.qb-ttl').forEach(function(b){var p=b.parentNode.querySelector('.qb-pill');if(!p)return;
+        var tops=new Set([].map.call(b.getClientRects(),function(r){return Math.round(r.top)}));
+        if(tops.size===1){b.classList.add('one');b.style.marginTop=Math.max(0,(p.offsetHeight-b.offsetHeight)/2)+'px'}})});
     qbSnap();
     var mr=document.getElementById('myreset');if(mr)SITE.quizResetControls(mr,'harchakot');
     window.__users=others;window.__grants=grants;
