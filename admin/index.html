@@ -116,7 +116,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 @container (max-width:21px){.qb-seg .s{position:relative;margin-top:21px}
   .qb-seg .s b,.qb-seg .s.rd b{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:6px;padding:0;background:none;color:var(--qread);white-space:nowrap}
   /* a short black line from the number down to its cube */
-  .qb-seg .s b::after{content:"";position:absolute;top:100%;left:50%;width:1.5px;height:5px;margin-left:-.75px;background:var(--fg)}
+  .qb-seg .s b::after{content:"";position:absolute;top:100%;left:50%;width:2px;height:5px;margin-left:-1px;background:var(--fg)}
   .qb-seg:nth-child(even) .s b{display:none}}
 @container (max-width:11px){.qb-seg .s b{display:none}.qb-seg:is(:first-child,:nth-child(5n)) .s b{display:block}}
 .qb-seg .q{display:flex;gap:2px;height:22px}.qb-seg .q i{flex:1;border-radius:2px}
