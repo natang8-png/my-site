@@ -519,3 +519,11 @@ html.flow .toc ol .num,html.flow .cb-panel li[data-g] .num{display:none}
 /* הרחקות: the "לשאלון" / "להלכה" buttons in the site's green (Natan, 2026-11-08). */
 html:has(main[data-chapter="harchakot"]) .to-quiz,html:has(main[data-chapter="harchakot"]) .to-hal{background:var(--accent)}
 .sec>.cover,.sec>.sec-pic{display:block;width:100%;height:auto;aspect-ratio:1024/572;object-fit:cover;border-radius:14px;margin:0 0 16px;background:var(--soft)}
+
+/* Wide computer screens: a wider page column, so the side margins are not so wide. Phones and tablets keep 40rem. */
+@media (min-width:1200px){
+  main{max-width:60rem}
+  .chbar{padding-inline:max(12px,calc((100vw - 60rem)/2))}
+  /* Section pictures stay the size they were, centred, so the text still starts on the first screen */
+  .sec>.cover,.sec>.sec-pic{max-width:40rem;margin-inline:auto}
+}
