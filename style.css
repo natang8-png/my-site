@@ -170,7 +170,11 @@ main.quiz-only .sec-tools{justify-content:flex-end}
 /* Chapter bar sits above the page bar */
 .sec-foot{bottom:var(--foot-h,56px)}
 /* Reading preferences */
-:root.a-bright{filter:brightness(var(--bright,1))}
+/* Brightness: a see-through layer over the whole screen, not a filter on the page itself.
+   A filter on <html> makes some desktop browsers drop the top and bottom bars from the screen edges
+   (they then sit at the page's top and end, and the bottom bar shows only after scrolling down). */
+:root.a-bright body::after{content:"";position:fixed;inset:0;z-index:2147483647;pointer-events:none;
+  -webkit-backdrop-filter:brightness(var(--bright,1));backdrop-filter:brightness(var(--bright,1))}
 :root:not([data-theme="dark"])[data-bg="white"]{--bg:#ffffff;--soft:#f1f4f2}
 :root:not([data-theme="dark"])[data-bg="cream"]{--bg:#f8f1e3;--soft:#efe5d1;--line:#e0d4bd}
 :root:not([data-theme="dark"])[data-bg="gray"]{--bg:#e9ebea;--soft:#dde1df;--line:#c9cfcb}
