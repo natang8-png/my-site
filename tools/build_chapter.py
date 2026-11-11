@@ -169,7 +169,9 @@ for i, h in enumerate(heads, 1):
         body = '<p class="placeholder">הטקסט של הקטע הזה עוד לא נוסף.</p>'
         hw = ""
         filled = False
-    toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{i}</span>{ico(i, "ico")}{html.escape(h)}{hw}</a></li>')
+    # The number shown is the section's place in the reading order (Natan, 2026-11-11), so the tabs count 1, 2, 3... in a row;
+    # the id (s{i}) and the saved reads keep the section's own number.
+    toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{pos[i]+1}</span>{ico(i, "ico")}{html.escape(h)}{hw}</a></li>')
     k = pos[i]; pi = order[k - 1] if k > 0 else None; ni = order[k + 1] if k + 1 < n else None
     prev = (f'<a class="pn prev" href="#s{pi}"><small>הקודם</small>{html.escape(heads[pi-1])}</a>' if pi
             else f'<a class="pn prev" href="{ch.get("back", "/halacha/")}"><small>חזרה</small>לתפריט הלכה</a>')
@@ -207,7 +209,7 @@ if groups:
             return (f'<details class="grp" name="grp"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span></summary>'
                     '<p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>')
         return (f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
-                f'<small>{"סעיפים "+str(a)+"-"+str(b) if b > a else "סעיף "+str(a)}</small></summary>'
+                f'<small>{"סעיפים "+str(pos[a]+1)+"-"+str(pos[b]+1) if b > a else "סעיף "+str(pos[a]+1)}</small></summary>'
                 f'<ol>{items(a, b, sub)}</ol></details>')
     toc_html = '<div class="grps">' + "".join(grp(g, *x) for g, x in enumerate(groups, 1)) + '</div>'
     # A sub-topic title above its first section on the page (shown only once inside the long page).
