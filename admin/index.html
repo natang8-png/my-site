@@ -112,7 +112,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb-seg .s.ur b{color:var(--qread);background:none}
 /* topic numbers inside the blue strip; when it is crowded, every other one */
 .qb-seg{container-type:inline-size}.qb-seg .s{overflow:visible}
-@container (max-width:21px){.qb-seg:nth-child(even) .s b{display:none}}
+/* crowded: odd numbers inside the cube, even numbers in a row above the cubes */
+@container (max-width:21px){.qb-seg .s{position:relative;margin-top:16px}
+  .qb-seg:nth-child(even) .s b{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:none;color:var(--qread);white-space:nowrap}}
 @container (max-width:11px){.qb-seg .s b{display:none}.qb-seg:is(:first-child,:nth-child(5n)) .s b{display:block}}
 .qb-seg .q{display:flex;gap:2px;height:22px}.qb-seg .q i{flex:1;border-radius:2px}
 .qb .ok{background:var(--qok)}.qb .bad{background:var(--qbad)}.qb .no{background:var(--qnone)}
