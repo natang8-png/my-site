@@ -73,6 +73,8 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.qb,.qb-top,.qb-heads){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
 :root[data-theme="dark"] :is(.qb,.qb-top,.qb-heads){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
 .qb-top{display:flex;align-items:center;gap:16px;margin:18px 0 10px}
+/* a line between chapters */
+.qb~.qb-top{border-top:1px solid var(--line);padding-top:18px;margin-top:16px}
 .qb-top>b,.qb-ttl{font-family:var(--display);font-size:1.75rem;line-height:1.1;white-space:nowrap}
 .qb-ttl{all:unset;font-family:var(--display);font-size:1.75rem;font-weight:700;line-height:1.1;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:8px}
 .qb-ttl .ar{display:inline-block;color:var(--qok,#2e8b57);font-size:.55em;transition:transform .15s}.qb-ttl[aria-expanded="true"] .ar{transform:rotate(-90deg)}
@@ -303,9 +305,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   // Topics strip (always shown); clicking a topic opens its questions below, clicking it again closes them.
   function qbDraw(uid,n){
     var secs=QB[uid];
-    if(secs.noq)return '<div class="qb-secs">'+secs.map(function(s){return '<span class="qb-seg noq" title="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.n+'</b></span></span>'}).join('')+'</div><div class="qb-axis"><span>נושא 1</span><span>נושא '+secs.length+'</span></div>';
+    if(secs.noq)return '<div class="qb-secs">'+secs.map(function(s){return '<span class="qb-seg noq" title="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.n+'</b></span></span>'}).join('')+'</div>';
     var h='<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg'+(s.n===n?' on':'')+'" data-qbgo="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.n+'</b></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>';
-    var ax='<div class="qb-axis"><span>נושא 1</span><span>נושא '+secs.length+'</span></div>';
+    var ax='';
     return n?h+qbTopic(uid,n)+ax:h+ax;
   }
   // One topic's questions with the student's answers (used by the strip and by the headings list).
