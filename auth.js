@@ -38,10 +38,10 @@
       var s=(await sb.auth.getSession()).data.session;
       if(!s) return state;
       state.user=s.user;
-      var p=await sb.from('profiles').select('*').eq('id',s.user.id).maybeSingle();
-      state.profile=p.data||null;
-      var g=await sb.from('grants').select('*').eq('user_id',s.user.id);
-      state.grants=g.data||[];
+      // Profile and grants together, not one after the other: the chapter text waits for them.
+      var r=await Promise.all([sb.from('profiles').select('*').eq('id',s.user.id).maybeSingle(),sb.from('grants').select('*').eq('user_id',s.user.id)]);
+      state.profile=r[0].data||null;
+      state.grants=r[1].data||[];
       touch();
     }catch(e){}
     return state;
@@ -88,7 +88,7 @@
         '<a class="acct-name" href="/me/" title="האזור האישי"></a>'+(incomplete()?'<span>·</span><a href="/login/?complete=1&next='+next+'">השלמת פרטים</a>':'')+'<span>·</span><button type="button" class="link" data-out>יציאה</button>';
       bar.querySelector('.acct-name').textContent=name();
       var eo=bar.querySelector('[data-edit-on]'); if(eo) eo.onclick=function(){setEdit(true)};
-      bar.querySelector('[data-out]').onclick=async function(){await sb.auth.signOut();location.reload()};
+      bar.querySelector('[data-out]').onclick=async function(){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('acc:')===0)localStorage.removeItem(k)})}catch(e){}await sb.auth.signOut();location.reload()};
     } else {
       bar.innerHTML='<a href="/login/?next='+next+'">כניסה / הרשמה</a>';
     }

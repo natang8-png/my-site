@@ -97,12 +97,18 @@ else if(PROOF){document.documentElement.classList.add('proof');
 (function(){
   var main=document.querySelector('main[data-path]');
   if(!main||!window.SITE)return;
-  main.classList.add('checking');
+  // The text is already in the page; only the access check waits for the server (a few round trips).
+  // A reader who had access last time on this device sees the text at once, and the check runs behind it.
+  var path=main.getAttribute('data-path'), key='acc:'+path, was=null;
+  try{if(!main.hasAttribute('data-track'))was=localStorage.getItem(key)}catch(e){}
+  if(was==='study'||was==='read'){if(was==='read')main.classList.add('read-only')}else main.classList.add('checking');
   SITE.ready.then(function(st){
-    var a=SITE.access(main.getAttribute('data-path'));
+    var a=SITE.access(path);
+    try{if(a)localStorage.setItem(key,a);else localStorage.removeItem(key)}catch(e){}
     main.classList.remove('checking');
+    main.classList.toggle('read-only',a==='read');
     if(a==='study')return;
-    if(a==='read'){main.classList.add('read-only');return}
+    if(a==='read')return;
     main.classList.add(a==='quiz'?'quiz-only':'locked');
     var next=encodeURIComponent(location.pathname+location.hash);
     var msg=a==='quiz'?'בפרק הזה פתוחה לך הבחינה העצמית בלבד.'
