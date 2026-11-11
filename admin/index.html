@@ -72,8 +72,26 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb,.qb-top,.qb-heads{--qok:#2e8b57;--qbad:#c8463d;--qnone:var(--line);--qread:#3d6fa3}.qb{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.qb,.qb-top,.qb-heads){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
 :root[data-theme="dark"] :is(.qb,.qb-top,.qb-heads){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
-.qb-top{display:flex;align-items:center;gap:16px;margin-top:4px}
-.qb-top>b{font-family:var(--display);font-size:1.75rem;line-height:1.1;white-space:nowrap}
+.qb-top{display:flex;align-items:center;gap:16px;margin:18px 0 10px}
+/* a line between chapters */
+.qb~.qb-top{border-top:1px solid var(--line);padding-top:18px;margin-top:16px}
+.qb-top>b,.qb-ttl{font-family:var(--display);font-size:1.75rem;line-height:1.1;white-space:nowrap}
+.qb-ttl{all:unset;font-family:var(--display);font-size:1.75rem;font-weight:700;line-height:1.1;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:8px}
+.qb-ttl .ar{display:inline-block;color:var(--qok,#2e8b57);font-size:.55em;transition:transform .15s}.qb-ttl[aria-expanded="true"] .ar{transform:rotate(-90deg)}
+.qb-top>.qb-ttl{order:-1}
+.qb-ttl:focus-visible{outline:2px solid var(--fg);outline-offset:3px;border-radius:4px}
+.qb-heads.nosum>summary{display:none}
+.qb-heads li.go{cursor:pointer}.qb-heads li.go:hover{outline:1px solid var(--qread)}
+.qb-heads li.go.on{outline:2px solid var(--fg)}
+.qb-heads>ol>li.qb-hq{display:block;padding:0;margin:2px 0 8px}
+.qb-pill.noq,.qb-seg.noq{cursor:default}
+/* wide screens: every pill has the same width; a long chapter name wraps beside it, and a 3rd line continues under it */
+@media (min-width:621px){
+  .qb-top{display:flow-root}
+  .qb-top>.qb-pill{float:left;width:calc(100% - 10rem);margin-right:16px}
+  .qb-ttl{display:inline;white-space:normal;line-height:32px} /* 2 lines = pill height (64px), so a 3rd line runs full width under it */.qb-ttl .ar{margin-left:8px}
+  .qb-ttl.one{display:inline-block}
+}
 .qb{border-top:0;padding-top:0}
 /* "כפתור הציון": green fill = reading progress, snapped to the gap between words (qbSnap) */
 .qb-pill{all:unset;box-sizing:border-box;position:relative;flex:1;min-width:0;height:64px;border:1.5px solid var(--accent);border-radius:999px;overflow:hidden;cursor:pointer;background:var(--soft);color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
@@ -90,19 +108,35 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb-secs{align-items:flex-end}
 /* the open topic hangs from its segment like a tab */
 .qb-seg.on{box-sizing:border-box;border:2px solid var(--fg);border-bottom:0;border-radius:5px 5px 0 0;padding:3px 3px 5px;margin-bottom:-2px;background:var(--bg);position:relative;z-index:1;flex:1.6}
-.qb-seg .s{height:14px;border-radius:2px}
-.qb-seg .q{display:flex;gap:1px;height:34px}.qb-seg .q i{flex:1;border-radius:2px}
+.qb-seg .s{height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.qb-seg .s b{font-size:12px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;color:#fff}
+.qb-seg .s b{padding:1px 2px;border-radius:3px;position:relative;z-index:1}.qb-seg .s.rd b{background:var(--qread)}
+.qb-seg .s.ur b{color:var(--qread);background:none}
+/* topic numbers inside the blue strip; when it is crowded, every other one */
+.qb-seg{container-type:inline-size}.qb-seg .s{overflow:visible}
+/* crowded: the numbers move to a row above the cubes, every other one (1, 3, 5...); very crowded: 1, 5, 10, 15... */
+@container (max-width:21px){.qb-seg .s{position:relative;margin-top:21px}
+  .qb-seg .s b,.qb-seg .s.rd b{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:6px;padding:0;background:none;color:var(--qread);white-space:nowrap}
+  /* a short black line from the number down to its cube */
+  .qb-seg .s b::after{content:"";position:absolute;top:100%;left:50%;width:2px;height:5px;margin-left:-1px;background:var(--fg)}
+  .qb-seg:nth-child(even) .s b{display:none}}
+@container (max-width:11px){.qb-seg .s b{display:none}.qb-seg:is(:first-child,:nth-child(5n)) .s b{display:block}}
+.qb-seg .q{display:flex;gap:2px;height:22px}.qb-seg .q i{flex:1;border-radius:2px}
 .qb .ok{background:var(--qok)}.qb .bad{background:var(--qbad)}.qb .no{background:var(--qnone)}
+/* unanswered question = hollow white square, its own frame, not touching the next one */
+.qb-seg .q i.no,.qb-seg .s.ur{background:#fff;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--fg) 30%,transparent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.qb-seg .q i.no,.qb-seg .s.ur){background:var(--bg)}}
+:root[data-theme="dark"] :is(.qb-seg .q i.no,.qb-seg .s.ur){background:var(--bg)}
 .qb .rd{background:var(--qread)}
 .qb .ur{background:repeating-linear-gradient(135deg,var(--qread) 0 2px,transparent 2px 6px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--qread) 45%,transparent)}
-.qb-heads ol{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:3px}
-.qb-heads li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:3px 10px;border-radius:6px}
-.qb-heads li.rd{background:color-mix(in srgb,var(--qread) 26%,transparent);font-weight:600}
-.qb-heads small{font-weight:400;color:var(--muted)}
-.qb-heads .mk{display:flex;gap:4px;flex:none}
-.qb-heads .mk i{font-style:normal;font-weight:700;width:1.1em;text-align:center}
-.qb-heads .mk .ok{color:var(--qok)}.qb-heads .mk .bad{color:var(--qbad)}
-.qb-heads .mk .no{width:9px;height:9px;box-sizing:border-box;border:1.5px solid var(--muted);border-radius:50%;margin:0 3px}
+.qb-heads>ol{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:3px}
+.qb-heads>ol>li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:3px 10px;border-radius:6px}
+.qb-heads>ol>li.rd{background:color-mix(in srgb,var(--qread) 26%,transparent);font-weight:600}
+.qb-heads>ol>li small{font-weight:400;color:var(--muted)}
+.qb-heads>ol>li>.mk{display:flex;gap:4px;flex:none}
+.qb-heads>ol>li>.mk i{font-style:normal;font-weight:700;width:1.1em;text-align:center}
+.qb-heads>ol>li>.mk .ok{color:var(--qok)}.qb-heads>ol>li>.mk .bad{color:var(--qbad)}
+.qb-heads>ol>li>.mk .no{width:9px;height:9px;box-sizing:border-box;border:1.5px solid var(--muted);border-radius:50%;margin:0 3px}
 .qb-axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
 .qb-thick{display:block;height:14px;border-radius:3px}
 .qb-topic{display:grid;gap:12px;border:2px solid var(--fg);border-radius:10px;padding:14px 14px 16px;background:var(--bg)}
@@ -233,6 +267,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       return {n:n,t:t,qs:qs,read:!!rd[n],r:r,k:k}});
     var sc=0,tt=0;Object.keys(last).forEach(function(k){sc+=last[k].score;tt+=last[k].total});
     QB[key].avg=tt?Math.round(100*sc/tt):null;
+    QB[key].noq=!QB[key].some(function(s){return s.qs.length}); // chapter without a quiz: reading only
     return '<div class="qb" data-qb="'+key+'">'+(from?'<div class="none">סבב נוכחי, מאז '+when(from)+'</div>':'')+'<div class="qb-in">'+qbDraw(key,0)+'</div></div>';
   }
   function qbCount(secs){var o={ok:0,bad:0,no:0,read:0};secs.forEach(function(s){s.k.forEach(function(k){o[k]++});if(s.read)o.read++});o.tot=o.ok+o.bad+o.no;return o}
@@ -243,6 +278,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   // "כפתור הציון": reading progress fills the pill green from the right; click = reset (asks first).
   function qbPill(uid,c){
     var secs=QB[uid], o=qbCount(secs), n=secs.length, p=P(o.read,n), avg=QB[uid].avg;
+    if(secs.noq)return '<div class="qb-pill noq" data-p="'+p+'" style="--p:'+p+'%"><span class="bg"></span><span class="lay">'+
+      '<span class="side"><span>'+W('למד')+' '+W('-')+' '+W(N(o.read+'/'+n))+'</span></span>'+
+      '<span class="mid">'+W('התקדמות')+' '+W(N(p+'%'))+'</span><span class="side"></span></span></div>';
     return '<button type="button" class="qb-pill" data-qbreset="'+c+'" data-p="'+p+'" style="--p:'+p+'%" title="איפוס השאלון של התלמיד">'+
       '<span class="bg"></span><span class="lay">'+
       '<span class="side"><span>'+W('למד')+' '+W('-')+' '+W(N(o.read+'/'+n))+'</span><span>'+W('התקדמות')+' '+W('-')+' '+W(N(p+'%'))+'</span></span>'+
@@ -267,12 +305,16 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   // Topics strip (always shown); clicking a topic opens its questions below, clicking it again closes them.
   function qbDraw(uid,n){
     var secs=QB[uid];
-    var h='<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg'+(s.n===n?' on':'')+'" data-qbgo="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>';
-    var ax='<div class="qb-axis"><span>נושא 1</span><span>נושא '+secs.length+'</span></div>';
-    if(!n)return h+ax;
-    var s=secs[n-1], a=s.r&&s.r.answers;
+    if(secs.noq)return '<div class="qb-secs">'+secs.map(function(s){return '<span class="qb-seg noq" title="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.n+'</b></span></span>'}).join('')+'</div>';
+    var h='<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg'+(s.n===n?' on':'')+'" data-qbgo="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.n+'</b></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>';
+    var ax='';
+    return n?h+qbTopic(uid,n)+ax:h+ax;
+  }
+  // One topic's questions with the student's answers (used by the strip and by the headings list).
+  function qbTopic(uid,n){
+    var s=QB[uid][n-1], a=s.r&&s.r.answers;
     var TAG={ok:'<span class="qb-tag ok">✓ נכון</span>',bad:'<span class="qb-tag bad">✗ שגוי</span>',no:'<span class="qb-tag no">לא נענה</span>'};
-    return h+'<div class="qb-topic"><span class="qb-thick '+(s.read?'rd':'ur')+'" title="'+(s.read?'נקרא':'לא נקרא')+'"></span><h4>'+esc(s.n+'. '+s.t)+'</h4>'+
+    return '<div class="qb-topic"><span class="qb-thick '+(s.read?'rd':'ur')+'" title="'+(s.read?'נקרא':'לא נקרא')+'"></span><h4>'+esc(s.n+'. '+s.t)+'</h4>'+
       (s.r&&!a?'<p class="none">התשובות עצמן לא נשמרו בבחינה הזאת (לפני שהתחלנו לשמור אותן). הציון: '+s.r.score+'/'+s.r.total+'.</p>':'')+
       '<ol class="qb-list">'+s.qs.map(function(q,j){var k=s.k[j], g=a?a[j]:null;
         return '<li class="l-'+k+'"><div class="t"><span>'+(j+1)+'. '+esc(q.q)+'</span>'+TAG[k]+'</div>'+
@@ -281,11 +323,27 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
             else if(right&&k==='bad'){cls='r';mk='<span>✓</span>';if(a)tag='<span class="qb-tag no">צריך לענות</span>'}
             else if(right){cls='n';mk='<span>✓</span>';tag='<span class="qb-tag no">צריך לענות</span>'}
             else if(picked){cls='x';mk='<span>✗</span>';tag='<span class="qb-tag bad">תשובה שגויה</span>'}
-            return '<li class="'+cls+'">'+mk+'<span>'+esc(t)+tag+'</span>'+(right&&q.why?'<span class="why">&gt; '+esc(q.why)+'</span>':'')+'</li>'}).join('')+'</ul></li>'}).join('')+'</ol></div>'+ax;
+            return '<li class="'+cls+'">'+mk+'<span>'+esc(t)+tag+'</span>'+(right&&q.why?'<span class="why">&gt; '+esc(q.why)+'</span>':'')+'</li>'}).join('')+'</ul></li>'}).join('')+'</ol></div>';
   }
-  // A click anywhere outside an open topic (and outside the topics strip) closes it.
+  // Headings list: clicking a topic opens its questions right under it; scrolling it out of view closes it.
+  var hObs=window.IntersectionObserver?new IntersectionObserver(function(es){es.forEach(function(en){
+    if(en.isIntersecting)en.target.__seen=1;else if(en.target.__seen)hClose(en.target)})}):null;
+  function hClose(x){if(hObs)hObs.unobserve(x);var li=x.previousElementSibling;if(li)li.classList.remove('on');x.remove()}
   document.addEventListener('click',function(e){
-    document.querySelectorAll('details.qb-heads[open]').forEach(function(d){if(!d.contains(e.target))d.open=false});
+    var li=e.target.closest('li[data-hgo]');if(!li)return;
+    var d=li.closest('[data-hk]'), was=li.classList.contains('on');
+    d.querySelectorAll('li.qb-hq').forEach(hClose);
+    if(was)return;
+    var x=document.createElement('li');x.className='qb-hq';x.innerHTML='<div class="qb">'+qbTopic(d.getAttribute('data-hk'),+li.getAttribute('data-hgo'))+'</div>';
+    li.after(x);li.classList.add('on');if(hObs)hObs.observe(x);
+  });
+  document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('li[data-hgo]')){e.preventDefault();e.target.click()}});
+  // A click anywhere outside an open topic (and outside the topics strip) closes it.
+  document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('qb-ttl')){e.preventDefault();e.target.click()}});
+  document.addEventListener('click',function(e){
+    var tt=e.target.closest('.qb-ttl');
+    if(tt){var d=tt.parentNode.nextElementSibling;if(d&&d.matches('details.qb-heads')){d.open=!d.open;tt.setAttribute('aria-expanded',d.open)}}
+    document.querySelectorAll('details.qb-heads[open]').forEach(function(d){if(!d.contains(e.target)&&!(tt&&tt.parentNode.nextElementSibling===d)){d.open=false;var b=d.previousElementSibling&&d.previousElementSibling.querySelector('.qb-ttl');if(b)b.setAttribute('aria-expanded','false')}});
     if(e.target.closest('.qb-topic')||e.target.closest('.qb-seg'))return;
     document.querySelectorAll('.qb-topic').forEach(function(t){var box=t.closest('[data-qb]');if(box)box.querySelector('.qb-in').innerHTML=qbDraw(box.getAttribute('data-qb'),0)});
   });
@@ -347,10 +405,10 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
         var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
         if(CHAPTERS[c].own&&!n&&!all.some(function(g){return g.path===c}))return;
-        // Chapters with a quiz get the score pill, the headings list and the topics strip.
-        var qb=QUIZ&&QUIZ[c]&&CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
+        // Chapters with headings get the pill, the headings list and the topics strip (no quiz = reading only).
+        var qb=CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
         if(qb){
-          h+='<div class="qb-top"><b>'+esc(CHAPTERS[c].title)+'</b>'+qbPill(u.id+'|'+c,c)+'</div>'+readHeads(c,u.id+'|'+c)+qb;return}
+          h+='<div class="qb-top">'+qbPill(u.id+'|'+c,c)+'<span class="qb-ttl" role="button" tabindex="0" aria-expanded="false" title="קריאה לפי כותרות"><span class="ar">◀</span>'+esc(CHAPTERS[c].title)+'</span></div>'+readHeads(c,u.id+'|'+c)+qb;return}
         h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' קטעים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
         // Which headings were read (chapters whose reading is tracked quietly).
         h+=readHeads(c);
@@ -359,16 +417,23 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       function readHeads(c,key){
         if(!CHAPTERS[c].heads)return '';
         var secs=key&&QB[key];
-        return '<details class="qb-heads"><summary>קריאה לפי כותרות</summary><ol>'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
+        return '<details class="qb-heads'+(key?' nosum':'')+'"'+(key?' data-hk="'+key+'"':'')+'><summary>קריאה לפי כותרות</summary><ol>'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
             var v=ur.find(function(x){return x.chapter===c+':v'&&x.section===i+1}); // the student's own "קראתי" mark
             var mk=secs&&secs[i]?secs[i].k.map(function(k){return k==='ok'?'<i class="ok">✓</i>':k==='bad'?'<i class="bad">✗</i>':'<i class="no"></i>'}).join(''):'';
-            return '<li class="'+(r?'rd':'')+'"><span>'+(i+1)+'. '+esc(t)+(r?' <small>· '+when(r.read_at)+'</small>':'')+(v?' · <b>V סימן קראתי</b>':'')+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+'</li>'}).join('')+'</ol></details>'+
+            var go=secs&&secs[i]&&secs[i].qs.length?' data-hgo="'+(i+1)+'" role="button" tabindex="0" title="בדיקת השאלות של הנושא"':'';
+            return '<li class="'+(r?'rd':'')+(go?' go':'')+'"'+go+'><span>'+(i+1)+'. '+esc(t)+(r?' <small>· '+when(r.read_at)+'</small>':'')+(v?' · <b>V סימן קראתי</b>':'')+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+'</li>'}).join('')+'</ol></details>'+
               (CHAPTERS[c].own?'<p class="muted" style="margin:4px 0 0;font-size:.85rem">מוצלל = נקרא בקצב קריאה (זמן על המסך לפי אורך הקטע). V = החתן סימן בעצמו "קראתי".</p>':'');
       }
       h+=rounds(u,uq)+studentReset(u,uq);
       h+='</article>';
     });
     app.innerHTML=h+'</div>'+inviteBlock(invites);
+    // A one-line chapter name sits in the middle of the pill's height.
+    (document.fonts?document.fonts.ready:Promise.resolve()).then(function(){
+      if(matchMedia('(max-width:620px)').matches)return;
+      app.querySelectorAll('.qb-ttl').forEach(function(b){var p=b.parentNode.querySelector('.qb-pill');if(!p)return;
+        var tops=new Set([].map.call(b.getClientRects(),function(r){return Math.round(r.top)}));
+        if(tops.size===1){b.classList.add('one');b.style.marginTop=Math.max(0,(p.offsetHeight-b.offsetHeight)/2)+'px'}})});
     qbSnap();
     var mr=document.getElementById('myreset');if(mr)SITE.quizResetControls(mr,'harchakot');
     window.__users=others;window.__grants=grants;
