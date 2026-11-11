@@ -72,7 +72,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb,.qb-top,.qb-heads{--qok:#2e8b57;--qbad:#c8463d;--qnone:var(--line);--qread:#3d6fa3}.qb{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.qb,.qb-top,.qb-heads){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
 :root[data-theme="dark"] :is(.qb,.qb-top,.qb-heads){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
-.qb-top{display:flex;align-items:center;gap:16px;margin-top:4px}
+.qb-top{display:flex;align-items:center;gap:16px;margin:18px 0 10px}
 .qb-top>b,.qb-ttl{font-family:var(--display);font-size:1.75rem;line-height:1.1;white-space:nowrap}
 .qb-ttl{all:unset;font-family:var(--display);font-size:1.75rem;font-weight:700;line-height:1.1;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:8px}
 .qb-ttl .ar{display:inline-block;font-size:.55em;transition:transform .15s}.qb-ttl[aria-expanded="true"] .ar{transform:rotate(-90deg)}
@@ -102,8 +102,14 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb-secs{align-items:flex-end}
 /* the open topic hangs from its segment like a tab */
 .qb-seg.on{box-sizing:border-box;border:2px solid var(--fg);border-bottom:0;border-radius:5px 5px 0 0;padding:3px 3px 5px;margin-bottom:-2px;background:var(--bg);position:relative;z-index:1;flex:1.6}
-.qb-seg .s{height:14px;border-radius:2px}
-.qb-seg .q{display:flex;gap:1px;height:34px}.qb-seg .q i{flex:1;border-radius:2px}
+.qb-seg .s{height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.qb-seg .s b{font-size:12px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;color:#fff}
+.qb-seg .s.ur b{color:var(--qread);background:var(--bg);padding:1px 2px;border-radius:3px}
+/* topic numbers inside the blue strip; when it is crowded, every other one */
+.qb-secs{container-type:inline-size}
+@container (max-width:560px){.qb-seg:nth-child(even) .s b{display:none}}
+@container (max-width:280px){.qb-seg .s b{display:none}}
+.qb-seg .q{display:flex;gap:1px;height:22px}.qb-seg .q i{flex:1;border-radius:2px}
 .qb .ok{background:var(--qok)}.qb .bad{background:var(--qbad)}.qb .no{background:var(--qnone)}
 .qb .rd{background:var(--qread)}
 .qb .ur{background:repeating-linear-gradient(135deg,var(--qread) 0 2px,transparent 2px 6px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--qread) 45%,transparent)}
@@ -279,7 +285,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   // Topics strip (always shown); clicking a topic opens its questions below, clicking it again closes them.
   function qbDraw(uid,n){
     var secs=QB[uid];
-    var h='<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg'+(s.n===n?' on':'')+'" data-qbgo="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>';
+    var h='<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg'+(s.n===n?' on':'')+'" data-qbgo="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.n+'</b></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>';
     var ax='<div class="qb-axis"><span>נושא 1</span><span>נושא '+secs.length+'</span></div>';
     if(!n)return h+ax;
     var s=secs[n-1], a=s.r&&s.r.answers;
