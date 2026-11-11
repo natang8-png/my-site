@@ -87,7 +87,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 @media (min-width:621px){
   .qb-top{display:flow-root}
   .qb-top>.qb-pill{float:left;width:calc(100% - 10rem);margin-right:16px}
-  .qb-ttl{display:inline;white-space:normal}.qb-ttl .ar{margin-left:8px}
+  .qb-ttl{display:inline;white-space:normal;line-height:32px} /* 2 lines = pill height (64px), so a 3rd line runs full width under it */.qb-ttl .ar{margin-left:8px}
   .qb-ttl.one{display:inline-block}
 }
 .qb{border-top:0;padding-top:0}
