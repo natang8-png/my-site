@@ -79,6 +79,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb-top>.qb-ttl{order:-1}
 .qb-ttl:focus-visible{outline:2px solid var(--fg);outline-offset:3px;border-radius:4px}
 .qb-heads.nosum>summary{display:none}
+.qb-pill.noq,.qb-seg.noq{cursor:default}
 /* wide screens: every pill has the same width; a long chapter name wraps beside it, and a 3rd line continues under it */
 @media (min-width:621px){
   .qb-top{display:flow-root}
@@ -104,11 +105,12 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb-seg.on{box-sizing:border-box;border:2px solid var(--fg);border-bottom:0;border-radius:5px 5px 0 0;padding:3px 3px 5px;margin-bottom:-2px;background:var(--bg);position:relative;z-index:1;flex:1.6}
 .qb-seg .s{height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .qb-seg .s b{font-size:12px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;color:#fff}
-.qb-seg .s.ur b{color:var(--qread);background:var(--bg);padding:1px 2px;border-radius:3px}
+.qb-seg .s b{padding:1px 2px;border-radius:3px;position:relative;z-index:1}.qb-seg .s.rd b{background:var(--qread)}
+.qb-seg .s.ur b{color:var(--qread);background:var(--bg)}
 /* topic numbers inside the blue strip; when it is crowded, every other one */
-.qb-secs{container-type:inline-size}
-@container (max-width:560px){.qb-seg:nth-child(even) .s b{display:none}}
-@container (max-width:280px){.qb-seg .s b{display:none}}
+.qb-seg{container-type:inline-size}.qb-seg .s{overflow:visible}
+@container (max-width:21px){.qb-seg:nth-child(even) .s b{display:none}}
+@container (max-width:11px){.qb-seg .s b{display:none}.qb-seg:is(:first-child,:nth-child(5n)) .s b{display:block}}
 .qb-seg .q{display:flex;gap:1px;height:22px}.qb-seg .q i{flex:1;border-radius:2px}
 .qb .ok{background:var(--qok)}.qb .bad{background:var(--qbad)}.qb .no{background:var(--qnone)}
 .qb .rd{background:var(--qread)}
@@ -251,6 +253,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       return {n:n,t:t,qs:qs,read:!!rd[n],r:r,k:k}});
     var sc=0,tt=0;Object.keys(last).forEach(function(k){sc+=last[k].score;tt+=last[k].total});
     QB[key].avg=tt?Math.round(100*sc/tt):null;
+    QB[key].noq=!QB[key].some(function(s){return s.qs.length}); // chapter without a quiz: reading only
     return '<div class="qb" data-qb="'+key+'">'+(from?'<div class="none">סבב נוכחי, מאז '+when(from)+'</div>':'')+'<div class="qb-in">'+qbDraw(key,0)+'</div></div>';
   }
   function qbCount(secs){var o={ok:0,bad:0,no:0,read:0};secs.forEach(function(s){s.k.forEach(function(k){o[k]++});if(s.read)o.read++});o.tot=o.ok+o.bad+o.no;return o}
@@ -261,6 +264,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   // "כפתור הציון": reading progress fills the pill green from the right; click = reset (asks first).
   function qbPill(uid,c){
     var secs=QB[uid], o=qbCount(secs), n=secs.length, p=P(o.read,n), avg=QB[uid].avg;
+    if(secs.noq)return '<div class="qb-pill noq" data-p="'+p+'" style="--p:'+p+'%"><span class="bg"></span><span class="lay">'+
+      '<span class="side"><span>'+W('למד')+' '+W('-')+' '+W(N(o.read+'/'+n))+'</span></span>'+
+      '<span class="mid">'+W('התקדמות')+' '+W(N(p+'%'))+'</span><span class="side"></span></span></div>';
     return '<button type="button" class="qb-pill" data-qbreset="'+c+'" data-p="'+p+'" style="--p:'+p+'%" title="איפוס השאלון של התלמיד">'+
       '<span class="bg"></span><span class="lay">'+
       '<span class="side"><span>'+W('למד')+' '+W('-')+' '+W(N(o.read+'/'+n))+'</span><span>'+W('התקדמות')+' '+W('-')+' '+W(N(p+'%'))+'</span></span>'+
@@ -285,6 +291,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   // Topics strip (always shown); clicking a topic opens its questions below, clicking it again closes them.
   function qbDraw(uid,n){
     var secs=QB[uid];
+    if(secs.noq)return '<div class="qb-secs">'+secs.map(function(s){return '<span class="qb-seg noq" title="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.n+'</b></span></span>'}).join('')+'</div><div class="qb-axis"><span>נושא 1</span><span>נושא '+secs.length+'</span></div>';
     var h='<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg'+(s.n===n?' on':'')+'" data-qbgo="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.n+'</b></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>';
     var ax='<div class="qb-axis"><span>נושא 1</span><span>נושא '+secs.length+'</span></div>';
     if(!n)return h+ax;
@@ -368,8 +375,8 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
         var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
         if(CHAPTERS[c].own&&!n&&!all.some(function(g){return g.path===c}))return;
-        // Chapters with a quiz get the score pill, the headings list and the topics strip.
-        var qb=QUIZ&&QUIZ[c]&&CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
+        // Chapters with headings get the pill, the headings list and the topics strip (no quiz = reading only).
+        var qb=CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
         if(qb){
           h+='<div class="qb-top">'+qbPill(u.id+'|'+c,c)+'<span class="qb-ttl" role="button" tabindex="0" aria-expanded="false" title="קריאה לפי כותרות"><span class="ar">◀</span>'+esc(CHAPTERS[c].title)+'</span></div>'+readHeads(c,u.id+'|'+c)+qb;return}
         h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' קטעים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
