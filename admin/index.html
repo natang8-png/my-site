@@ -69,9 +69,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .rsec{padding:8px 0;border-bottom:1px dashed var(--line)}
 .ans{margin:6px 0 0;padding-inline-start:1.2em;display:grid;gap:6px}.ans li.ok{color:var(--fg)}.ans li.bad{color:#b3261e}.ans small{color:var(--muted)}
 /* Quiz results bar: all -> topics -> questions. Blue = read (striped = not read), green/red/gray = right/wrong/not answered. */
-.qb,.qb-top{--qok:#2e8b57;--qbad:#c8463d;--qnone:var(--line);--qread:#3d6fa3}.qb{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.qb,.qb-top){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
-:root[data-theme="dark"] :is(.qb,.qb-top){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
+.qb,.qb-top,.qb-heads{--qok:#2e8b57;--qbad:#c8463d;--qnone:var(--line);--qread:#3d6fa3}.qb{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.qb,.qb-top,.qb-heads){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
+:root[data-theme="dark"] :is(.qb,.qb-top,.qb-heads){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
 .qb-top{display:flex;align-items:center;gap:16px;margin-top:4px}
 .qb-top>b{font-family:var(--display);font-size:1.75rem;line-height:1.1;white-space:nowrap}
 .qb{border-top:0;padding-top:0}
@@ -95,6 +95,14 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .qb .ok{background:var(--qok)}.qb .bad{background:var(--qbad)}.qb .no{background:var(--qnone)}
 .qb .rd{background:var(--qread)}
 .qb .ur{background:repeating-linear-gradient(135deg,var(--qread) 0 2px,transparent 2px 6px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--qread) 45%,transparent)}
+.qb-heads ol{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:3px}
+.qb-heads li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:3px 10px;border-radius:6px}
+.qb-heads li.rd{background:color-mix(in srgb,var(--qread) 26%,transparent);font-weight:600}
+.qb-heads small{font-weight:400;color:var(--muted)}
+.qb-heads .mk{display:flex;gap:4px;flex:none}
+.qb-heads .mk i{font-style:normal;font-weight:700;width:1.1em;text-align:center}
+.qb-heads .mk .ok{color:var(--qok)}.qb-heads .mk .bad{color:var(--qbad)}
+.qb-heads .mk .no{width:9px;height:9px;box-sizing:border-box;border:1.5px solid var(--muted);border-radius:50%;margin:0 3px}
 .qb-axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
 .qb-thick{display:block;height:14px;border-radius:3px}
 .qb-topic{display:grid;gap:12px;border:2px solid var(--fg);border-radius:10px;padding:14px 14px 16px;background:var(--bg)}
@@ -214,18 +222,18 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 
   // Quiz results bar for הרחקות (current round): three levels, all -> topics -> one topic's questions.
   var QB={};
-  function qbHTML(u,ur,uq){
-    var c='harchakot', qd=(QUIZ||{})[c]||{}, heads=CHAPTERS[c].heads;
+  function qbHTML(u,ur,uq,c){
+    var key=u.id+'|'+c, qd=(QUIZ||{})[c]||{}, heads=CHAPTERS[c].heads;
     var cuts=RESETS.filter(function(z){return z.user_id===u.id&&z.chapter===c}).map(function(z){return z.reset_at}).sort(), from=cuts[cuts.length-1]||null;
     var last={};uq.forEach(function(x){if(x.chapter===c&&(!from||x.taken_at>from)&&(!last[x.section]||last[x.section].taken_at<x.taken_at))last[x.section]=x});
     var rd={};ur.forEach(function(x){if(x.chapter===c)rd[x.section]=1});
-    QB[u.id]=heads.map(function(t,i){var n=i+1,qs=qd[n]||[],r=last[n],k=[];
+    QB[key]=heads.map(function(t,i){var n=i+1,qs=qd[n]||[],r=last[n],k=[];
       // k = one mark per question: 'ok', 'bad' or 'no'. Old results without saved answers: right ones first.
       qs.forEach(function(q,j){k.push(!r?'no':r.answers?(r.answers[j]===q.c?'ok':'bad'):(j<r.score?'ok':'bad'))});
       return {n:n,t:t,qs:qs,read:!!rd[n],r:r,k:k}});
     var sc=0,tt=0;Object.keys(last).forEach(function(k){sc+=last[k].score;tt+=last[k].total});
-    QB[u.id].avg=tt?Math.round(100*sc/tt):null;
-    return '<div class="qb" data-qb="'+u.id+'">'+(from?'<div class="none">סבב נוכחי, מאז '+when(from)+'</div>':'')+'<div class="qb-in">'+qbDraw(u.id,0)+'</div></div>';
+    QB[key].avg=tt?Math.round(100*sc/tt):null;
+    return '<div class="qb" data-qb="'+key+'">'+(from?'<div class="none">סבב נוכחי, מאז '+when(from)+'</div>':'')+'<div class="qb-in">'+qbDraw(key,0)+'</div></div>';
   }
   function qbCount(secs){var o={ok:0,bad:0,no:0,read:0};secs.forEach(function(s){s.k.forEach(function(k){o[k]++});if(s.read)o.read++});o.tot=o.ok+o.bad+o.no;return o}
   function N(t){return '<bdi dir="ltr">'+t+'</bdi>'}
@@ -277,6 +285,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   }
   // A click anywhere outside an open topic (and outside the topics strip) closes it.
   document.addEventListener('click',function(e){
+    document.querySelectorAll('details.qb-heads[open]').forEach(function(d){if(!d.contains(e.target))d.open=false});
     if(e.target.closest('.qb-topic')||e.target.closest('.qb-seg'))return;
     document.querySelectorAll('.qb-topic').forEach(function(t){var box=t.closest('[data-qb]');if(box)box.querySelector('.qb-in').innerHTML=qbDraw(box.getAttribute('data-qb'),0)});
   });
@@ -338,19 +347,23 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
         var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
         if(CHAPTERS[c].own&&!n&&!all.some(function(g){return g.path===c}))return;
-        var qb=c==='harchakot'?qbHTML(u,ur,uq):'';
+        // Chapters with a quiz get the score pill, the headings list and the topics strip.
+        var qb=QUIZ&&QUIZ[c]&&CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
         if(qb){
-          h+='<div class="qb-top"><b>'+esc(CHAPTERS[c].title)+'</b>'+qbPill(u.id,c)+'</div>'+readHeads(c)+qb;return}
+          h+='<div class="qb-top"><b>'+esc(CHAPTERS[c].title)+'</b>'+qbPill(u.id+'|'+c,c)+'</div>'+readHeads(c,u.id+'|'+c)+qb;return}
         h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' קטעים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
         // Which headings were read (chapters whose reading is tracked quietly).
         h+=readHeads(c);
       });
-      function readHeads(c){
+      // Headings list: read rows shaded, with the date; on the left one mark per question (first question on the right).
+      function readHeads(c,key){
         if(!CHAPTERS[c].heads)return '';
-        return '<details><summary>קריאה לפי כותרות</summary><ol class="none" style="margin:6px 0 0">'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
+        var secs=key&&QB[key];
+        return '<details class="qb-heads"><summary>קריאה לפי כותרות</summary><ol>'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
             var v=ur.find(function(x){return x.chapter===c+':v'&&x.section===i+1}); // the student's own "קראתי" mark
-            return '<li>'+(r?'✓ ':'○ ')+esc(t)+(r?' · '+when(r.read_at):'')+(v?' · <b>V סימן קראתי</b>':'')+'</li>'}).join('')+'</ol></details>'+
-              (CHAPTERS[c].own?'<p class="muted" style="margin:4px 0 0;font-size:.85rem">✓ = נקרא בקצב קריאה (זמן על המסך לפי אורך הקטע). V = החתן סימן בעצמו "קראתי".</p>':'');
+            var mk=secs&&secs[i]?secs[i].k.map(function(k){return k==='ok'?'<i class="ok">✓</i>':k==='bad'?'<i class="bad">✗</i>':'<i class="no"></i>'}).join(''):'';
+            return '<li class="'+(r?'rd':'')+'"><span>'+(i+1)+'. '+esc(t)+(r?' <small>· '+when(r.read_at)+'</small>':'')+(v?' · <b>V סימן קראתי</b>':'')+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+'</li>'}).join('')+'</ol></details>'+
+              (CHAPTERS[c].own?'<p class="muted" style="margin:4px 0 0;font-size:.85rem">מוצלל = נקרא בקצב קריאה (זמן על המסך לפי אורך הקטע). V = החתן סימן בעצמו "קראתי".</p>':'');
       }
       h+=rounds(u,uq)+studentReset(u,uq);
       h+='</article>';
