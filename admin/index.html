@@ -69,44 +69,63 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 .rsec{padding:8px 0;border-bottom:1px dashed var(--line)}
 .ans{margin:6px 0 0;padding-inline-start:1.2em;display:grid;gap:6px}.ans li.ok{color:var(--fg)}.ans li.bad{color:#b3261e}.ans small{color:var(--muted)}
 /* Quiz results bar: all -> topics -> questions. Blue = read (striped = not read), green/red/gray = right/wrong/not answered. */
-.qb{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px;--qok:#2e8b57;--qbad:#c8463d;--qnone:var(--line);--qread:#3d6fa3}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .qb{--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
-:root[data-theme="dark"] .qb{--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
-.qb-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px}.qb-top b{font-size:1.05rem}
-.qb-avg{font:inherit;font-weight:600;padding:4px 14px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);background:var(--soft);cursor:pointer;font-variant-numeric:tabular-nums}
+.qb,.qb-top{--qok:#2e8b57;--qbad:#c8463d;--qnone:var(--line);--qread:#3d6fa3}.qb{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.qb,.qb-top){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}}
+:root[data-theme="dark"] :is(.qb,.qb-top){--qok:#4fb97a;--qbad:#e06a5f;--qread:#6f9fd4}
+.qb-top{display:flex;align-items:center;gap:16px;margin-top:4px}
+.qb-top>b{font-family:var(--display);font-size:1.75rem;line-height:1.1;white-space:nowrap}
 .qb{border-top:0;padding-top:0}
-.qb-crumbs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.9rem}
-.qb-crumbs button{font:inherit;font-size:.85rem;padding:1px 10px;border-radius:8px}
-.qb-hit{all:unset;cursor:pointer;display:grid;gap:6px;width:100%;box-sizing:border-box;border-radius:6px}
-.qb-hit:focus-visible,.qb-seg:focus-visible,.qb-seg.on{outline:2px solid var(--fg);outline-offset:2px}
-.qb-thick{display:flex;gap:2px;height:14px;width:100%}
-.qb-thick i{border-radius:3px;min-width:0}
+/* "כפתור הציון": green fill = reading progress, snapped to the gap between words (qbSnap) */
+.qb-pill{all:unset;box-sizing:border-box;position:relative;flex:1;min-width:0;height:64px;border:1.5px solid var(--accent);border-radius:999px;overflow:hidden;cursor:pointer;background:var(--soft);color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
+.qb-pill:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.qb-pill .bg{position:absolute;top:0;bottom:0;right:0;width:var(--p);background:var(--qok)}
+.qb-pill .lay{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 26px}
+.qb-pill .side{display:grid;gap:1px;font-size:1rem;line-height:1.25;text-align:right;white-space:nowrap}
+.qb-pill .mid{font-size:2rem;font-weight:700;white-space:nowrap}
+.qb-pill .ic{display:inline-block;width:1.1em;text-align:center;font-weight:700;font-size:1.15em}
+.qb-pill .w.on{color:#fff}
+.qb-secs{display:flex;gap:3px;width:100%}
+.qb-seg{all:unset;cursor:pointer;flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;border-radius:3px}
+.qb-seg:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.qb-secs{align-items:flex-end}
+/* the open topic hangs from its segment like a tab */
+.qb-seg.on{box-sizing:border-box;border:2px solid var(--fg);border-bottom:0;border-radius:5px 5px 0 0;padding:3px 3px 5px;margin-bottom:-2px;background:var(--bg);position:relative;z-index:1;flex:1.6}
+.qb-seg .s{height:14px;border-radius:2px}
+.qb-seg .q{display:flex;gap:1px;height:34px}.qb-seg .q i{flex:1;border-radius:2px}
 .qb .ok{background:var(--qok)}.qb .bad{background:var(--qbad)}.qb .no{background:var(--qnone)}
 .qb .rd{background:var(--qread)}
 .qb .ur{background:repeating-linear-gradient(135deg,var(--qread) 0 2px,transparent 2px 6px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--qread) 45%,transparent)}
-.qb-read{color:var(--qread);font-weight:600;font-variant-numeric:tabular-nums}
-.qb-score{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-variant-numeric:tabular-nums;font-size:.9rem;line-height:1.35}
-.qb-score span{white-space:nowrap}.qb-score .c2{text-align:center}.qb-score .c3{text-align:left}
-.qb .c1{color:var(--qok)}.qb .c2{color:var(--qbad)}.qb .c3{color:var(--muted)}
-.qb-secs{display:flex;gap:3px;width:100%}
-.qb-seg{all:unset;cursor:pointer;flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;border-radius:3px}
-.qb-seg .s{height:14px;border-radius:2px}
-.qb-seg .q{display:flex;gap:1px;height:34px}.qb-seg .q i{flex:1;border-radius:2px}
 .qb-axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
-.qb-qs{display:flex;gap:4px}
-.qb-qs button{flex:1;height:40px;border:0;border-radius:6px;font:inherit;font-weight:700;color:#fff;cursor:pointer}
-.qb-qs button.no{color:var(--muted)}
-.qb-head{display:flex;gap:8px;align-items:center}.qb-head b{flex:1;font-family:var(--display);font-size:1.05rem}
-.qb-head button{font:inherit;padding:0 10px;border-radius:8px}
-.qb-list{list-style:none;margin:0;padding:0;display:grid;gap:10px;font-size:.93rem}
-.qb-list>li{display:grid;gap:3px;padding-inline-start:10px;border-inline-start:3px solid var(--qnone)}
+.qb-thick{display:block;height:14px;border-radius:3px}
+.qb-topic{display:grid;gap:12px;border:2px solid var(--fg);border-radius:10px;padding:14px 14px 16px;background:var(--bg)}
+.qb-topic h4{margin:0;font-family:var(--display);font-size:1.15rem}
+.qb-list{list-style:none;margin:0;padding:0;display:grid;gap:16px;font-size:.95rem}
+.qb-list>li{display:grid;gap:6px;padding-inline-start:12px;border-inline-start:3px solid var(--qnone)}
 .qb-list>li.l-ok{border-color:var(--qok)}.qb-list>li.l-bad{border-color:var(--qbad)}
-.qb-list .t{font-weight:600}
-.qb-opts{list-style:none;margin:0;padding:0;display:grid;gap:2px}
-.qb-opts li{display:grid;grid-template-columns:1.3em 1fr}
-.qb-opts li.r{color:var(--qok);font-weight:600}.qb-opts li.x{color:var(--qbad);font-weight:600}
-.qb-opts .why{grid-column:2;color:var(--fg);font-weight:400;font-size:.9rem;background:var(--soft);border-radius:6px;padding:3px 8px;margin-top:2px}
-@media (max-width:520px){.qb-score{font-size:.82rem}}
+.qb-list>li.l-no{border-color:color-mix(in srgb,var(--fg) 50%,transparent);border-inline-start-style:dashed}
+.qb-list .t{display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:600;border-radius:6px;padding:4px 8px;margin-inline-start:-8px}
+.qb-list .l-ok>.t{background:color-mix(in srgb,var(--qok) 16%,transparent)}
+.qb-list .l-bad>.t{background:color-mix(in srgb,var(--qbad) 16%,transparent)}
+.qb-list .l-no>.t{background:color-mix(in srgb,var(--fg) 10%,transparent)}
+.qb-tag{font-size:.8rem;font-weight:700;padding:1px 9px;border-radius:99px;white-space:nowrap;border:1.5px solid;display:inline-block;line-height:1.5}
+.qb-tag.ok{color:var(--qok);border-color:var(--qok);background:color-mix(in srgb,var(--qok) 8%,var(--bg))}
+.qb-tag.bad{color:var(--qbad);border-color:var(--qbad);background:color-mix(in srgb,var(--qbad) 8%,var(--bg))}
+.qb-tag.no{color:var(--fg);border-color:var(--fg);background:color-mix(in srgb,var(--fg) 8%,var(--bg))}
+.qb-opts .qb-tag{margin-inline-start:8px;vertical-align:1px}
+.qb-opts{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.qb-opts li{display:grid;grid-template-columns:1.4em 1fr;align-items:start}
+.qb-opts li>span:first-child{text-align:center}
+.qb-opts li.r{color:var(--qok);font-weight:600}.qb-opts li.x{color:var(--qbad);font-weight:600}.qb-opts li.n{color:var(--fg)}
+.qb-opts .mk{display:inline-block;box-sizing:border-box;width:8px;height:8px;border:1.5px solid var(--muted);border-radius:50%;margin-top:.6em;justify-self:center}
+.qb-opts .why{grid-column:2;color:var(--qok);font-weight:400;margin:1px 0 3px}
+.qb-opts li.n .why{color:var(--fg)}
+@media (max-width:620px){
+  .qb-top{flex-direction:column;align-items:stretch;gap:8px}
+  .qb-pill{flex:none;height:58px}
+  .qb-pill .lay{padding:0 16px;gap:6px}
+  .qb-pill .side{font-size:.8rem}
+  .qb-pill .mid{font-size:1.35rem}
+}
 </style>
 </head><body>
 <main dir="rtl" lang="he">
@@ -127,7 +146,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 <script>
 (async function(){
   var app=document.getElementById('app'), sb=SITE.sb;
-  var CHAPTERS={harchakot:{title:'הרחקות',total:26,heads:["הקדמה", "סיפור מהגמרא", "האיסור הכללי", "איסור נגיעה", "הרחקות נוספות", "הנהגת האשה", "הסתכלות בה", "מסירת דבר מאחד לשני", "אכילה מצלחת אחת", "אכילה על שולחן אחד", "שיירי מאכל ומשקה", "מזיגה והושטה", "הרחקה בין המיטות", "ישיבה ושכיבה על מיטת בן הזוג", "ישיבה על ספסל אחד", "טיול", "אכילה במסעדה ושהייה במלון", "ההנהגה בין אנשים", "מתנה", "הצעת המיטה לבן הזוג", "יציקת מים", "כשאחד מבני הזוג חולה", "הליכת האשה לבית-הקברות או להלוויה", "הליכת האשה לבית-הכנסת", "חיוב האשה בתפילות וברכות", "ההנהגה ביום הכיפורים ובתשעה באב"]},yoledet:{title:'דיני יולדת ומפלת',total:17,heads:["ימי טומאה וימי טוהר מן התורה", "המנהג לטמא כל דם", "מנהג ארבעים ושמונים יום", "מאימתי נטמאת בתהליך הלידה", "הפלה וניתוח קיסרי", "טומאת היולדת", "צירי לידה וחדר הלידה", "סדר טהרת היולדת", "מפלת", "ניתוח קיסרי", "חילול שבת עבור יולדת", "יולדת בשבת", "מאימתי נאסרת היולדת", "הבעל בזמן הלידה", "ההמתנה אחר לידה והפלה", "בדיקת רופא אחר הלידה", "הבאת ילדים לעולם"]},'leil-hachatuna':{title:'סדר ליל החתונה',total:40,own:true,heads:["כניסה לבית", "חופת נדה", "חופה טהורה", "סידור החדר", "כדי להימנע מאי נעימות ומכאב", "דברי אהבה וריצוי", "הביאה", "בשעת התשמיש", "בכלה בתולה", "טומאת בתולים", "לאחר שעברו את טומאת בתולים", "התארגנות שאחרי", "לבעול בזמן המוקדם האפשרי", "קשר עם המדריך/כה", "ומה עוד לגבי המשך החיים?", "השוני בין האיש לאשה", "קרבה - בגוף ונפש", "ללמוד אנו צריכים", "סגנון אישי", "הכנה", "הכנה - קרבה נפשית", "רגישות", "פתיחות", "סעיף א - קדושה וצניעות בשעת התשמיש", "סעיף ב - הרהור בדברי תורה", "סעיף ג - אור הנר, היום והלבנה", "סעיף ד - בפני אדם אחר", "סעיף ה - הסתכלות", "סעיף ו - ספרי קודש ומזוזה בחדר", "סעיף ז - מצות עונה", "סעיף ח - מתי חייב לפקוד את אשתו", "סעיף ט - הכוונה בשעת התשמיש", "סעיף י - הזמן בלילה ונטילת ידיים", "סעיף יא - מקום התשמיש, והכתובה", "סעיף יב - בשעת רעב וצרה", "סעיף יג - רק מרצונה", "סעיף יד - אורח ומלון", "סעיף טו - מדרכי הרפואה", "סעיף טז - תינוק, בית הכסא והנקה", "סעיף יז - שמירת הכח"]]}};
+  var CHAPTERS={harchakot:{title:'הרחקות',total:26,heads:["הקדמה", "סיפור מהגמרא", "האיסור הכללי", "איסור נגיעה", "הרחקות נוספות", "הנהגת האשה", "הסתכלות בה", "מסירת דבר מאחד לשני", "אכילה מצלחת אחת", "אכילה על שולחן אחד", "שיירי מאכל ומשקה", "מזיגה והושטה", "הרחקה בין המיטות", "ישיבה ושכיבה על מיטת בן הזוג", "ישיבה על ספסל אחד", "טיול", "אכילה במסעדה ושהייה במלון", "ההנהגה בין אנשים", "מתנה", "הצעת המיטה לבן הזוג", "יציקת מים", "כשאחד מבני הזוג חולה", "הליכת האשה לבית-הקברות או להלוויה", "הליכת האשה לבית-הכנסת", "חיוב האשה בתפילות וברכות", "ההנהגה ביום הכיפורים ובתשעה באב"]},yoledet:{title:'דיני יולדת ומפלת',total:17,heads:["ימי טומאה וימי טוהר מן התורה", "המנהג לטמא כל דם", "מנהג ארבעים ושמונים יום", "מאימתי נטמאת בתהליך הלידה", "הפלה וניתוח קיסרי", "טומאת היולדת", "צירי לידה וחדר הלידה", "סדר טהרת היולדת", "מפלת", "ניתוח קיסרי", "חילול שבת עבור יולדת", "יולדת בשבת", "מאימתי נאסרת היולדת", "הבעל בזמן הלידה", "ההמתנה אחר לידה והפלה", "בדיקת רופא אחר הלידה", "הבאת ילדים לעולם"]},'leil-hachatuna':{title:'סדר ליל החתונה',total:40,own:true,heads:["כניסה לבית", "חופת נדה", "חופה טהורה", "סידור החדר", "כדי להימנע מאי נעימות ומכאב", "דברי אהבה וריצוי", "הביאה", "בשעת התשמיש", "בכלה בתולה", "טומאת בתולים", "לאחר שעברו את טומאת בתולים", "התארגנות שאחרי", "לבעול בזמן המוקדם האפשרי", "קשר עם המדריך/כה", "ומה עוד לגבי המשך החיים?", "השוני בין האיש לאשה", "קרבה - בגוף ונפש", "ללמוד אנו צריכים", "סגנון אישי", "הכנה", "הכנה - קרבה נפשית", "רגישות", "פתיחות", "סעיף א - קדושה וצניעות בשעת התשמיש", "סעיף ב - הרהור בדברי תורה", "סעיף ג - אור הנר, היום והלבנה", "סעיף ד - בפני אדם אחר", "סעיף ה - הסתכלות", "סעיף ו - ספרי קודש ומזוזה בחדר", "סעיף ז - מצות עונה", "סעיף ח - מתי חייב לפקוד את אשתו", "סעיף ט - הכוונה בשעת התשמיש", "סעיף י - הזמן בלילה ונטילת ידיים", "סעיף יא - מקום התשמיש, והכתובה", "סעיף יב - בשעת רעב וצרה", "סעיף יג - רק מרצונה", "סעיף יד - אורח ומלון", "סעיף טו - מדרכי הרפואה", "סעיף טז - תינוק, בית הכסא והנקה", "סעיף יז - שמירת הכח"]}};
   function esc(t){var d=document.createElement('div');d.textContent=t==null?'':t;return d.innerHTML}
   function when(t){if(!t)return'—';var d=new Date(t);return d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
   function title(path){var n=SITE.TREE.find(function(x){return x.path===path});return n?n.title:path}
@@ -206,33 +225,55 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       return {n:n,t:t,qs:qs,read:!!rd[n],r:r,k:k}});
     var sc=0,tt=0;Object.keys(last).forEach(function(k){sc+=last[k].score;tt+=last[k].total});
     QB[u.id].avg=tt?Math.round(100*sc/tt):null;
-    return '<div class="qb" data-qb="'+u.id+'" data-lv="0">'+(from?'<div class="none">סבב נוכחי, מאז '+when(from)+'</div>':'')+'<div class="qb-in">'+qbDraw(u.id,0)+'</div></div>';
+    return '<div class="qb" data-qb="'+u.id+'">'+(from?'<div class="none">סבב נוכחי, מאז '+when(from)+'</div>':'')+'<div class="qb-in">'+qbDraw(u.id,0)+'</div></div>';
   }
   function qbCount(secs){var o={ok:0,bad:0,no:0,read:0};secs.forEach(function(s){s.k.forEach(function(k){o[k]++});if(s.read)o.read++});o.tot=o.ok+o.bad+o.no;return o}
   function N(t){return '<bdi dir="ltr">'+t+'</bdi>'}
   function P(a,b){return b?Math.round(100*a/b):0}
   function fl(c,n){return n?'<i class="'+c+'" style="flex:'+n+'"></i>':''}
-  function qbRead(a,b){return '<div class="qb-read">'+N(P(a,b)+'%')+' נקרא · '+N(a+'/'+b)+'</div>'}
-  function qbScore(o){return '<div class="qb-score"><span class="c1">'+N(P(o.ok,o.tot)+'%')+' נכון<br>'+N(o.ok+'/'+o.tot)+'</span><span class="c2">'+N(P(o.bad,o.tot)+'%')+' שגוי<br>'+N(o.bad+'/'+o.tot)+'</span><span class="c3">'+N(P(o.no,o.tot)+'%')+' לא נענה<br>'+N(o.no+'/'+o.tot)+'</span></div>'}
-  function qbDraw(uid,lv,n){
-    var secs=QB[uid], all=qbCount(secs);
-    if(lv===0)return '<div class="qb-crumbs"><b>הכל</b><span class="none">· לחיצה על הפסים פותחת את הנושאים</span></div>'+
-      '<button type="button" class="qb-hit" data-qbgo="1">'+qbRead(all.read,secs.length)+
-      '<span class="qb-thick">'+fl('rd',all.read)+fl('ur',secs.length-all.read)+'</span>'+
-      '<span class="qb-thick">'+fl('ok',all.ok)+fl('bad',all.bad)+fl('no',all.no)+'</span>'+qbScore(all)+'</button>';
-    if(lv===1)return '<div class="qb-crumbs"><button type="button" data-qbgo="0">הכל</button> › <b>נושאים</b></div>'+qbRead(all.read,secs.length)+
-      '<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg" data-qbgo="2" data-n="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>'+
-      qbScore(all)+'<div class="qb-axis"><span>נושא 1</span><span>נושא '+secs.length+'</span></div>';
-    var s=secs[n-1], o=qbCount([s]), a=s.r&&s.r.answers;
-    return '<div class="qb-crumbs"><button type="button" data-qbgo="0">הכל</button> › <button type="button" data-qbgo="1">נושאים</button> › <b>'+esc(s.n+'. '+s.t)+'</b></div>'+
-      '<div class="qb-read">'+(s.read?'נקרא':'לא נקרא')+'</div><span class="qb-thick"><i class="'+(s.read?'rd':'ur')+'" style="flex:1"></i></span>'+
-      '<div class="qb-qs">'+s.qs.map(function(q,j){return '<button type="button" class="'+s.k[j]+'" data-qbq="'+j+'">שאלה '+(j+1)+'</button>'}).join('')+'</div>'+qbScore(o)+
-      '<div class="qb-head"><b>'+esc(s.n+'. '+s.t)+'</b><button type="button" data-qbgo="2" data-n="'+Math.max(1,n-1)+'" aria-label="נושא קודם">›</button><button type="button" data-qbgo="2" data-n="'+Math.min(secs.length,n+1)+'" aria-label="נושא הבא">‹</button></div>'+
+  function W(t){return '<span class="w">'+t+'</span>'}
+  // "כפתור הציון": reading progress fills the pill green from the right; click = reset (asks first).
+  function qbPill(uid,c){
+    var secs=QB[uid], o=qbCount(secs), n=secs.length, p=P(o.read,n), avg=QB[uid].avg;
+    return '<button type="button" class="qb-pill" data-qbreset="'+c+'" data-p="'+p+'" style="--p:'+p+'%" title="איפוס השאלון של התלמיד">'+
+      '<span class="bg"></span><span class="lay">'+
+      '<span class="side"><span>'+W('למד')+' '+W('-')+' '+W(N(o.read+'/'+n))+'</span><span>'+W('התקדמות')+' '+W('-')+' '+W(N(p+'%'))+'</span></span>'+
+      '<span class="mid">'+W('ציון')+' '+W(avg==null?'—':N(avg+'%'))+'</span>'+
+      '<span class="side"><span>'+W('<span class="ic">✓</span> '+o.ok)+'</span><span>'+W('<span class="ic">✗</span> '+o.bad)+'</span></span>'+
+      '</span></button>';
+  }
+  // Move the fill edge to the nearest gap between words, so no word is cut; words inside the fill turn white.
+  function qbSnap(){
+    document.querySelectorAll('.qb-pill').forEach(function(pl){
+      var bg=pl.querySelector('.bg'), ws=[].slice.call(pl.querySelectorAll('.w'));
+      bg.style.width='';ws.forEach(function(w){w.classList.remove('on')});
+      var p=+pl.getAttribute('data-p'), box=pl.getBoundingClientRect();if(!box.width)return;
+      var e=box.right-box.width*p/100;
+      // Two rows of words: keep moving until the edge cuts no word on either row.
+      for(var t=0;p>0&&p<100&&t<8;t++){var hit=ws.find(function(w){var r=w.getBoundingClientRect();return r.left<e&&r.right>e});if(!hit)break;var r=hit.getBoundingClientRect();e=(e-r.left<r.right-e||t>3)?r.left-5:r.right+5}
+      if(p>0&&p<100)bg.style.width=Math.max(0,Math.min(box.width,box.right-e))+'px';
+      ws.forEach(function(w){if(p>0&&w.getBoundingClientRect().left>=e-1)w.classList.add('on')});
+    });
+  }
+  window.addEventListener('resize',function(){clearTimeout(qbSnap.t);qbSnap.t=setTimeout(qbSnap,120)});
+  // Topics strip (always shown); clicking a topic opens its questions below, clicking it again closes them.
+  function qbDraw(uid,n){
+    var secs=QB[uid];
+    var h='<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg'+(s.n===n?' on':'')+'" data-qbgo="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>';
+    var ax='<div class="qb-axis"><span>נושא 1</span><span>נושא '+secs.length+'</span></div>';
+    if(!n)return h+ax;
+    var s=secs[n-1], a=s.r&&s.r.answers;
+    var TAG={ok:'<span class="qb-tag ok">✓ נכון</span>',bad:'<span class="qb-tag bad">✗ שגוי</span>',no:'<span class="qb-tag no">לא נענה</span>'};
+    return h+'<div class="qb-topic"><span class="qb-thick '+(s.read?'rd':'ur')+'" title="'+(s.read?'נקרא':'לא נקרא')+'"></span><h4>'+esc(s.n+'. '+s.t)+'</h4>'+
       (s.r&&!a?'<p class="none">התשובות עצמן לא נשמרו בבחינה הזאת (לפני שהתחלנו לשמור אותן). הציון: '+s.r.score+'/'+s.r.total+'.</p>':'')+
-      '<ol class="qb-list">'+s.qs.map(function(q,j){var g=a?a[j]:null;
-        return '<li class="l-'+s.k[j]+'" data-qbi="'+j+'"><span class="t">'+(j+1)+'. '+esc(q.q)+'</span>'+(s.r?'':'<span class="none">לא נענה</span>')+
-          '<ul class="qb-opts">'+q.a.map(function(t,i){var right=i===q.c, x=a&&i===g&&!right;
-            return '<li class="'+(s.r&&right?'r':x?'x':'')+'"><span>'+(s.r&&right?'✓':x?'✗':'')+'</span><span>'+esc(t)+'</span>'+(s.r&&right&&q.why?'<span class="why">'+esc(q.why)+'</span>':'')+'</li>'}).join('')+'</ul></li>'}).join('')+'</ol>';
+      '<ol class="qb-list">'+s.qs.map(function(q,j){var k=s.k[j], g=a?a[j]:null;
+        return '<li class="l-'+k+'"><div class="t"><span>'+(j+1)+'. '+esc(q.q)+'</span>'+TAG[k]+'</div>'+
+          '<ul class="qb-opts">'+q.a.map(function(t,i){var right=i===q.c, picked=a&&i===g, cls='', mk='<span class="mk"></span>', tag='';
+            if(right&&k==='ok'){cls='r';mk='<span>✓</span>';if(a)tag='<span class="qb-tag ok">תשובה נכונה</span>'}
+            else if(right&&k==='bad'){cls='r';mk='<span>✓</span>';if(a)tag='<span class="qb-tag no">צריך לענות</span>'}
+            else if(right){cls='n';mk='<span>✓</span>';tag='<span class="qb-tag no">צריך לענות</span>'}
+            else if(picked){cls='x';mk='<span>✗</span>';tag='<span class="qb-tag bad">תשובה שגויה</span>'}
+            return '<li class="'+cls+'">'+mk+'<span>'+esc(t)+tag+'</span>'+(right&&q.why?'<span class="why">&gt; '+esc(q.why)+'</span>':'')+'</li>'}).join('')+'</ul></li>'}).join('')+'</ol></div>'+ax;
   }
   app.addEventListener('click',async function(e){
     var rs=e.target.closest('[data-qbreset]');
@@ -245,11 +286,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       load();return;
     }
     var box=e.target.closest('[data-qb]');if(!box)return;
-    var go=e.target.closest('[data-qbgo]'), qq=e.target.closest('[data-qbq]');
-    if(qq){var li=box.querySelector('[data-qbi="'+qq.getAttribute('data-qbq')+'"]');if(li)li.scrollIntoView({behavior:'smooth',block:'center'});return}
-    if(!go)return;
-    var lv=+go.getAttribute('data-qbgo'), n=+go.getAttribute('data-n')||0;
-    box.querySelector('.qb-in').innerHTML=qbDraw(box.getAttribute('data-qb'),lv,n);
+    var go=e.target.closest('[data-qbgo]');if(!go)return;
+    var n=+go.getAttribute('data-qbgo');if(go.classList.contains('on'))n=0;
+    box.querySelector('.qb-in').innerHTML=qbDraw(box.getAttribute('data-qb'),n);
   });
 
   function render(users,grants,reads,results,invites,requests){
@@ -295,8 +334,8 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
         if(CHAPTERS[c].own&&!n&&!all.some(function(g){return g.path===c}))return;
         var qb=c==='harchakot'?qbHTML(u,ur,uq):'';
-        if(qb){var avg=QB[u.id].avg;
-          h+='<div class="qb-top"><b>'+esc(CHAPTERS[c].title)+'</b><button type="button" class="qb-avg" data-qbreset="'+c+'" title="איפוס השאלון של התלמיד">ממוצע '+(avg==null?'—':N(avg+'%'))+'</button></div>'+readHeads(c)+qb;return}
+        if(qb){
+          h+='<div class="qb-top"><b>'+esc(CHAPTERS[c].title)+'</b>'+qbPill(u.id,c)+'</div>'+readHeads(c)+qb;return}
         h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' קטעים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
         // Which headings were read (chapters whose reading is tracked quietly).
         h+=readHeads(c);
@@ -312,6 +351,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       h+='</article>';
     });
     app.innerHTML=h+'</div>'+inviteBlock(invites);
+    qbSnap();
     var mr=document.getElementById('myreset');if(mr)SITE.quizResetControls(mr,'harchakot');
     window.__users=others;window.__grants=grants;
     sel.forEach(function(id){if(!others.some(function(u){return u.id===id}))sel.delete(id)});
