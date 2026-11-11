@@ -153,6 +153,13 @@ order = [i for g in ch.get("groups", []) if g[0] is not None for i in range(g[0]
 order += [i for i in range(1, len(heads) + 1) if i not in order]
 assert sorted(order) == list(range(1, len(heads) + 1))
 pos = {i: k for k, i in enumerate(order)}  # 0-based place in the reading order
+# Natan, 2026-11-11: when each tab stands apart, the visible numbers count inside the tab (1, 2, 3 ...), in reading order.
+shown = {i: i for i in range(1, len(heads) + 1)}
+tabn = {}
+if ch.get("tabs_apart"):
+    for g in ch.get("groups", []):
+        if g[0] is None: continue
+        for k, i in enumerate(range(g[0], g[1] + 1), 1): shown[i] = k; tabn[i] = g[1] - g[0] + 1
 
 toc, secs, private_rows = [], [], []
 for i, h in enumerate(heads, 1):
@@ -169,14 +176,14 @@ for i, h in enumerate(heads, 1):
         body = '<p class="placeholder">הטקסט של הקטע הזה עוד לא נוסף.</p>'
         hw = ""
         filled = False
-    toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{i}</span>{ico(i, "ico")}{html.escape(h)}{hw}</a></li>')
+    toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{shown[i]}</span>{ico(i, "ico")}{html.escape(h)}{hw}</a></li>')
     k = pos[i]; pi = order[k - 1] if k > 0 else None; ni = order[k + 1] if k + 1 < n else None
     prev = (f'<a class="pn prev" href="#s{pi}"><small>הקודם</small>{html.escape(heads[pi-1])}</a>' if pi
             else f'<a class="pn prev" href="{ch.get("back", "/halacha/")}"><small>חזרה</small>לתפריט הלכה</a>')
     mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
     nxt = f'<a class="pn next" href="#s{ni}"><small>הבא</small>{html.escape(heads[ni-1])}</a>' if ni else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
-    <div class="sec-head{" no-h" if i in quiet else ""}">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {k+1} מתוך {n}">{k+1}/{n}</span></div>
+    <div class="sec-head{" no-h" if i in quiet else ""}">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {shown[i] if i in tabn else k+1} מתוך {tabn.get(i, n)}">{shown[i] if i in tabn else k+1}/{tabn.get(i, n)}</span></div>
     <div class="content">
 {body}
     </div>{f'<i class="read-end" data-end="{i}"></i><label class="v-read"><input type="checkbox" data-vread="{i}"><span>קראתי</span></label>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
@@ -207,7 +214,7 @@ if groups:
             return (f'<details class="grp" name="grp"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span></summary>'
                     '<p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>')
         return (f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
-                f'<small>{"סעיפים "+str(a)+"-"+str(b) if b > a else "סעיף "+str(a)}</small></summary>'
+                f'<small>{"סעיפים "+str(shown[a])+"-"+str(shown[b]) if b > a else "סעיף "+str(shown[a])}</small></summary>'
                 f'<ol>{items(a, b, sub)}</ol></details>')
     toc_html = '<div class="grps">' + "".join(grp(g, *x) for g, x in enumerate(groups, 1)) + '</div>'
     # A sub-topic title above its first section on the page (shown only once inside the long page).
