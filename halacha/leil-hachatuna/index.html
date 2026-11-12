@@ -10,7 +10,7 @@
 <main dir="rtl" lang="he" class="chapter checking" data-track="leil-hachatuna" data-tabs-apart>
   <header>
     <a class="back" href="/hadracha/">→ חזרה להדרכה</a>
-    <div class="eyebrow">הדרכה · חלק 1 מתוך 1</div>
+    <div class="eyebrow">הדרכה · מדור 1 מתוך 1</div>
     <h1>סדר ליל החתונה</h1>
     <p class="lead">סדר ליל הכלולות</p>
     <p class="until" id="until" hidden></p>
@@ -452,12 +452,12 @@
   main.classList.remove('checking');
   if(!open){main.classList.add('priv-locked');gate.hidden=false;return}
   var g=LOCK.grantOf('leil-hachatuna'), u=document.getElementById('until'), st=SITE.state;
-  if(g&&g.expires_at&&!st.profile.is_admin){u.textContent='החלק פתוח לך עד '+LOCK.day(g.expires_at)+'.';u.hidden=false}
+  if(g&&g.expires_at&&!st.profile.is_admin){u.textContent='המדור פתוח לך עד '+LOCK.day(g.expires_at)+'.';u.hidden=false}
   // The text itself comes from Supabase, and only to readers whose permission is live.
   var t=await SITE.sb.from('chapter_text').select('section,html').eq('chapter',ch);
   (t.data||[]).forEach(function(r){var c=document.querySelector('#s'+r.section+' .content');if(c)c.innerHTML=r.html});
   if(t.error||!(t.data||[]).length) [].forEach.call(document.querySelectorAll('.sec .content'),function(c){
-    c.innerHTML='<p class="placeholder">'+(st.profile&&st.profile.is_admin?'הטקסט עוד לא הועלה ל־Supabase. צריך להריץ שם את v5.sql ואת קובץ התוכן של החלק.':'הטקסט לא נטען. נסה לרענן את הדף.')+'</p>'});
+    c.innerHTML='<p class="placeholder">'+(st.profile&&st.profile.is_admin?'הטקסט עוד לא הועלה ל־Supabase. צריך להריץ שם את v5.sql ואת קובץ התוכן של המדור.':'הטקסט לא נטען. נסה לרענן את הדף.')+'</p>'});
   if(!st.user||st.profile&&st.profile.is_admin) return;
   // A section counts as read only at reading pace (Natan, 2026-11-08): it must stay in the middle of the screen
   // long enough for its length (about a quarter second a word, at least 8 seconds), and its end must come into view.

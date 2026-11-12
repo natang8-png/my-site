@@ -105,8 +105,8 @@ else if(PROOF){document.documentElement.classList.add('proof');
     if(a==='read'){main.classList.add('read-only');return}
     main.classList.add(a==='quiz'?'quiz-only':'locked');
     var next=encodeURIComponent(location.pathname+location.hash);
-    var msg=a==='quiz'?'בחלק הזה פתוחה לך הבחינה העצמית בלבד.'
-      :st.user?'החשבון שלך עוד לא קיבל גישה לחלק הזה. נתן יפתח אותה בקרוב.'
+    var msg=a==='quiz'?'במדור הזה פתוחה לך הבחינה העצמית בלבד.'
+      :st.user?'החשבון שלך עוד לא קיבל גישה למדור הזה. נתן יפתח אותה בקרוב.'
       :'התוכן פתוח למשתמשים רשומים. <a href="/login/?next='+next+'">כניסה / הרשמה</a>';
     [].forEach.call(document.querySelectorAll('.sec .content'),function(c){
       var n=document.createElement('div');n.className='lock-note';n.innerHTML='<span aria-hidden="true">🔒</span> '+msg;
@@ -123,7 +123,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
   var total=+(toc.querySelector('[data-total]')||{}).getAttribute('data-total')||toc.querySelectorAll('a').length;
   var back=head.querySelector('.back'), title=head.querySelector('h1').textContent;
   var bar=document.createElement('header');bar.className='chbar';bar.dir='rtl';
-  bar.innerHTML='<div class="cb-row"><a class="cb-back" href="'+(back?back.getAttribute('href'):'/')+'" aria-label="חזרה לרשימת החלקים">→</a>'+
+  bar.innerHTML='<div class="cb-row"><a class="cb-back" href="'+(back?back.getAttribute('href'):'/')+'" aria-label="חזרה לרשימת המדורים">→</a>'+
     '<span class="cb-ico" aria-hidden="true" hidden></span><div class="cb-mid"><span class="cb-title"></span><span class="cb-sname"></span></div>'+
     '<span class="cb-snum"></span></div>'+
     '<div class="cb-panel" hidden></div>';
@@ -286,7 +286,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
   // Light buttons: the accessibility figure in a double circle, and three lines for the menu.
   var A11Y='<svg class="rb-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="6.6" r="1.7" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M7.2 9.6h9.6M12 9.6v4.2M12 13.8l-1.9 4.5M12 13.8l1.9 4.5"/></svg>';
   var MENU='<svg class="rb-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 7h14M5 12h14M5 17h14"/></svg>';
-  var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט בחלק');
+  var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט במדור');
   bar.innerHTML='<div class="rb-row">'+
     '<button type="button" class="rb-pill rb-prev" data-go="-1">'+ARROW('r')+'<span>הקודם</span></button>'+
     '<button type="button" class="rb-lite" data-rb="menu" aria-label="תפריט כותרות">'+MENU+'<span class="rb-tx"><b>תפריט</b><span class="rb-count"></span></span></button>'+

@@ -23,22 +23,22 @@
     var n=node(path), s=SITE.state, next=encodeURIComponent('/halacha/'+path+'/');
     box.className='req-box';
     if(!s.user){
-      box.innerHTML='<p><b>אין לך הרשאה לחלק "'+n.title+'".</b></p><p>החלק נפתח בהרשאה אישית מנתן. כדי לבקש אותה צריך קודם להיכנס לאתר.</p>'+
+      box.innerHTML='<p><b>אין לך הרשאה למדור "'+n.title+'".</b></p><p>המדור נפתח בהרשאה אישית מנתן. כדי לבקש אותה צריך קודם להיכנס לאתר.</p>'+
         '<div class="acts"><a class="primary" href="/login/?next='+next+'" style="text-decoration:none;border-radius:999px">כניסה / הרשמה</a>'+(inDialog?'<button type="button" data-x>סגירה</button>':'')+'</div>';
       return false;
     }
     var open=await SITE.sb.from('access_requests').select('created_at').eq('user_id',s.user.id).eq('path',path).is('handled_at',null).maybeSingle();
     if(open.data){
-      box.innerHTML='<p><b>הבקשה שלך נשלחה ✓</b></p><p>שלחת בקשה ב־'+day(open.data.created_at)+'. כשנתן יאשר, החלק ייפתח לך ל־'+(n.days||7)+' ימים.</p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');
+      box.innerHTML='<p><b>הבקשה שלך נשלחה ✓</b></p><p>שלחת בקשה ב־'+day(open.data.created_at)+'. כשנתן יאשר, המדור ייפתח לך ל־'+(n.days||7)+' ימים.</p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');
       return false;
     }
     var g=grantOf(path);
     if(g&&g.starts_at&&new Date(g.starts_at)>new Date()){
-      box.innerHTML='<p><b>החלק "'+n.title+'" ייפתח לך ב־'+day(g.starts_at)+'.</b></p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');
+      box.innerHTML='<p><b>המדור "'+n.title+'" ייפתח לך ב־'+day(g.starts_at)+'.</b></p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');
       return false;
     }
-    box.innerHTML=(g&&g.expires_at&&new Date(g.expires_at)<=new Date()?'<p><b>ההרשאה שלך לחלק "'+n.title+'" הסתיימה ב־'+day(g.expires_at)+'.</b></p><p>האם לשלוח בקשה חדשה?</p>'
-        :'<p><b>אין לך הרשאה לחלק "'+n.title+'".</b></p><p>האם לשלוח בקשה?</p>')+
+    box.innerHTML=(g&&g.expires_at&&new Date(g.expires_at)<=new Date()?'<p><b>ההרשאה שלך למדור "'+n.title+'" הסתיימה ב־'+day(g.expires_at)+'.</b></p><p>האם לשלוח בקשה חדשה?</p>'
+        :'<p><b>אין לך הרשאה למדור "'+n.title+'".</b></p><p>האם לשלוח בקשה?</p>')+
       '<div class="acts"><button type="button" class="primary" data-ask>שליחת בקשה</button>'+(inDialog?'<button type="button" data-x>לא עכשיו</button>':'')+'</div><p class="msg" role="status"></p>';
     box.querySelector('[data-ask]').onclick=async function(){
       this.disabled=true;

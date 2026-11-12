@@ -420,7 +420,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         return '<details class="qb-heads'+(key?' nosum':'')+'"'+(key?' data-hk="'+key+'"':'')+'><summary>קריאה לפי כותרות</summary><ol>'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
             var v=ur.find(function(x){return x.chapter===c+':v'&&x.section===i+1}); // the student's own "קראתי" mark
             var mk=secs&&secs[i]?secs[i].k.map(function(k){return k==='ok'?'<i class="ok">✓</i>':k==='bad'?'<i class="bad">✗</i>':'<i class="no"></i>'}).join(''):'';
-            var go=secs&&secs[i]&&secs[i].qs.length?' data-hgo="'+(i+1)+'" role="button" tabindex="0" title="בדיקת השאלות של החלק"':'';
+            var go=secs&&secs[i]&&secs[i].qs.length?' data-hgo="'+(i+1)+'" role="button" tabindex="0" title="בדיקת השאלות של הפרק"':'';
             return '<li class="'+(r?'rd':'')+(go?' go':'')+'"'+go+'><span>'+(i+1)+'. '+esc(t)+(r?' <small>· '+when(r.read_at)+'</small>':'')+(v?' · <b>V סימן קראתי</b>':'')+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+'</li>'}).join('')+'</ol></details>'+
               (CHAPTERS[c].own?'<p class="muted" style="margin:4px 0 0;font-size:.85rem">מוצלל = נקרא בקצב קריאה (זמן על המסך לפי אורך הסעיף). V = החתן סימן בעצמו "קראתי".</p>':'');
       }
@@ -573,7 +573,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     if(requests===null)return '<p class="msg" style="margin-top:24px">כדי לקבל בקשות גישה (סדר ליל החתונה), צריך להריץ קודם את supabase/v4.sql.</p>';
     var h='<h2 style="margin-top:32px">בקשות גישה'+(requests.length?' ('+requests.length+')':'')+'</h2>';
     if(!requests.length)return h+'<p class="none">אין בקשות שממתינות.</p>';
-    h+='<p class="help"><b class="g">אישור</b> פותח את החלק לתלמיד לשבוע מהיום, ואחר כך הוא נסגר מעצמו. <b class="r">דחייה</b> סוגרת את הבקשה, והתלמיד יכול לבקש שוב.</p><div class="users">';
+    h+='<p class="help"><b class="g">אישור</b> פותח את המדור לתלמיד לשבוע מהיום, ואחר כך הוא נסגר מעצמו. <b class="r">דחייה</b> סוגרת את הבקשה, והתלמיד יכול לבקש שוב.</p><div class="users">';
     return h+requests.map(function(q){var u=users.find(function(x){return x.id===q.user_id})||{};
       return '<article class="user pending"><div class="u-head"><div><h3>'+esc(uname(u))+'</h3><small dir="ltr">'+esc(u.email)+'</small></div><div class="meta">ביקש: '+esc(title(q.path))+'<br>'+when(q.created_at)+'</div></div>'+
         '<div class="add"><button type="button" class="primary" data-rq="'+q.id+'" data-ok="1">אישור לשבוע</button><button type="button" class="close" data-rq="'+q.id+'">דחייה</button></div></article>'}).join('')+'</div>';

@@ -112,12 +112,12 @@ PRIVATE_TAIL = f"""<script src="/private.js"></script>
   main.classList.remove('checking');
   if(!open){{main.classList.add('priv-locked');gate.hidden=false;return}}
   var g=LOCK.grantOf('{ch["path"]}'), u=document.getElementById('until'), st=SITE.state;
-  if(g&&g.expires_at&&!st.profile.is_admin){{u.textContent='החלק פתוח לך עד '+LOCK.day(g.expires_at)+'.';u.hidden=false}}
+  if(g&&g.expires_at&&!st.profile.is_admin){{u.textContent='המדור פתוח לך עד '+LOCK.day(g.expires_at)+'.';u.hidden=false}}
   // The text itself comes from Supabase, and only to readers whose permission is live.
   var t=await SITE.sb.from('chapter_text').select('section,html').eq('chapter',ch);
   (t.data||[]).forEach(function(r){{var c=document.querySelector('#s'+r.section+' .content');if(c)c.innerHTML=r.html}});
   if(t.error||!(t.data||[]).length) [].forEach.call(document.querySelectorAll('.sec .content'),function(c){{
-    c.innerHTML='<p class="placeholder">'+(st.profile&&st.profile.is_admin?'הטקסט עוד לא הועלה ל־Supabase. צריך להריץ שם את v5.sql ואת קובץ התוכן של החלק.':'הטקסט לא נטען. נסה לרענן את הדף.')+'</p>'}});
+    c.innerHTML='<p class="placeholder">'+(st.profile&&st.profile.is_admin?'הטקסט עוד לא הועלה ל־Supabase. צריך להריץ שם את v5.sql ואת קובץ התוכן של המדור.':'הטקסט לא נטען. נסה לרענן את הדף.')+'</p>'}});
   if(!st.user||st.profile&&st.profile.is_admin) return;
   // A section counts as read only at reading pace (Natan, 2026-11-08): it must stay in the middle of the screen
   // long enough for its length (about a quarter second a word, at least 8 seconds), and its end must come into view.
@@ -260,7 +260,7 @@ page = f'''<!doctype html>
 {PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}{" data-flow" if ch.get("flow") else ""}{" data-tabs-apart" if ch.get("tabs_apart") else ""}>
   <header>
     <a class="back" href="{ch.get("back", "/halacha/")}">→ חזרה{ch.get("back_label", " ללידה" if ch.get("back") else " להלכה")}</a>
-    <div class="eyebrow">{ch.get("topic", "הלכה")} · חלק {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>
+    <div class="eyebrow">{ch.get("topic", "הלכה")} · מדור {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>
     <h1>{ch["title"]}</h1>
     {f'<p class="lead">{ch["subtitle"]}</p>' if ch.get("subtitle") else ""}
     {'<p class="until" id="until" hidden></p>' if private else ""}
