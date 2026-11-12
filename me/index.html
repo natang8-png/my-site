@@ -22,7 +22,7 @@
       <h2 id="open-h">מה פתוח לך, וכמה הספקת</h2>
       <p class="me-meta" id="admin-note" hidden>אתה מנהל, ולכן כל התכנים פתוחים לך.</p>
       <ul class="me-list" id="list"></ul>
-      <p class="me-meta" id="none" hidden>עוד לא נפתח לך אף פרק. נתן יפתח לך גישה בקרוב.</p>
+      <p class="me-meta" id="none" hidden>עוד לא נפתח לך אף חלק. נתן יפתח לך גישה בקרוב.</p>
     </section>
 
     <section class="me-sec" aria-labelledby="acc-h">
@@ -102,12 +102,12 @@
     var meta=[admin&&c.adminOnly?'למנהלים בלבד':c.key&&!c.quiz?'קריאה':LEVEL[a]||''];
     if(g&&g.expires_at)meta.push('פתוח עד '+day(g.expires_at));
     var h='<div class="me-card"><h3><a href="'+c.url+'">'+esc(c.title)+'</a></h3><p class="me-meta">'+esc(meta.filter(Boolean).join(' · '))+'</p>';
-    if(c.shared){h+='<p class="me-meta">ההתקדמות כאן משותפת עם הפרק "'+esc(c.shared)+'".</p>'}
+    if(c.shared){h+='<p class="me-meta">ההתקדמות כאן משותפת עם החלק "'+esc(c.shared)+'".</p>'}
     else{
       var n=Object.keys(reads[c.key]||{}).length, pct=Math.round(100*n/c.total);
       h+='<div class="me-bar" aria-hidden="true"><i style="width:'+pct+'%"></i></div>';
-      h+='<p>קראת <b>'+n+' מתוך '+c.total+'</b> קטעים ('+pct+'%)</p>';
-      if(c.quiz&&a!=='read'){var qn=Object.keys(quizzed[c.key]||{}).length, qt=qtotal[c.key]||c.total;h+='<p>ענית על השאלות ב־<b>'+qn+' מתוך '+qt+'</b> קטעים</p><div data-qreset-host="'+c.key+'"></div>'}
+      h+='<p>קראת <b>'+n+' מתוך '+c.total+'</b> סעיפים ('+pct+'%)</p>';
+      if(c.quiz&&a!=='read'){var qn=Object.keys(quizzed[c.key]||{}).length, qt=qtotal[c.key]||c.total;h+='<p>ענית על השאלות ב־<b>'+qn+' מתוך '+qt+'</b> סעיפים</p><div data-qreset-host="'+c.key+'"></div>'}
     }
     li.innerHTML=h+'</div>';list.appendChild(li);
     [].forEach.call(li.querySelectorAll('[data-qreset-host]'),function(el){SITE.quizResetControls(el,el.getAttribute('data-qreset-host'))});

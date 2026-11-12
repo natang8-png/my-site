@@ -145,7 +145,7 @@
       var self=this, msg=host.querySelector('.qmsg');
       var rb=host.querySelector('[data-qreset]'), ub=host.querySelector('[data-qundo]');
       if(rb)rb.onclick=async function(){
-        if(!confirm('לאפס את כל השאלון של הפרק?\n\nאפשר יהיה לענות מחדש על כל השאלות, וכפתור "הבא" ייסגר שוב בכל קטע עד שתענה. התשובות הקודמות נשמרות, ואפשר לבטל את האיפוס האחרון.'))return;
+        if(!confirm('לאפס את כל השאלון של החלק?\n\nאפשר יהיה לענות מחדש על כל השאלות, וכפתור "הבא" ייסגר שוב בכל סעיף עד שתענה. התשובות הקודמות נשמרות, ואפשר לבטל את האיפוס האחרון.'))return;
         var err=await self.resetQuiz(ch);
         if(err){msg.textContent='האיפוס לא הצליח: '+err.message;return}
         location.reload();

@@ -7,7 +7,7 @@ window.PROOF=/[?&](proof|edit)\b/.test(location.search)&&!!document.querySelecto
 if(PROOF&&/[?&]edit\b/.test(location.search)){document.documentElement.classList.add('proof')}
 else if(PROOF){document.documentElement.classList.add('proof');
   var pn=document.createElement('p');pn.className='proof-note';
-  pn.textContent='דף הגהה: כל הקטעים ברצף. קו אדום מפריד בין קטעים, וזיג־זג מסמן את המרווח שהושמט לפני השאלות. בשאלות מסומנת התשובה הנכונה עם ההסבר.';
+  pn.textContent='דף הגהה: כל הסעיפים ברצף. קו אדום מפריד בין סעיפים, וזיג־זג מסמן את המרווח שהושמט לפני השאלות. בשאלות מסומנת התשובה הנכונה עם ההסבר.';
   var hd=document.querySelector('main.chapter > header');if(hd)hd.appendChild(pn)}
 (function(){
   var secs=[].slice.call(document.querySelectorAll('.sec'));
@@ -81,7 +81,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
     [].forEach.call(document.querySelectorAll('[data-read]'),function(b){b.checked=!!read[b.getAttribute('data-read')]});
     [].forEach.call(document.querySelectorAll('#toc a'),function(a){a.classList.toggle('done',!!read[a.getAttribute('href').slice(2)])});
     var n=Object.keys(read).length;
-    if(count)count.textContent=n?n+' מתוך '+total+' נקראו':total+' קטעים';
+    if(count)count.textContent=n?n+' מתוך '+total+' נקראו':total+' סעיפים';
   }
   window.markRead=function(i,on){i=String(i);if(on)read[i]=1;else delete read[i];save();if(online)SITE.saveRead(ch,i,on);paint()};
   document.addEventListener('change',function(e){var b=e.target.closest('[data-read]');if(b)markRead(b.getAttribute('data-read'),b.checked)});
@@ -105,8 +105,8 @@ else if(PROOF){document.documentElement.classList.add('proof');
     if(a==='read'){main.classList.add('read-only');return}
     main.classList.add(a==='quiz'?'quiz-only':'locked');
     var next=encodeURIComponent(location.pathname+location.hash);
-    var msg=a==='quiz'?'בפרק הזה פתוחה לך הבחינה העצמית בלבד.'
-      :st.user?'החשבון שלך עוד לא קיבל גישה לפרק הזה. נתן יפתח אותה בקרוב.'
+    var msg=a==='quiz'?'בחלק הזה פתוחה לך הבחינה העצמית בלבד.'
+      :st.user?'החשבון שלך עוד לא קיבל גישה לחלק הזה. נתן יפתח אותה בקרוב.'
       :'התוכן פתוח למשתמשים רשומים. <a href="/login/?next='+next+'">כניסה / הרשמה</a>';
     [].forEach.call(document.querySelectorAll('.sec .content'),function(c){
       var n=document.createElement('div');n.className='lock-note';n.innerHTML='<span aria-hidden="true">🔒</span> '+msg;
@@ -116,14 +116,14 @@ else if(PROOF){document.documentElement.classList.add('proof');
 })();
 
 // Slim top bar, always on while reading: back to the chapter list, the chapter name over the current heading,
-// and the section number ("קטע 2/25"). The headings menu itself opens from the bottom bar.
+// and the section number ("סעיף 2/25"). The headings menu itself opens from the bottom bar.
 (function(){
   var main=document.querySelector('main.chapter'), head=main&&main.querySelector('header'), toc=document.getElementById('toc');
   if(!main||!head||!toc||PROOF) return;
   var total=+(toc.querySelector('[data-total]')||{}).getAttribute('data-total')||toc.querySelectorAll('a').length;
   var back=head.querySelector('.back'), title=head.querySelector('h1').textContent;
   var bar=document.createElement('header');bar.className='chbar';bar.dir='rtl';
-  bar.innerHTML='<div class="cb-row"><a class="cb-back" href="'+(back?back.getAttribute('href'):'/')+'" aria-label="חזרה לרשימת הפרקים">→</a>'+
+  bar.innerHTML='<div class="cb-row"><a class="cb-back" href="'+(back?back.getAttribute('href'):'/')+'" aria-label="חזרה לרשימת החלקים">→</a>'+
     '<span class="cb-ico" aria-hidden="true" hidden></span><div class="cb-mid"><span class="cb-title"></span><span class="cb-sname"></span></div>'+
     '<span class="cb-snum"></span></div>'+
     '<div class="cb-panel" hidden></div>';
@@ -167,7 +167,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
     var all=main.hasAttribute('data-flow')&&window.visSecs?visSecs():APART&&window.tabSecs?tabSecs(sec):[].slice.call(document.querySelectorAll('.sec'));
     var i=all.indexOf(sec)+1, total=all.length; // place on the page (in a flow chapter: in the open tab), not the section's number
     bar.querySelector('.cb-sname').textContent=sec.querySelector('.sec-head h2').textContent;
-    num.textContent='קטע '+i+'/'+total;num.setAttribute('aria-label','קטע '+i+' מתוך '+total);
+    num.textContent='סעיף '+i+'/'+total;num.setAttribute('aria-label','סעיף '+i+' מתוך '+total);
   }
   window.addEventListener('hashchange',function(){setTimeout(current,0)});document.addEventListener('sec-change',current);current();
 })();
@@ -215,7 +215,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
   function render(box){
     var i=box.getAttribute('data-iq'), qs=data[i]||[], sv=saved[i], right=0, answered=0, picks=[];
     if(!qs.length){box.innerHTML='';box.previousElementSibling.hidden=true;return}
-    var h='<h3 class="iq-h">שאלות על הקטע</h3>';
+    var h='<h3 class="iq-h">שאלות על הסעיף</h3>';
     qs.forEach(function(q,k){
       h+='<fieldset class="qq" data-k="'+k+'"><legend>'+(k+1)+'. '+esc(q.q)+'</legend><div class="opts'+(q.a.length===2?' tf':'')+'">'+
         q.a.map(function(a,j){return '<button type="button" data-j="'+j+'">'+esc(a)+'</button>'}).join('')+
@@ -286,7 +286,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
   // Light buttons: the accessibility figure in a double circle, and three lines for the menu.
   var A11Y='<svg class="rb-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="6.6" r="1.7" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M7.2 9.6h9.6M12 9.6v4.2M12 13.8l-1.9 4.5M12 13.8l1.9 4.5"/></svg>';
   var MENU='<svg class="rb-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 7h14M5 12h14M5 17h14"/></svg>';
-  var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט בפרק');
+  var bar=document.createElement('nav');bar.className='rbar';bar.dir='rtl';bar.setAttribute('aria-label','ניווט בחלק');
   bar.innerHTML='<div class="rb-row">'+
     '<button type="button" class="rb-pill rb-prev" data-go="-1">'+ARROW('r')+'<span>הקודם</span></button>'+
     '<button type="button" class="rb-lite" data-rb="menu" aria-label="תפריט כותרות">'+MENU+'<span class="rb-tx"><b>תפריט</b><span class="rb-count"></span></span></button>'+
@@ -299,7 +299,7 @@ else if(PROOF){document.documentElement.classList.add('proof');
   (document.querySelector('.chbar')||bar).appendChild(prog);
   // Pressing "הבא" before the questions are done explains why it is not active yet.
   var dlg=document.createElement('dialog');dlg.className='rb-dlg';dlg.dir='rtl';
-  dlg.innerHTML='<p>אחרי הקריאה, לוחצים על הכפתור "לשאלון" בסוף הקטע וממלאים את השאלון.<br>לאחר מילוי השאלון - כפתור "הבא" יהפוך לפעיל.</p><button type="button" class="primary" data-close data-quiz-open>לשאלון</button><button type="button" class="link" data-close>הבנתי</button>';
+  dlg.innerHTML='<p>אחרי הקריאה, לוחצים על הכפתור "לשאלון" בסוף הסעיף וממלאים את השאלון.<br>לאחר מילוי השאלון - כפתור "הבא" יהפוך לפעיל.</p><button type="button" class="primary" data-close data-quiz-open>לשאלון</button><button type="button" class="link" data-close>הבנתי</button>';
   document.body.appendChild(dlg);
   dlg.addEventListener('click',function(e){if(e.target===dlg||e.target.closest('[data-close]'))dlg.close()});
   function cur(){var s=window.curSec?curSec():document.querySelector('.sec:not([hidden])');return s?+s.id.slice(1):0} // 0 = תוכן עניינים

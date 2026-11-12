@@ -94,7 +94,7 @@ def heading_who(raw):
     full = bool(letters) and all(l in who for l in letters) and len(kinds) == 1
     icons = "".join(who_icon(k) for k in "mw" if k in kinds)
     return f'<span class="hw{"" if full else " part"}">{icons}</span>'
-WHO_KEY = (f'<p class="who-key">{who_icon("m")} = דגש לבעל<span class="sep">·</span>{who_icon("w")} = הדגשה לאשה<span class="key-note">סמל בסוגריים בכותרת = רק חלק מהקטע</span></p>' if who else "")
+WHO_KEY = (f'<p class="who-key">{who_icon("m")} = דגש לבעל<span class="sep">·</span>{who_icon("w")} = הדגשה לאשה<span class="key-note">סמל בסוגריים בכותרת = רק חלק מהסעיף</span></p>' if who else "")
 n = len(heads)
 
 # Private chapters: hidden until the reader's permission is confirmed; reading is tracked quietly for the admin.
@@ -110,12 +110,12 @@ PRIVATE_TAIL = f"""<script src="/private.js"></script>
   main.classList.remove('checking');
   if(!open){{main.classList.add('priv-locked');gate.hidden=false;return}}
   var g=LOCK.grantOf('{ch["path"]}'), u=document.getElementById('until'), st=SITE.state;
-  if(g&&g.expires_at&&!st.profile.is_admin){{u.textContent='הפרק פתוח לך עד '+LOCK.day(g.expires_at)+'.';u.hidden=false}}
+  if(g&&g.expires_at&&!st.profile.is_admin){{u.textContent='החלק פתוח לך עד '+LOCK.day(g.expires_at)+'.';u.hidden=false}}
   // The text itself comes from Supabase, and only to readers whose permission is live.
   var t=await SITE.sb.from('chapter_text').select('section,html').eq('chapter',ch);
   (t.data||[]).forEach(function(r){{var c=document.querySelector('#s'+r.section+' .content');if(c)c.innerHTML=r.html}});
   if(t.error||!(t.data||[]).length) [].forEach.call(document.querySelectorAll('.sec .content'),function(c){{
-    c.innerHTML='<p class="placeholder">'+(st.profile&&st.profile.is_admin?'הטקסט עוד לא הועלה ל־Supabase. צריך להריץ שם את v5.sql ואת קובץ התוכן של הפרק.':'הטקסט לא נטען. נסה לרענן את הדף.')+'</p>'}});
+    c.innerHTML='<p class="placeholder">'+(st.profile&&st.profile.is_admin?'הטקסט עוד לא הועלה ל־Supabase. צריך להריץ שם את v5.sql ואת קובץ התוכן של החלק.':'הטקסט לא נטען. נסה לרענן את הדף.')+'</p>'}});
   if(!st.user||st.profile&&st.profile.is_admin) return;
   // A section counts as read only at reading pace (Natan, 2026-11-08): it must stay in the middle of the screen
   // long enough for its length (about a quarter second a word, at least 8 seconds), and its end must come into view.
@@ -173,7 +173,7 @@ for i, h in enumerate(heads, 1):
             private_rows.append((i, body))
             body = '<p class="msg">טוען…</p>'
     else:
-        body = '<p class="placeholder">הטקסט של הקטע הזה עוד לא נוסף.</p>'
+        body = '<p class="placeholder">הטקסט של הסעיף הזה עוד לא נוסף.</p>'
         hw = ""
         filled = False
     toc.append(f'<li><a href="#s{i}"{"" if filled else " class=\"empty\""}><span class="num">{shown[i]}</span>{ico(i, "ico")}{html.escape(h)}{hw}</a></li>')
@@ -183,13 +183,13 @@ for i, h in enumerate(heads, 1):
     mid = '<button type="button" class="pn mid" data-open-toc><small>תפריט</small>כל הכותרות</button>'
     nxt = f'<a class="pn next" href="#s{ni}"><small>הבא</small>{html.escape(heads[ni-1])}</a>' if ni else '<span></span>'
     secs.append(f'''  <section class="sec" id="s{i}" aria-labelledby="s{i}-h">
-    <div class="sec-head{" no-h" if i in quiet else ""}">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="קטע {shown[i] if i in tabn else k+1} מתוך {tabn.get(i, n)}">{shown[i] if i in tabn else k+1}/{tabn.get(i, n)}</span></div>
+    <div class="sec-head{" no-h" if i in quiet else ""}">{ico(i, "sec-ico")}<h2 id="s{i}-h">{html.escape(h)}{hw}</h2><span class="sec-num" aria-label="סעיף {shown[i] if i in tabn else k+1} מתוך {tabn.get(i, n)}">{shown[i] if i in tabn else k+1}/{tabn.get(i, n)}</span></div>
     <div class="content">
 {body}
     </div>{f'<i class="read-end" data-end="{i}"></i><label class="v-read"><input type="checkbox" data-vread="{i}"><span>קראתי</span></label>' if private else ""}{INLINE_Q.format(i=i) if inline else ""}
     <div class="sec-foot">
       {"" if private else f'<div class="sec-tools"><label class="read-mark"><input type="checkbox" data-read="{i}"><span>קראתי</span></label>{"" if inline or ch.get("noquiz") else f'<button type="button" class="quiz-btn" data-quiz="{i}">בחינה עצמית</button>'}</div>'}
-      <nav class="pager" aria-label="ניווט בין קטעים">{prev}{mid}{nxt}</nav>
+      <nav class="pager" aria-label="ניווט בין סעיפים">{prev}{mid}{nxt}</nav>
     </div>
   </section>''')
 
@@ -258,7 +258,7 @@ page = f'''<!doctype html>
 {PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}{" data-flow" if ch.get("flow") else ""}{" data-tabs-apart" if ch.get("tabs_apart") else ""}>
   <header>
     <a class="back" href="{ch.get("back", "/halacha/")}">→ חזרה{" ללידה" if ch.get("back") else " להלכה"}</a>
-    <div class="eyebrow">הלכה · פרק {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>
+    <div class="eyebrow">הלכה · חלק {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>
     <h1>{ch["title"]}</h1>
     {f'<p class="lead">{ch["subtitle"]}</p>' if ch.get("subtitle") else ""}
     {'<p class="until" id="until" hidden></p>' if private else ""}
@@ -267,7 +267,7 @@ page = f'''<!doctype html>
 
   {'<div id="gate" hidden></div>' if private else ""}
   <details class="toc" id="toc">
-    <summary><span>תוכן עניינים</span><span class="toc-count" data-total="{n}">{n} קטעים</span></summary>
+    <summary><span>תוכן עניינים</span><span class="toc-count" data-total="{n}">{n} סעיפים</span></summary>
     {WHO_KEY}
     {toc_html}
   </details>

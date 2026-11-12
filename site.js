@@ -33,7 +33,7 @@
     '<h3 class="grp">עיצוב</h3><h3>גודל אותיות</h3><div class="size"><button type="button" data-size="-10" aria-label="הקטנה">א־</button><output id="p-size"></output><button type="button" data-size="10" aria-label="הגדלה">א+</button></div>'+
     '<h3>צבע רקע</h3>'+seg('bg',[['','רגיל'],['white','לבן'],['cream','שמנת'],['gray','אפור']])+
     '<h3>מצב תצוגה</h3>'+seg('theme',[['','אוטומטי'],['light','בהיר'],['dark','כהה']])+
-    '<h3>תפריט הכותרות בפרק</h3>'+seg('menu',[['','חלון מלמטה'],['full','מסך מלא']])+
+    '<h3>תפריט הכותרות בחלק</h3>'+seg('menu',[['','חלון מלמטה'],['full','מסך מלא']])+
     '<div class="a11y"><h3 class="grp">נגישות</h3>'+
       '<h3>בהירות</h3><input type="range" min="70" max="130" step="5" data-bright aria-label="בהירות">'+
       tog('contrast','ניגודיות גבוהה','טקסט כהה יותר וקווים בולטים')+

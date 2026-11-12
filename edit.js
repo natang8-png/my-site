@@ -220,7 +220,7 @@
       var body=r.kind==='note'?'<div class="hand">'+esc(r.val)+'</div>'
         :r.kind==='correct'?'התשובה הנכונה: '+esc(r.val)+' (במקור '+esc(r.orig)+')'
         :'<div class="was">'+esc(r.orig)+'</div><div class="now">'+esc(plain(r.val))+'</div>';
-      return '<li><a href="#" data-go="'+esc(lost?'':b===blocks[r.key]?r.key:r.key.replace(/\.c$/,'.q'))+'">'+(r.sec?'קטע '+r.sec+' · ':'')+lbl[r.kind]+'</a>'+(lost?' <small>(המקום לא נמצא)</small>':'')+body+'</li>';
+      return '<li><a href="#" data-go="'+esc(lost?'':b===blocks[r.key]?r.key:r.key.replace(/\.c$/,'.q'))+'">'+(r.sec?'סעיף '+r.sec+' · ':'')+lbl[r.kind]+'</a>'+(lost?' <small>(המקום לא נמצא)</small>':'')+body+'</li>';
     }).join('')+'</ol><button type="button" class="primary" data-close>סגירה</button>';
     dlg.innerHTML=h;dlg.showModal();
   }
