@@ -49,7 +49,11 @@
         var p=a.getAttribute('data-path');
         if((a.hasAttribute('data-empty')&&!admin)||(p&&!SITE.access(p)))a.remove();
       });
-      nav.hidden=!nav.children.length;
+      // Natan, 2026-11-12: running text with " - " between the names instead of buttons; the paragraph grows with the list.
+      var links=[].slice.call(nav.querySelectorAll('a'));
+      nav.className='sublist';nav.textContent='';
+      links.forEach(function(a,i){ if(i)nav.appendChild(document.createTextNode(' - ')); nav.appendChild(a) });
+      nav.hidden=!links.length;
     });
   });
 })();

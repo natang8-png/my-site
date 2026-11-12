@@ -39,7 +39,7 @@
     [].forEach.call(document.querySelectorAll('[data-gate]'),function(a){
       var open=JSON.parse(a.getAttribute('data-gate')).filter(function(m){return SITE.access(m[0])}).map(function(m){return m[1]});
       var p=a.querySelector('.gate-list');
-      if(open.length){p.textContent=open.join(' · ');p.hidden=false}
+      if(open.length){p.textContent=open.join(' - ');p.hidden=false}
       else a.classList.add('off');
     });
   });
