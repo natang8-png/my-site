@@ -14,9 +14,9 @@
   <section aria-labelledby="topics-h">
     <h2 id="topics-h">שערים</h2>
     <ul class="topics">
-      <li><a class="topic" href="/halacha/"><h3>הלכה</h3><p>השער הראשון באתר, עם מדורים שייפתחו בהדרגה.</p><span class="go" aria-hidden="true">←</span></a></li>
-      <li><a class="topic" href="/hadracha/"><h3>הדרכה</h3><p>סדר ליל החתונה, בהרשאה אישית.</p><span class="go" aria-hidden="true">←</span></a></li>
-      <li><div class="topic soon"><h3>שלום בית</h3><p>בקרוב</p></div></li>
+      <li><a class="topic" href="/halacha/" data-gate='[["halacha/family/harchakot","הרחקות"],["halacha/family/yoledet","מעגל החיים"]]'><h3>שער הלכה</h3><p class="gate-list" hidden></p><span class="go" aria-hidden="true">←</span></a></li>
+      <li><a class="topic" href="/hadracha/" data-gate='[["leil-hachatuna","סדר ליל החתונה"]]'><h3>שער הדרכה</h3><p class="gate-list" hidden></p><span class="go" aria-hidden="true">←</span></a></li>
+      <li><div class="topic soon"><h3>שער שלום בית</h3><p>בקרוב</p></div></li>
       <li><div class="topic soon"><h3>צור קשר</h3><p>בקרוב</p></div></li>
     </ul>
   </section>
@@ -29,4 +29,20 @@
 <script src="/site.js"></script>
 <script src="/vendor/supabase.js"></script>
 <script src="/auth.js"></script>
+<script>
+// Each gate (שער) on the home page (Natan, 2026-11-12): a signed-in reader sees the list of its מדורים that are open to them.
+// With none open, the gate shows its name only, in the "not available" color (still a link, so a closed מדור can be requested).
+(function(){
+  if(!window.SITE)return;
+  SITE.ready.then(function(st){
+    if(!st.user)return;
+    [].forEach.call(document.querySelectorAll('[data-gate]'),function(a){
+      var open=JSON.parse(a.getAttribute('data-gate')).filter(function(m){return SITE.access(m[0])}).map(function(m){return m[1]});
+      var p=a.querySelector('.gate-list');
+      if(open.length){p.textContent=open.join(' · ');p.hidden=false}
+      else a.classList.add('off');
+    });
+  });
+})();
+</script>
 </body></html>
