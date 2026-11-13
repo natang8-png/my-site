@@ -61,3 +61,24 @@
   dlg.addEventListener('change',function(e){var t=e.target.getAttribute('data-t');if(t){P[t]=e.target.checked;save()}});
   dlg.addEventListener('input',function(e){if(e.target.hasAttribute('data-bright')){P.bright=+e.target.value;save()}});
 })();
+
+// A list of names as running text, a green dot between them (Natan, 2026-11-13: example ה, centered).
+// A dot that lands at the end of a line is hidden, so no line ends with a dot. Re-checked when the width changes.
+(function(){
+  var lists=[];
+  function fix(el){
+    var dots=el.querySelectorAll('.ldot');
+    [].forEach.call(dots,function(d){d.classList.remove('eol')});
+    [].forEach.call(dots,function(d){var nx=d.nextElementSibling; if(nx&&Math.round(nx.getBoundingClientRect().top)>Math.round(d.getBoundingClientRect().top)+2)d.classList.add('eol')});
+  }
+  window.dotList=function(el,nodes){
+    el.textContent='';el.classList.add('dotlist');
+    nodes.forEach(function(n,i){
+      if(i){el.appendChild(document.createTextNode(' '));var d=document.createElement('span');d.className='ldot';d.setAttribute('aria-hidden','true');d.textContent='•';el.appendChild(d);el.appendChild(document.createTextNode(' '))}
+      var w=document.createElement('span');w.className='item';w.appendChild(typeof n==='string'?document.createTextNode(n):n);el.appendChild(w);
+    });
+    lists.push(el);fix(el);
+    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){fix(el)});
+  };
+  var t;window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){lists.forEach(fix)},100)});
+})();

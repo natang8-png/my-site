@@ -49,10 +49,10 @@
         var p=a.getAttribute('data-path');
         if((a.hasAttribute('data-empty')&&!admin)||(p&&!SITE.access(p)))a.remove();
       });
-      // Natan, 2026-11-12: running text with " - " between the names instead of buttons; the paragraph grows with the list.
+      // Natan, 2026-11-13: running text, centered, a green dot between the names (example ה).
       var links=[].slice.call(nav.querySelectorAll('a'));
-      nav.className='sublist';nav.textContent='';
-      links.forEach(function(a,i){ if(i)nav.appendChild(document.createTextNode(' - ')); nav.appendChild(a) });
+      var p=document.createElement('p');nav.replaceWith(p);nav=p;
+      if(links.length&&window.dotList)dotList(p,links);
       nav.hidden=!links.length;
     });
   });
