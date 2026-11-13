@@ -8,18 +8,17 @@
 <main dir="rtl" lang="he" class="home">
   <header>
     <a class="back" href="/">→ חזרה לדף הבית</a>
-    <h1>הלכה</h1>
+    <h1>שער הלכה</h1>
   </header>
 
   <section aria-labelledby="sub-h">
-    <h2 id="sub-h">תתי־נושאים</h2>
+    <h2 id="sub-h">מדורים</h2>
     <ol class="topics">
-      <li><a class="topic" href="/halacha/harchakot/"><h3><span class="num">1</span>הרחקות</h3><p>האיסורים הנוהגים בזמן נידתה <span class="nw">-&nbsp;7 נושאים</span></p>
-        <div class="qsum" data-qsum="harchakot" data-path="halacha/family/harchakot" data-quiz="/halacha/harchakot/quiz.json" hidden></div><span class="go" aria-hidden="true">←</span></a></li>
-      <li><div class="topic has-sub" data-lock="leil-hachatuna"><h3><a class="stretch" href="/halacha/leil-hachatuna/" data-lock="leil-hachatuna"><span class="num">2</span>סדר ליל החתונה<span class="lock" aria-label="בהרשאה אישית">🔒</span></a></h3><p>נפתח בהרשאה אישית לשבוע.</p>
-        <nav class="subtabs" aria-label="בתוך הפרק"><a href="/halacha/leil-hachatuna/#s24" data-lock="leil-hachatuna">הלכה</a><a href="/halacha/leil-hachatuna/#s16" data-lock="leil-hachatuna">השקפה</a><a href="/halacha/leil-hachatuna/#s1" data-lock="leil-hachatuna">ליל הכלולות</a></nav><span class="go" aria-hidden="true">←</span></div></li>
-      <li><div class="topic has-sub"><h3><a class="stretch" href="/halacha/maagal-hachaim/"><span class="num">3</span>מעגל החיים</a></h3><p>הריון, לידה והנקה.</p>
-        <nav class="subtabs" aria-label="בתוך הפרק"><a href="/halacha/maagal-hachaim/#herayon">הריון</a><a href="/halacha/maagal-hachaim/#leida">לידה</a><a href="/halacha/maagal-hachaim/#hanaka">הנקה</a></nav>
+      <li><div class="topic has-sub" data-mador="halacha/family/harchakot"><h3><a class="stretch" href="/halacha/harchakot/"><span class="num">1</span>הרחקות</a></h3><p class="desc">האיסורים הנוהגים בזמן נידתה <span class="nw">-&nbsp;7 פרקים</span></p>
+        <nav class="subtabs" aria-label="בתוך המדור" hidden><a href="/halacha/harchakot/#s1">כללי</a><a href="/halacha/harchakot/#s5">חיי היום יום</a><a href="/halacha/harchakot/#s9">אכילה ושתייה</a><a href="/halacha/harchakot/#s13">חדר השינה</a><a href="/halacha/harchakot/#s15">מחוץ לבית</a><a href="/halacha/harchakot/#s19">הנהגה אישית</a><a href="/halacha/harchakot/#s22">מצבים מיוחדים</a></nav>
+        <div class="qsum" data-qsum="harchakot" data-path="halacha/family/harchakot" data-quiz="/halacha/harchakot/quiz.json" hidden></div><span class="go" aria-hidden="true">←</span></div></li>
+      <li><div class="topic has-sub" data-mador="halacha/family/yoledet"><h3><a class="stretch" href="/halacha/maagal-hachaim/"><span class="num">2</span>מעגל החיים</a></h3><p class="desc">הריון, לידה והנקה.</p>
+        <nav class="subtabs" aria-label="בתוך המדור" hidden><a href="/halacha/maagal-hachaim/#herayon" data-empty>הריון</a><a href="/halacha/maagal-hachaim/#leida" data-path="halacha/family/yoledet">לידה</a><a href="/halacha/maagal-hachaim/#hanaka" data-empty>הנקה</a></nav>
         <div class="qsum" data-qsum="yoledet" data-path="halacha/family/yoledet" data-quiz="/halacha/yoledet/quiz.json" data-label="דיני יולדת" hidden></div><span class="go" aria-hidden="true">←</span></div></li>
     </ol>
   </section>
@@ -33,6 +32,32 @@
 <script src="/vendor/supabase.js"></script>
 <script src="/auth.js"></script>
 <script src="/private.js"></script>
+<script>
+// Each מדור card (Natan, 2026-11-12), for a signed-in reader: no description; only the פרקים open to them as buttons.
+// A מדור with nothing open shows its name only, in the "not available" color. Empty פרקים (no text yet) show to the admin only.
+(function(){
+  if(!window.SITE)return;
+  SITE.ready.then(function(st){
+    if(!st.user)return;
+    var admin=!!(st.profile&&st.profile.is_admin);
+    [].forEach.call(document.querySelectorAll('[data-mador]'),function(c){
+      var d=c.querySelector('.desc'), nav=c.querySelector('.subtabs');
+      if(d)d.remove();
+      if(!SITE.access(c.getAttribute('data-mador'))){c.classList.add('off');if(nav)nav.remove();return}
+      if(!nav)return;
+      [].forEach.call(nav.querySelectorAll('a'),function(a){
+        var p=a.getAttribute('data-path');
+        if((a.hasAttribute('data-empty')&&!admin)||(p&&!SITE.access(p)))a.remove();
+      });
+      // Natan, 2026-11-13: running text, centered, a green dot between the names (example ה).
+      var links=[].slice.call(nav.querySelectorAll('a'));
+      var p=document.createElement('p');nav.replaceWith(p);nav=p;
+      if(links.length&&window.dotList)dotList(p,links);
+      nav.hidden=!links.length;
+    });
+  });
+})();
+</script>
 <script>
 // Quiz score under each chapter: questions answered out of all, and the score in percent. Resetting lives in /me/ and /admin/ only.
 (function(){

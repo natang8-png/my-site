@@ -33,7 +33,7 @@
     '<h3 class="grp">עיצוב</h3><h3>גודל אותיות</h3><div class="size"><button type="button" data-size="-10" aria-label="הקטנה">א־</button><output id="p-size"></output><button type="button" data-size="10" aria-label="הגדלה">א+</button></div>'+
     '<h3>צבע רקע</h3>'+seg('bg',[['','רגיל'],['white','לבן'],['cream','שמנת'],['gray','אפור']])+
     '<h3>מצב תצוגה</h3>'+seg('theme',[['','אוטומטי'],['light','בהיר'],['dark','כהה']])+
-    '<h3>תפריט הכותרות בפרק</h3>'+seg('menu',[['','חלון מלמטה'],['full','מסך מלא']])+
+    '<h3>תפריט הכותרות במדור</h3>'+seg('menu',[['','חלון מלמטה'],['full','מסך מלא']])+
     '<div class="a11y"><h3 class="grp">נגישות</h3>'+
       '<h3>בהירות</h3><input type="range" min="70" max="130" step="5" data-bright aria-label="בהירות">'+
       tog('contrast','ניגודיות גבוהה','טקסט כהה יותר וקווים בולטים')+
@@ -60,4 +60,25 @@
   });
   dlg.addEventListener('change',function(e){var t=e.target.getAttribute('data-t');if(t){P[t]=e.target.checked;save()}});
   dlg.addEventListener('input',function(e){if(e.target.hasAttribute('data-bright')){P.bright=+e.target.value;save()}});
+})();
+
+// A list of names as running text, a green dot between them (Natan, 2026-11-13: example ה, centered).
+// A dot that lands at the end of a line is hidden, so no line ends with a dot. Re-checked when the width changes.
+(function(){
+  var lists=[];
+  function fix(el){
+    var dots=el.querySelectorAll('.ldot');
+    [].forEach.call(dots,function(d){d.classList.remove('eol')});
+    [].forEach.call(dots,function(d){var nx=d.nextElementSibling; if(nx&&Math.round(nx.getBoundingClientRect().top)>Math.round(d.getBoundingClientRect().top)+2)d.classList.add('eol')});
+  }
+  window.dotList=function(el,nodes){
+    el.textContent='';el.classList.add('dotlist');
+    nodes.forEach(function(n,i){
+      if(i){el.appendChild(document.createTextNode(' '));var d=document.createElement('span');d.className='ldot';d.setAttribute('aria-hidden','true');d.textContent='•';el.appendChild(d);el.appendChild(document.createTextNode(' '))}
+      var w=document.createElement('span');w.className='item';w.appendChild(typeof n==='string'?document.createTextNode(n):n);el.appendChild(w);
+    });
+    lists.push(el);fix(el);
+    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){fix(el)});
+  };
+  var t;window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){lists.forEach(fix)},100)});
 })();

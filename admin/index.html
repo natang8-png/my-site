@@ -228,14 +228,14 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         cq.forEach(function(x){if((!from||x.taken_at>from)&&(!to||x.taken_at<=to))last[x.section]=x});
         var list=Object.keys(last).sort(function(a,b){return a-b}).map(function(n){return last[n]});
         var s=0,t=0;list.forEach(function(x){s+=x.score;t+=x.total});
-        var hd='סבב '+(k+1)+(from?' · מ־'+when(from):'')+' · '+list.length+' קטעים, '+t+' שאלות'+(t?' · ציון '+Math.round(100*s/t)+'%':'')+(to?'':' (נוכחי)');
+        var hd='סבב '+(k+1)+(from?' · מ־'+when(from):'')+' · '+list.length+' סעיפים, '+t+' שאלות'+(t?' · ציון '+Math.round(100*s/t)+'%':'')+(to?'':' (נוכחי)');
         if(!list.length)return '<div class="round empty">'+esc(hd)+' · עוד לא ענה</div>';
         return '<details class="round"><summary>'+esc(hd)+'</summary>'+list.map(function(x){
           var qs=qd[x.section]||[];
           var ans=x.answers?'<ol class="ans">'+qs.map(function(q,i){var j=x.answers[i], ok=j===q.c;
             return '<li class="'+(ok?'ok':'bad')+'">'+(ok?'✓ ':'✗ ')+esc(q.q)+'<br><small>ענה: '+esc(j==null?'—':q.a[j])+(ok?'':' · הנכונה: '+esc(q.a[q.c]))+'</small></li>'}).join('')+'</ol>'
             :'<p class="none">התשובות עצמן לא נשמרו (לפני שהתחלנו לשמור אותן).</p>';
-          return '<div class="rsec"><b>קטע '+x.section+'</b> · '+x.score+'/'+x.total+' · '+when(x.taken_at)+ans+'</div>';
+          return '<div class="rsec"><b>סעיף '+x.section+'</b> · '+x.score+'/'+x.total+' · '+when(x.taken_at)+ans+'</div>';
         }).join('')+'</details>';
       });
       out+='<div class="rounds"><h4>שאלונים · '+esc(CHAPTERS[c].title)+'</h4>'+rows.join('')+'</div>';
@@ -409,7 +409,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         var qb=CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
         if(qb){
           h+='<div class="qb-top">'+qbPill(u.id+'|'+c,c)+'<span class="qb-ttl" role="button" tabindex="0" aria-expanded="false" title="קריאה לפי כותרות"><span class="ar">◀</span>'+esc(CHAPTERS[c].title)+'</span></div>'+readHeads(c,u.id+'|'+c)+qb;return}
-        h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' קטעים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
+        h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' סעיפים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
         // Which headings were read (chapters whose reading is tracked quietly).
         h+=readHeads(c);
       });
@@ -420,9 +420,9 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         return '<details class="qb-heads'+(key?' nosum':'')+'"'+(key?' data-hk="'+key+'"':'')+'><summary>קריאה לפי כותרות</summary><ol>'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
             var v=ur.find(function(x){return x.chapter===c+':v'&&x.section===i+1}); // the student's own "קראתי" mark
             var mk=secs&&secs[i]?secs[i].k.map(function(k){return k==='ok'?'<i class="ok">✓</i>':k==='bad'?'<i class="bad">✗</i>':'<i class="no"></i>'}).join(''):'';
-            var go=secs&&secs[i]&&secs[i].qs.length?' data-hgo="'+(i+1)+'" role="button" tabindex="0" title="בדיקת השאלות של הנושא"':'';
+            var go=secs&&secs[i]&&secs[i].qs.length?' data-hgo="'+(i+1)+'" role="button" tabindex="0" title="בדיקת השאלות של הפרק"':'';
             return '<li class="'+(r?'rd':'')+(go?' go':'')+'"'+go+'><span>'+(i+1)+'. '+esc(t)+(r?' <small>· '+when(r.read_at)+'</small>':'')+(v?' · <b>V סימן קראתי</b>':'')+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+'</li>'}).join('')+'</ol></details>'+
-              (CHAPTERS[c].own?'<p class="muted" style="margin:4px 0 0;font-size:.85rem">מוצלל = נקרא בקצב קריאה (זמן על המסך לפי אורך הקטע). V = החתן סימן בעצמו "קראתי".</p>':'');
+              (CHAPTERS[c].own?'<p class="muted" style="margin:4px 0 0;font-size:.85rem">מוצלל = נקרא בקצב קריאה (זמן על המסך לפי אורך הסעיף). V = החתן סימן בעצמו "קראתי".</p>':'');
       }
       h+=rounds(u,uq)+studentReset(u,uq);
       h+='</article>';
@@ -573,7 +573,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     if(requests===null)return '<p class="msg" style="margin-top:24px">כדי לקבל בקשות גישה (סדר ליל החתונה), צריך להריץ קודם את supabase/v4.sql.</p>';
     var h='<h2 style="margin-top:32px">בקשות גישה'+(requests.length?' ('+requests.length+')':'')+'</h2>';
     if(!requests.length)return h+'<p class="none">אין בקשות שממתינות.</p>';
-    h+='<p class="help"><b class="g">אישור</b> פותח את הפרק לתלמיד לשבוע מהיום, ואחר כך הוא נסגר מעצמו. <b class="r">דחייה</b> סוגרת את הבקשה, והתלמיד יכול לבקש שוב.</p><div class="users">';
+    h+='<p class="help"><b class="g">אישור</b> פותח את המדור לתלמיד לשבוע מהיום, ואחר כך הוא נסגר מעצמו. <b class="r">דחייה</b> סוגרת את הבקשה, והתלמיד יכול לבקש שוב.</p><div class="users">';
     return h+requests.map(function(q){var u=users.find(function(x){return x.id===q.user_id})||{};
       return '<article class="user pending"><div class="u-head"><div><h3>'+esc(uname(u))+'</h3><small dir="ltr">'+esc(u.email)+'</small></div><div class="meta">ביקש: '+esc(title(q.path))+'<br>'+when(q.created_at)+'</div></div>'+
         '<div class="add"><button type="button" class="primary" data-rq="'+q.id+'" data-ok="1">אישור לשבוע</button><button type="button" class="close" data-rq="'+q.id+'">דחייה</button></div></article>'}).join('')+'</div>';

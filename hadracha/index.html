@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>הדרכה · הלכה בבית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="/style.css?v=3d2b8822">
+</head><body>
+<main dir="rtl" lang="he" class="home">
+  <header>
+    <a class="back" href="/">→ חזרה לדף הבית</a>
+    <h1>שער הדרכה</h1>
+  </header>
+
+  <section aria-labelledby="sub-h">
+    <h2 id="sub-h">מדורים</h2>
+    <ol class="topics">
+      <li><div class="topic has-sub" data-lock="leil-hachatuna"><h3><a class="stretch" href="/halacha/leil-hachatuna/" data-lock="leil-hachatuna"><span class="num">1</span>סדר ליל החתונה<span class="lock" aria-label="בהרשאה אישית">🔒</span></a></h3><p>נפתח בהרשאה אישית לשבוע.</p>
+        <nav class="subtabs" aria-label="בתוך המדור"><a href="/halacha/leil-hachatuna/#s24" data-lock="leil-hachatuna">הלכה</a><a href="/halacha/leil-hachatuna/#s16" data-lock="leil-hachatuna">השקפה</a><a href="/halacha/leil-hachatuna/#s1" data-lock="leil-hachatuna">ליל הכלולות</a></nav><span class="go" aria-hidden="true">←</span></div></li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>נבנה בהדרגה, צעד אחר צעד.</span>
+    <button id="theme" type="button">מצב כהה</button>
+  </footer>
+</main>
+<script src="/site.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
+<script src="/private.js"></script>
+<script>
+// Quiz score under each chapter: questions answered out of all, and the score in percent. Resetting lives in /me/ and /admin/ only.
+(function(){
+  if(!window.SITE)return;
+  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+  SITE.ready.then(function(st){
+    [].forEach.call(document.querySelectorAll('[data-qsum]'),async function(box){
+      var ch=box.getAttribute('data-qsum'), a=SITE.access(box.getAttribute('data-path'));
+      if(a!=='study'&&a!=='quiz')return;
+      var data=await fetch(box.getAttribute('data-quiz')).then(function(r){return r.json()}).catch(function(){return null});
+      if(!data)return;
+      var all=0;Object.keys(data).forEach(function(k){all+=(data[k]||[]).length});
+      var rows=[];
+      if(st.user){var r=await SITE.loadQuiz(ch);rows=r?r.rows:[]}
+      else try{var o=JSON.parse(localStorage.getItem('iq:'+ch))||{};if(!Array.isArray(o))rows=Object.keys(o).map(function(k){return o[k]}).filter(function(x){return x.t!=null}).map(function(x){return {score:x.s,total:x.t}})}catch(e){}
+      var s=0,t=0;rows.forEach(function(x){s+=x.score;t+=x.total});
+      box.innerHTML='<span>'+(box.getAttribute('data-label')?esc(box.getAttribute('data-label'))+' · ':'')+'שאלון: <b>ענית על '+t+'</b> מתוך '+all+' שאלות'+(t?' · <span class="nw">ציון <b>'+Math.round(100*s/t)+'%</b></span>':'')+'</span>'+
+        '';
+      box.hidden=false;
+    });
+  });
+})();
+</script>
+</body></html>
