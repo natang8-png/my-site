@@ -33,12 +33,12 @@
 <script src="/auth.js"></script>
 <script src="/private.js"></script>
 <script>
-// Each מדור card (Natan, 2026-11-12), for a signed-in reader: no description; only the פרקים open to them as buttons.
+// Each מדור card (Natan, 2026-11-12; guests too, 2026-11-15): no description; only the פרקים open to them as buttons.
 // A מדור with nothing open shows its name only, in the "not available" color. Empty פרקים (no text yet) show to the admin only.
 (function(){
   if(!window.SITE)return;
   SITE.ready.then(function(st){
-    if(!st.user)return;
+
     var admin=!!(st.profile&&st.profile.is_admin);
     [].forEach.call(document.querySelectorAll('[data-mador]'),function(c){
       var d=c.querySelector('.desc'), nav=c.querySelector('.subtabs');

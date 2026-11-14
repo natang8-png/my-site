@@ -30,12 +30,12 @@
 <script src="/vendor/supabase.js"></script>
 <script src="/auth.js"></script>
 <script>
-// Each gate (שער) on the home page (Natan, 2026-11-12): a signed-in reader sees the list of its מדורים that are open to them.
+// Each gate (שער) on the home page (Natan, 2026-11-12; guests too, 2026-11-15): a reader sees the list of its מדורים that are open to them.
 // With none open, the gate shows its name only, in the "not available" color (still a link, so a closed מדור can be requested).
 (function(){
   if(!window.SITE)return;
   SITE.ready.then(function(st){
-    if(!st.user)return;
+
     [].forEach.call(document.querySelectorAll('[data-gate]'),function(a){
       var open=JSON.parse(a.getAttribute('data-gate')).filter(function(m){return SITE.access(m[0])}).map(function(m){return m[1]});
       var p=a.querySelector('.gate-list');
