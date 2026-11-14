@@ -34,6 +34,8 @@
   if(!window.SITE)return;
   function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
   SITE.ready.then(function(st){
+    // Guests never see the מדורים of a gate: straight to sign-in (Natan, 2026-11-15).
+    if(!st.user){location.replace('/login/?next='+encodeURIComponent(location.pathname));return}
     [].forEach.call(document.querySelectorAll('[data-qsum]'),async function(box){
       var ch=box.getAttribute('data-qsum'), a=SITE.access(box.getAttribute('data-path'));
       if(a!=='study'&&a!=='quiz')return;

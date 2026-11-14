@@ -37,6 +37,8 @@
   SITE.ready.then(function(st){
 
     [].forEach.call(document.querySelectorAll('[data-gate]'),function(a){
+      // A guest who taps a gate gets the sign-in page, exactly like the top link (Natan, 2026-11-15).
+      if(!st.user)a.href='/login/?next='+encodeURIComponent(location.pathname);
       var open=JSON.parse(a.getAttribute('data-gate')).filter(function(m){return SITE.access(m[0])}).map(function(m){return m[1]});
       var p=a.querySelector('.gate-list');
       if(open.length){p.hidden=false;window.dotList?dotList(p,open):(p.textContent=open.join(' · '))}

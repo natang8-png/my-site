@@ -38,6 +38,8 @@
 (function(){
   if(!window.SITE)return;
   SITE.ready.then(function(st){
+    // Guests never see the מדורים of a gate: straight to sign-in (Natan, 2026-11-15).
+    if(!st.user){location.replace('/login/?next='+encodeURIComponent(location.pathname));return}
 
     var admin=!!(st.profile&&st.profile.is_admin);
     [].forEach.call(document.querySelectorAll('[data-mador]'),function(c){
