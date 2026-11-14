@@ -197,7 +197,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   if(!st.user){app.innerHTML='<p>צריך <a href="/login/?next=/admin/">להיכנס</a> קודם.</p>';return}
   if(!(st.profile&&st.profile.is_admin)){app.innerHTML='<p class="msg">הדף הזה פתוח רק למנהל.</p>';return}
 
-  var QUIZ=null, RESETS=[];
+  var QUIZ=null, RESETS=[], MSGS=null;
   async function load(){
     var r=await Promise.all([
       sb.from('profiles').select('*').order('created_at',{ascending:false}),
@@ -207,9 +207,11 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       sb.from('invites').select('*').order('created_at',{ascending:false}),
       sb.from('access_requests').select('*').is('handled_at',null).order('created_at'),
       sb.from('quiz_resets').select('*').order('reset_at'),  // from supabase/v8.sql; empty until it runs
+      sb.from('contact_messages').select('*').is('handled_at',null).order('created_at',{ascending:false}),  // from supabase/v14.sql
       QUIZ?null:Promise.all(['harchakot','yoledet'].map(function(k){return fetch('/halacha/'+k+'/quiz.json').then(function(x){return x.json()}).then(function(d){return [k,d]}).catch(function(){return null})})).then(function(l){QUIZ={};l.forEach(function(x){if(x)QUIZ[x[0]]=x[1]})})
     ]);
     RESETS=r[6].error?[]:r[6].data;
+    MSGS=r[7].error?null:r[7].data;
     var err=r.slice(0,4).find(function(x){return x.error});
     if(err){app.innerHTML='<p class="msg err">שגיאה בטעינה: '+esc(err.error.message)+'</p>';return}
     render(r[0].data,r[1].data,r[2].data,r[3].data,r[4].error?null:r[4].data,r[5].error?null:r[5].data);
@@ -377,6 +379,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     h+='<div class="add" style="margin-top:16px"><button type="button" class="primary" data-goinv>+ הוספת תלמיד</button></div>';
     h+='<h2 style="margin-top:32px">השאלון שלי</h2><p class="help">איפוס השאלון של הרחקות בחשבון שלך (סבב חדש). אפשר לבטל את האיפוס האחרון.</p><div id="myreset"></div>';
     h+=requestBlock(requests,users);
+    h+=contactBlock(MSGS);
     h+='<h2 style="margin-top:32px">משתמשים</h2><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
     if(!others.length)h+='<p class="none">עוד אין משתמשים רשומים. כשמישהו יירשם דרך "כניסה / הרשמה", הוא יופיע כאן.</p>';
     if(others.length)h+='<p class="help">כדי לקבוע הרשאות לכמה תלמידים ביחד: סמן אותם בתיבה שליד השם, ולחץ <b class="g">הרשאות</b> בחלונית שתופיע למטה. · <button type="button" class="link" data-selall>בחירת כולם</button></p>';
@@ -569,6 +572,20 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   }
 
   // Requests from students for chapters that need their own permission.
+  // Messages from "צור קשר" (home page box for guests, /contact/ for signed-in readers). A draft (*) is a message whose
+  // sender opened the details window and did not finish; once they send, the same row becomes a regular message.
+  function contactBlock(list){
+    if(list===null)return '<p class="msg" style="margin-top:24px">כדי לקבל הודעות מ"צור קשר", צריך להריץ קודם את supabase/v14.sql.</p>';
+    var h='<h2 style="margin-top:32px" id="cmsgs">הודעות מצור קשר'+(list.length?' ('+list.length+')':'')+'</h2>';
+    if(!list.length)return h+'<p class="none">אין הודעות שממתינות.</p>';
+    h+='<p class="help">הודעה שמסומנת <b>✱ טיוטה</b> נשמרה כשהכותב עוד היה בחלון הוספת הפרטים. אם ישלים וישלח, הסימון יירד מעצמו. <b class="g">טופל</b> מוריד את ההודעה מהרשימה.</p><div class="users">';
+    return h+list.map(function(m){
+      var who=[m.phone?'<a dir="ltr" href="tel:'+esc(m.phone.replace(/[^0-9+]/g,''))+'">'+esc(m.phone)+'</a>':'',m.email?'<a dir="ltr" href="mailto:'+esc(m.email)+'">'+esc(m.email)+'</a>':''].filter(Boolean).join(' · ');
+      return '<article class="user'+(m.status==='draft'?' pending':'')+'"><div class="u-head"><div><h3>'+(m.status==='draft'?'<span title="טיוטה">✱ טיוטה · </span>':'')+esc(m.name||'(בלי שם)')+'</h3><small>'+(who||'לא הושארו פרטים לחזרה')+'</small></div>'+
+        '<div class="meta">'+(m.user_id?'תלמיד רשום':'אורח')+'<br>'+when(m.created_at)+'</div></div>'+
+        '<p style="white-space:pre-wrap;margin:10px 0">'+esc(m.body)+'</p>'+
+        '<div class="add"><button type="button" class="primary" data-cm="'+esc(m.id)+'">טופל</button></div></article>'}).join('')+'</div>';
+  }
   function requestBlock(requests,users){
     if(requests===null)return '<p class="msg" style="margin-top:24px">כדי לקבל בקשות גישה (סדר ליל החתונה), צריך להריץ קודם את supabase/v4.sql.</p>';
     var h='<h2 style="margin-top:32px">בקשות גישה'+(requests.length?' ('+requests.length+')':'')+'</h2>';
@@ -647,6 +664,8 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     if(gc){var g=(window.__grants||[]).find(function(x){return String(x.id)===gc.getAttribute('data-gid')}), u=(window.__users||[]).find(function(x){return x.id===g.user_id});
       gmenu(g,u?uname(u):'');return}
     var tg=e.target.closest('[data-toggle]'), un=e.target.closest('[data-uninv]'), rq=e.target.closest('[data-rq]'), wk=e.target.closest('[data-week]');
+    var cm=e.target.closest('[data-cm]');
+    if(cm){cm.disabled=true;var rc=await sb.from('contact_messages').update({handled_at:new Date().toISOString()}).eq('id',cm.getAttribute('data-cm'));if(rc.error){alert(rc.error.message);cm.disabled=false}else load();return}
     if(rq){
       rq.disabled=true;
       var q=(await sb.from('access_requests').select('*').eq('id',rq.getAttribute('data-rq')).single()).data, ok=rq.hasAttribute('data-ok'), r1={};

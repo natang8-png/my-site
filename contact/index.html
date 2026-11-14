@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>צור קשר · הלכה בבית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="/style.css?v=3d2b8822">
+<style>main.gate-wait{visibility:hidden}.c-row h3{font-size:1.15rem}.c-row p{white-space:pre-line}</style>
+</head><body>
+<main dir="rtl" lang="he" class="home gate-wait">
+  <header>
+    <a class="back" href="/">→ חזרה לדף הבית</a>
+    <h1>צור קשר</h1>
+  </header>
+
+  <section aria-label="דרכי התקשרות">
+    <ul class="topics" id="ways"></ul>
+    <p class="msg" id="ways-msg" hidden>פרטי ההתקשרות יתווספו כאן בקרוב. בינתיים אפשר לכתוב למטה.</p>
+
+    <h2 id="write-h" style="margin-top:28px">או לכתוב כאן</h2>
+    <div class="cbox" id="write" role="group" aria-labelledby="write-h">
+      <textarea name="body" rows="3" placeholder="ההודעה שלך" aria-label="ההודעה שלך" maxlength="4000"></textarea>
+      <button type="button" class="primary" data-send disabled>שליחה</button>
+      <p class="msg" role="status"></p>
+    </div>
+  </section>
+
+  <footer>
+    <span>נבנה בהדרגה, צעד אחר צעד.</span>
+    <button id="theme" type="button">מצב כהה</button>
+  </footer>
+</main>
+<script src="/site.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
+<script src="/contact.js"></script>
+<script>
+// The contact page is for signed-in readers only (Natan, 2026-11-15). Guests go to sign-in; they write from the home page.
+// The details themselves live in the private settings table (supabase/v14.sql), not in this public file.
+(function(){
+  var main=document.querySelector('main');
+  if(!window.SITE){location.replace('/');return}
+  SITE.ready.then(async function(st){
+    if(!st.user){location.replace('/login/?next='+encodeURIComponent(location.pathname));return}
+    var r=await SITE.sb.rpc('contact_info').then(function(x){return x},function(){return {data:null}});
+    var c=(r&&r.data)||{}, esc=CONTACT.esc, h='';
+    function digits(t){return String(t||'').replace(/[^0-9+]/g,'')}
+    function intl(t){var d=digits(t).replace(/^\+/,'');return d.charAt(0)==='0'?'972'+d.slice(1):d}
+    function row(ic,t,v,href){h+='<li><a class="topic c-row" href="'+esc(href)+'"'+(/^https:/.test(href)?' target="_blank" rel="noopener"':'')+'><h3><span aria-hidden="true">'+ic+'</span> '+t+'</h3><p>'+v+'</p><span class="go" aria-hidden="true">←</span></a></li>'}
+    if(c.phone)row('📞','טלפון','<bdi dir="ltr">'+esc(c.phone)+'</bdi> · לחיצה מחייגת','tel:'+digits(c.phone));
+    if(c.whatsapp||c.phone)row('💬','וואטסאפ','לחיצה פותחת שיחה','https://wa.me/'+intl(c.whatsapp||c.phone)+'?text='+encodeURIComponent('שלום, אני פונה מהאתר הלכה בבית'));
+    if(c.sms||c.phone)row('✉️','הודעת SMS','לחיצה פותחת הודעה חדשה','sms:'+digits(c.sms||c.phone));
+    if(c.email)row('📧','אימייל','<bdi dir="ltr">'+esc(c.email)+'</bdi>','mailto:'+c.email);
+    if(c.address)row('📍','כתובת המשרד',esc(c.address)+' · ניווט'+(c.hours?'\nשעות קבלה: '+esc(c.hours):''),'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(c.address));
+    document.getElementById('ways').innerHTML=h;
+    if(!h)document.getElementById('ways-msg').hidden=false;
+    CONTACT.wire(document.getElementById('write'),false);
+    main.classList.remove('gate-wait');
+  });
+})();
+</script>
+</body></html>
