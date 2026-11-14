@@ -4,8 +4,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
 <link rel="stylesheet" href="/style.css?v=3d2b8822">
+<style>main.gate-wait{visibility:hidden}</style>
 </head><body>
-<main dir="rtl" lang="he" class="home">
+<main dir="rtl" lang="he" class="home gate-wait">
   <header>
     <a class="back" href="/">→ חזרה לדף הבית</a>
     <h1>שער הדרכה</h1>
@@ -31,11 +32,12 @@
 <script>
 // Quiz score under each chapter: questions answered out of all, and the score in percent. Resetting lives in /me/ and /admin/ only.
 (function(){
-  if(!window.SITE)return;
+  if(!window.SITE){document.querySelector('main').classList.remove('gate-wait');return}
   function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
   SITE.ready.then(function(st){
     // Guests never see the מדורים of a gate: straight to sign-in (Natan, 2026-11-15).
     if(!st.user){location.replace('/login/?next='+encodeURIComponent(location.pathname));return}
+    document.querySelector('main').classList.remove('gate-wait');
     [].forEach.call(document.querySelectorAll('[data-qsum]'),async function(box){
       var ch=box.getAttribute('data-qsum'), a=SITE.access(box.getAttribute('data-path'));
       if(a!=='study'&&a!=='quiz')return;

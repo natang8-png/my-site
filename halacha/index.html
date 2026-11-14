@@ -4,8 +4,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
 <link rel="stylesheet" href="/style.css?v=3d2b8822">
+<style>main.gate-wait{visibility:hidden}</style>
 </head><body>
-<main dir="rtl" lang="he" class="home">
+<main dir="rtl" lang="he" class="home gate-wait">
   <header>
     <a class="back" href="/">→ חזרה לדף הבית</a>
     <h1>שער הלכה</h1>
@@ -36,10 +37,11 @@
 // Each מדור card (Natan, 2026-11-12; guests too, 2026-11-15): no description; only the פרקים open to them as buttons.
 // A מדור with nothing open shows its name only, in the "not available" color. Empty פרקים (no text yet) show to the admin only.
 (function(){
-  if(!window.SITE)return;
+  if(!window.SITE){document.querySelector('main').classList.remove('gate-wait');return}
   SITE.ready.then(function(st){
     // Guests never see the מדורים of a gate: straight to sign-in (Natan, 2026-11-15).
     if(!st.user){location.replace('/login/?next='+encodeURIComponent(location.pathname));return}
+    document.querySelector('main').classList.remove('gate-wait');
 
     var admin=!!(st.profile&&st.profile.is_admin);
     [].forEach.call(document.querySelectorAll('[data-mador]'),function(c){
