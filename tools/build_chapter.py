@@ -64,6 +64,9 @@ def ico(i, cls):
     return f'<span class="{cls}" aria-hidden="true">{icons[i]}</span>' if i in icons else ""
 heads = [h.strip() for h in open(f"{src}/headings.txt", encoding="utf-8") if h.strip()]
 # A heading that starts with "~" names the section in the lists and menu only; on the page its words open the text instead (Natan, 2026-11-08).
+# Natan, 2026-11-17: the topics (נושאים) are numbered with letters, so they are not confused with the section numbers.
+HEB_LETTERS = "אבגדהוזחטיכלמנסעפצקרשת"
+def letter(n): return HEB_LETTERS[n-1] if 1 <= n <= len(HEB_LETTERS) else str(n)
 quiet = {i for i, h in enumerate(heads, 1) if h.startswith("~")}
 heads = [h.lstrip("~").strip() for h in heads]
 
@@ -213,9 +216,9 @@ if groups:
         return "".join(out)
     def grp(g, a, b, t, sub=()):
         if a is None:  # a tab whose text has not been written yet
-            return (f'<details class="grp" name="grp"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span></summary>'
+            return (f'<details class="grp" name="grp"><summary><span class="num">{letter(g)}</span><span class="g-title">{html.escape(t)}</span></summary>'
                     '<p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>')
-        return (f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{g}</span><span class="g-title">{html.escape(t)}</span>'
+        return (f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{letter(g)}</span><span class="g-title">{html.escape(t)}</span>'
                 f'<small>{"סעיפים "+str(shown[a])+"-"+str(shown[b]) if b > a else "סעיף "+str(shown[a])}</small></summary>'
                 f'<ol>{items(a, b, sub)}</ol></details>')
     toc_html = '<div class="grps">' + "".join(grp(g, *x) for g, x in enumerate(groups, 1)) + '</div>'
