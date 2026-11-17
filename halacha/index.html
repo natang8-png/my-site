@@ -54,7 +54,8 @@
         if((a.hasAttribute('data-empty')&&!admin)||(p&&!SITE.access(p)))a.remove();
       });
       // Natan, 2026-11-13: running text, centered, a green dot between the names (example ה).
-      var links=[].slice.call(nav.querySelectorAll('a'));
+      // Natan, 2026-11-17: on a phone the names are too small to tap, so they are plain text; the whole מדור card is the one button.
+      var links=[].slice.call(nav.querySelectorAll('a')).map(function(a){var sp=document.createElement('span');sp.textContent=a.textContent;return sp});
       var p=document.createElement('p');nav.replaceWith(p);nav=p;
       if(links.length&&window.dotList)dotList(p,links);
       nav.hidden=!links.length;
