@@ -528,3 +528,9 @@ html:has(main[data-chapter="harchakot"]) .to-quiz,html:has(main[data-chapter="ha
 /* Closed to this reader (no permission, reading-only, or still checking): never show the quiz button or the quiz (Natan, 2026-11-15).
    Stronger than the html.iq-drawer rules above, which otherwise bring the "לשאלון" button back. */
 html main.locked .q-gap,html main.locked .iq,html main.read-only .q-gap,html main.read-only .iq,html main.checking .q-gap,html main.checking .iq{display:none!important}
+
+/* Navigation line at the top of a chapter (Natan, 2026-11-17, example ב): a left-pointing triangle between the levels. */
+.crumbs{font-size:.95rem;color:var(--muted);margin:0 0 6px;display:flex;flex-wrap:wrap;gap:0 6px;align-items:center}
+.crumbs a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.crumbs .tri{color:var(--muted)}
+.crumbs .cur{font-weight:700}

@@ -66,7 +66,7 @@ heads = [h.strip() for h in open(f"{src}/headings.txt", encoding="utf-8") if h.s
 # A heading that starts with "~" names the section in the lists and menu only; on the page its words open the text instead (Natan, 2026-11-08).
 # Natan, 2026-11-17: the topics (נושאים) are numbered with letters, so they are not confused with the section numbers.
 HEB_LETTERS = "אבגדהוזחטיכלמנסעפצקרשת"
-def letter(n): return HEB_LETTERS[n-1] if 1 <= n <= len(HEB_LETTERS) else str(n)
+def hebrew_letter(n): return HEB_LETTERS[n-1] if 1 <= n <= len(HEB_LETTERS) else str(n)
 quiet = {i for i, h in enumerate(heads, 1) if h.startswith("~")}
 heads = [h.lstrip("~").strip() for h in heads]
 
@@ -216,9 +216,9 @@ if groups:
         return "".join(out)
     def grp(g, a, b, t, sub=()):
         if a is None:  # a tab whose text has not been written yet
-            return (f'<details class="grp" name="grp"><summary><span class="num">{letter(g)}</span><span class="g-title">{html.escape(t)}</span></summary>'
+            return (f'<details class="grp" name="grp"><summary><span class="num">{hebrew_letter(g)}</span><span class="g-title">{html.escape(t)}</span></summary>'
                     '<p class="grp-empty">התוכן של הלשונית הזו ייכתב בהמשך.</p></details>')
-        return (f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{letter(g)}</span><span class="g-title">{html.escape(t)}</span>'
+        return (f'<details class="grp" name="grp" data-from="{a}" data-to="{b}"><summary><span class="num">{hebrew_letter(g)}</span><span class="g-title">{html.escape(t)}</span>'
                 f'<small>{"סעיפים "+str(shown[a])+"-"+str(shown[b]) if b > a else "סעיף "+str(shown[a])}</small></summary>'
                 f'<ol>{items(a, b, sub)}</ol></details>')
     toc_html = '<div class="grps">' + "".join(grp(g, *x) for g, x in enumerate(groups, 1)) + '</div>'
@@ -263,7 +263,7 @@ page = f'''<!doctype html>
 {PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}{" data-flow" if ch.get("flow") else ""}{" data-tabs-apart" if ch.get("tabs_apart") else ""}>
   <header>
     <a class="back" href="{ch.get("back", "/halacha/")}">→ חזרה{ch.get("back_label", " ללידה" if ch.get("back") else " להלכה")}</a>
-    <div class="eyebrow">{ch.get("topic", "הלכה")} · מדור {ch["num"]} מתוך {ch["of"]}{" · "+ch["note"] if ch.get("note") else ""}</div>
+    <nav class="crumbs" aria-label="ניווט"><a href="/">בית</a><span class="tri" aria-hidden="true">◂</span><a href="/halacha/">{html.escape(ch.get("topic", "הלכה"))}</a><span class="tri" aria-hidden="true">◂</span><span class="cur">{html.escape(ch["title"])}</span></nav>
     <h1>{ch["title"]}</h1>
     {f'<p class="lead">{ch["subtitle"]}</p>' if ch.get("subtitle") else ""}
     {'<p class="until" id="until" hidden></p>' if private else ""}
