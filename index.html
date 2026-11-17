@@ -12,11 +12,24 @@
   </header>
 
   <section aria-labelledby="topics-h">
-    <h2 id="topics-h">נושאים</h2>
+    <h2 id="topics-h">שערים</h2>
     <ul class="topics">
-      <li><a class="topic" href="/halacha/"><h3>הלכה</h3><p>הנושא הראשון באתר, עם תתי־נושאים שייפתחו בהדרגה.</p><span class="go" aria-hidden="true">←</span></a></li>
-      <li><div class="topic soon"><h3>נושאים נוספים בדרך</h3></div></li>
+      <li><a class="topic" href="/halacha/" data-gate='[["halacha/family/harchakot","הרחקות"],["halacha/family/yoledet","מעגל החיים"]]'><h3>שער הלכה</h3><p class="gate-list" hidden></p><span class="go" aria-hidden="true">←</span></a></li>
+      <li><a class="topic" href="/hadracha/" data-gate='[["leil-hachatuna","סדר ליל החתונה"]]'><h3>שער הדרכה</h3><p class="gate-list" hidden></p><span class="go" aria-hidden="true">←</span></a></li>
+      <li><a class="topic off" data-gate='[]'><h3>שער שלום בית</h3><p class="gate-list" hidden></p><span class="go" aria-hidden="true">←</span></a></li>
+      <li id="c-card" hidden><a class="topic" href="/contact/"><h3>צור קשר</h3><span class="go" aria-hidden="true">←</span></a></li>
     </ul>
+    <div id="write" hidden>
+      <h2 id="write-h" style="margin-top:28px">אפשר לכתוב כאן</h2>
+      <div class="cbox" role="group" aria-labelledby="write-h">
+        <textarea name="body" rows="3" placeholder="ההודעה שלך" aria-label="ההודעה שלך" maxlength="4000"></textarea>
+        <input name="name" type="text" placeholder="שם" aria-label="שם" autocomplete="name">
+        <input name="phone" type="tel" placeholder="טלפון" aria-label="טלפון" autocomplete="tel" style="text-align:right">
+        <input name="email" type="email" placeholder="אימייל" aria-label="אימייל" autocomplete="email" style="text-align:right">
+        <button type="button" class="primary" data-send disabled>שליחה</button>
+        <p class="msg" role="status"></p>
+      </div>
+    </div>
   </section>
 
   <footer>
@@ -27,4 +40,27 @@
 <script src="/site.js"></script>
 <script src="/vendor/supabase.js"></script>
 <script src="/auth.js"></script>
+<script src="/contact.js"></script>
+<script>
+// Each gate (שער) on the home page (Natan, 2026-11-12; guests too, 2026-11-15): a reader sees the list of its מדורים that are open to them.
+// With none open, the gate shows its name only, in the "not available" color (still a link, so a closed מדור can be requested).
+(function(){
+  if(!window.SITE)return;
+  SITE.ready.then(function(st){
+    // צור קשר: signed-in readers get the card (to /contact/); guests get the write box instead (Natan, 2026-11-15).
+    // The write box is the same for everyone (Natan, 2026-11-15). Signed-in readers also keep the card that leads to the details page.
+    if(st.user)document.getElementById('c-card').hidden=false;
+    var w=document.getElementById('write');w.hidden=false;if(window.CONTACT)CONTACT.wire(w,true);
+
+    [].forEach.call(document.querySelectorAll('[data-gate]'),function(a){
+      // A guest who taps a gate gets the sign-in page, exactly like the top link (Natan, 2026-11-15).
+      if(!st.user)a.href='/login/?next='+encodeURIComponent(location.pathname);
+      var open=JSON.parse(a.getAttribute('data-gate')).filter(function(m){return SITE.access(m[0])}).map(function(m){return m[1]});
+      var p=a.querySelector('.gate-list');
+      if(open.length){p.hidden=false;window.dotList?dotList(p,open):(p.textContent=open.join(' · '))}
+      else a.classList.add('off');
+    });
+  });
+})();
+</script>
 </body></html>
