@@ -532,5 +532,5 @@ html main.locked .q-gap,html main.locked .iq,html main.read-only .q-gap,html mai
 /* Navigation line at the top of a chapter (Natan, 2026-11-17, example ב): a left-pointing triangle between the levels. */
 .crumbs{font-size:.95rem;color:var(--muted);margin:0 0 6px;display:flex;flex-wrap:wrap;gap:0 6px;align-items:center}
 .crumbs a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
-.crumbs .tri{color:var(--muted)}
-.crumbs .cur{font-weight:700}
+.crumbs .tri{color:var(--muted);font-weight:700}
+.crumbs .cur{font-weight:inherit;color:var(--muted)}
