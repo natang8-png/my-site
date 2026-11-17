@@ -82,3 +82,20 @@
   };
   var t;window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){lists.forEach(fix)},100)});
 })();
+
+// Natan, 2026-11-17: no selecting text or pictures, no dragging them, no right-click menu, no copy.
+// Form fields (typing a message, the sign-in boxes) keep working. This only stops casual copying; it cannot stop a determined person from saving a page.
+(function(){
+  function plain(t){return t&&(t.closest?t.closest('input,textarea,[contenteditable="true"]'):null)}
+  ['contextmenu','selectstart','dragstart','copy','cut'].forEach(function(ev){
+    document.addEventListener(ev,function(e){ if(!plain(e.target)) e.preventDefault() },true);
+  });
+  var st=document.createElement('style');
+  st.textContent='html,body,main,img,svg{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}'+
+    'input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text}'+
+    'img{-webkit-user-drag:none;pointer-events:auto}';
+  document.head.appendChild(st);
+  document.addEventListener('DOMContentLoaded',function(){
+    [].forEach.call(document.querySelectorAll('img'),function(i){i.draggable=false});
+  });
+})();
