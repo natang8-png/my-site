@@ -97,7 +97,7 @@
     sb.from('profiles').update({last_seen:new Date().toISOString()}).eq('id',state.user.id).then(function(){});
   }
 
-  // 'study' (text + quiz), 'read' (text only), 'quiz' (quiz only, older grants) or null.
+  // 'study' (text + quiz) or null. (Until 2026-11-18 there were also 'read' and 'quiz'; any live grant now opens everything.)
   // A grant counts between its opening time (if scheduled) and its closing time (if any).
   function live(g){ var now=new Date(); return (!g.starts_at||new Date(g.starts_at)<=now)&&(!g.expires_at||new Date(g.expires_at)>now) }
   function access(path){
@@ -105,10 +105,11 @@
     var best=null, own=TREE.some(function(n){return n.path===path&&n.own});
     state.grants.forEach(function(g){
       if(!live(g)) return;
-      if(path===g.path||(!own&&path.indexOf(g.path+'/')===0)){ var rank={study:3,read:2,quiz:1}; if((rank[g.mode]||0)>(rank[best]||0)) best=g.mode }
+      // Natan, 2026-11-18: a permission includes everything — reading and the quiz. Old 'read' / 'quiz' grants open everything too.
+      if(path===g.path||(!own&&path.indexOf(g.path+'/')===0)) best='study'
     });
     var node=TREE.find(function(n){return n.path===path});
-    if(node&&node.with){ var w=access(node.with), rank={study:3,read:2,quiz:1}; if((rank[w]||0)>(rank[best]||0)) best=w }
+    if(node&&node.with&&access(node.with)) best='study'
     return best;
   }
 
