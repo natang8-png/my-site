@@ -19,7 +19,13 @@ main{max-width:52rem}
 .mador ul{margin:6px 0 4px;padding-inline-start:22px}.mador li.off{opacity:.6}
 .mador .r{color:#b4473a;font-weight:600}.mador .go-m{text-decoration:none}
 .mador-x{border-top:1px dashed var(--line);padding:6px 0;margin:0}
-.chips .gname{font-weight:600;font-size:.92rem}
+.perm{border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.perm-h{font-weight:700;font-size:1.02rem;margin-bottom:2px}
+.pg-name{font-weight:700;color:var(--accent);margin-top:10px;font-size:.95rem}
+.pr{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-top:1px dashed var(--line)}
+.pr-n{min-width:6.5em;font-weight:600}
+.pr-v{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:1}
+.pr .wk{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;border:1px solid var(--accent);background:none;color:var(--accent);cursor:pointer}
 a.chip{text-decoration:none}
 .user{scroll-margin-top:12px}
 .stats{display:flex;gap:12px;flex-wrap:wrap}
@@ -448,16 +454,29 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div></label>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
       if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
-      // Each permission is a button: it opens a menu to change, close or schedule it.
-      // Permissions by שער, then מדור (Natan, 2026-11-18). Old paths outside today's tree show under "אחר".
-      if(!all.length)h+='<div class="chips"><span class="none">גישה: סגור (ממתין לאישור)</span></div>';
-      GATES.concat([{name:'אחר'}]).forEach(function(G,gi){
-        var gg=all.filter(function(g){return gateOf(g.path)===(G.madors?gi:-1)});
-        if(gg.length)h+='<div class="chips"><span class="gname">'+esc(G.name)+':</span>'+gg.map(gchip).join('')+'</div>';
+      // Permissions (Natan, 2026-11-18: "the area is messy"): one small table, a row per מדור, grouped by שער.
+      // Each row: the מדור's name, its state (a button that opens the change menu, or "סגור" / "פתוח דרך ..."),
+      // and for a מדור with its own weekly permission, the open / extend button in the same row.
+      function prow(name,cell){return '<div class="pr"><span class="pr-n">'+esc(name)+'</span><span class="pr-v">'+cell+'</span></div>'}
+      h+='<div class="perm"><div class="perm-h">הרשאות</div>';
+      GATES.forEach(function(G,gi){
+        if(!G.madors.some(function(m){return m[0]}))return;
+        h+='<div class="pg-name">'+esc(G.name)+'</div>';
+        var wide=all.filter(function(g){return gateOf(g.path)===gi&&!G.madors.some(function(m){return m[0]===g.path})});
+        if(wide.length)h+=prow('כל השער',wide.map(function(g){return gchip(g,g.path==='halacha')}).join(''));
+        G.madors.forEach(function(m){
+          if(!m[0])return;
+          var ex=all.filter(function(g){return g.path===m[0]}), cell;
+          if(ex.length)cell=ex.map(function(g){return gchip(g,true)}).join('');
+          else{var via=all.find(function(g){return g.path!==m[0]&&covers(g,m[0])&&SITE.live(g)});var vn=via&&(SITE.TREE.find(function(x){return x.path===via.path})||{title:via.path});cell='<span class="none">'+(via?'פתוח עם '+esc(via.path==='halacha'?'כל שער הלכה':vn.title):'סגור')+'</span>'}
+          var n=SITE.TREE.find(function(x){return x.path===m[0]});
+          if(n&&n.own)cell+='<button type="button" class="wk" data-week="'+m[0]+'">'+(ex.some(SITE.live)?'הארכה':'פתיחה')+' ל־'+n.days+' ימים</button>';
+          h+=prow(m[1],cell);
+        });
       });
-      // Chapters with their own permission: open for a week from here too, without waiting for a request.
-      h+=TREEA.filter(function(n){return n.own}).map(function(n){var g=all.find(function(x){return x.path===n.path&&SITE.live(x)});
-        return '<div class="add"><button type="button" data-week="'+n.path+'">'+(g?'הארכה':'פתיחה')+' של '+esc(n.label||n.title)+' ל־'+n.days+' ימים</button></div>'}).join('');
+      var olds=all.filter(function(g){return gateOf(g.path)<0});
+      if(olds.length)h+='<div class="pg-name">הרשאות ישנות</div>'+prow('',olds.map(function(g){return gchip(g)}).join(''));
+      h+='</div>';
       // One button: approve (with the chosen access) when closed, close (remove all access) when open.
       h+='<div class="add">'+(ug.length?'':'<select data-path>'+opts()+'</select><select data-mode><option value="study">קריאה + שאלון</option><option value="read">קריאה בלבד</option></select>')+
         '<button type="button" class="'+(ug.length?'close':'primary')+'" data-toggle="'+(ug.length?'close':'open')+'" title="'+(ug.length?'חסימת כל הגישה של התלמיד (אפשר לפתוח שוב)':'פתיחת הגישה שבחרת ברשימות')+'">'+(ug.length?'סגירה':'אישור')+'</button>'+
@@ -590,9 +609,10 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     if(g.expires_at)parts.push(new Date(g.expires_at)>now?'עד '+dt(g.expires_at):'הסתיים '+day(g.expires_at));
     return parts.join(' · ');
   }
-  function gchip(g){
+  // short: the row already names the מדור, so the button shows the state only.
+  function gchip(g,short){
     var off=!SITE.live(g);
-    return '<button type="button" class="chip gch'+(off?' off':'')+'" data-gid="'+g.id+'">'+esc(title(g.path))+' · '+esc(gstate(g))+' <span aria-hidden="true">▾</span></button>';
+    return '<button type="button" class="chip gch'+(off?' off':'')+'" data-gid="'+g.id+'">'+(short?'':esc(title(g.path))+' · ')+esc(gstate(g))+' <span aria-hidden="true">▾</span></button>';
   }
   // For <input type="datetime-local">: local time, without seconds.
   function local(t){var d=new Date(t);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
