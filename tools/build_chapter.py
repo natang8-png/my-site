@@ -40,6 +40,9 @@ CHAPTERS = {
          # The third holds the whole order, read as one long page (flow); the menu scrolls to a heading.
          # Natan, 2026-11-08: every section heading is a page of its own (no long page), and each tab stands apart.
          tabs_apart=True, part_titles=True,
+         # Natan, 2026-11-18: each tab is a מדור of שער הדרכה with its own permission (auth.js TREE): first section -> path.
+         # The tab's text sits in chapter_text under that path, so Supabase gives each reader only the tabs open to them.
+         tab_locks={24: "hadracha-halacha", 16: "hadracha-hashkafa", 1: "leil-hachatuna"},
          # Sections 16-23 were added later (2026-10-29) and show before 1-15, in the order of the tabs: the numbers stay, so saved reads stay valid.
          # Natan, 2026-11-08: הלכות צניעות = קיצור שולחן ערוך סימן ק"נ with his notes, sections 24-40 (one per סעיף).
          groups=[(24, 40, "הלכות צניעות"), # Natan, 2026-11-08: the two middle tabs are one tab now, with their names as sub-topic headings inside it.
@@ -101,23 +104,42 @@ def heading_who(raw):
     return f'<span class="hw{"" if full else " part"}">{icons}</span>'
 WHO_KEY = (f'<p class="who-key">{who_icon("m")} = דגש לבעל<span class="sep">·</span>{who_icon("w")} = הדגשה לאשה<span class="key-note">סמל בסוגריים בכותרת = רק חלק מהסעיף</span></p>' if who else "")
 n = len(heads)
+# Permission per tab (tab_locks): path -> [first, last] section. Without it, the chapter's own path covers every section.
+import json
+LOCKS = {path: [g[0], g[1]] for g in ch.get("groups", []) for a, path in ch.get("tab_locks", {}).items() if g[0] == a} or {ch.get("path", slug): [1, n]}
 
 # Private chapters: hidden until the reader's permission is confirmed; reading is tracked quietly for the admin.
 PRIVATE_HEAD = """<meta name="robots" content="noindex">
-<style>main.checking .sec,main.checking .toc,main.priv-locked .sec,main.priv-locked .toc{display:none}.read-end{display:block;height:1px}html:has(main[data-track]) .cb-read{display:none}html:has(main[data-track]){--accent:#2d5f93 !important;--soft:#e8eff8}@media (prefers-color-scheme:dark){html:not([data-theme="light"]):has(main[data-track]){--accent:#8fbbe8 !important;--soft:#18212c}}html[data-theme="dark"]:has(main[data-track]){--accent:#8fbbe8 !important;--soft:#18212c}.content ul.dots,.content ol.nums{margin:0;padding-inline-start:1.4em;display:grid;gap:.55em}.content ul.dots li::marker{color:var(--accent)}</style>
+<style>main.checking .sec,main.checking .toc,main.priv-locked .sec,main.priv-locked .toc{display:none}.sec.no-perm,.toc .grp.no-perm{display:none !important}.read-end{display:block;height:1px}html:has(main[data-track]) .cb-read{display:none}html:has(main[data-track]){--accent:#2d5f93 !important;--soft:#e8eff8}@media (prefers-color-scheme:dark){html:not([data-theme="light"]):has(main[data-track]){--accent:#8fbbe8 !important;--soft:#18212c}}html[data-theme="dark"]:has(main[data-track]){--accent:#8fbbe8 !important;--soft:#18212c}.content ul.dots,.content ol.nums{margin:0;padding-inline-start:1.4em;display:grid;gap:.55em}.content ul.dots li::marker{color:var(--accent)}</style>
 </head><body>
 """
 PRIVATE_TAIL = f"""<script src="/private.js"></script>
 <script>
 (async function(){{
   var main=document.querySelector('main[data-track]'), ch=main.getAttribute('data-track'), gate=document.getElementById('gate');
-  var open=await LOCK.paint(gate,'{ch["path"]}');
+  // Each tab can need its own permission (path: [first, last] section); without tabs the whole chapter is one.
+  var LOCKS={json.dumps(LOCKS)}, paths=Object.keys(LOCKS);
+  function pathOf(k){{for(var p in LOCKS)if(k>=LOCKS[p][0]&&k<=LOCKS[p][1])return p;return paths[0]}}
+  function wanted(){{var m=/^#s(\\d+)/.exec(location.hash);return m?pathOf(+m[1]):null}}
+  await SITE.ready;
+  var openP=paths.filter(function(p){{return SITE.access(p)}}), st=SITE.state, u=document.getElementById('until');
   main.classList.remove('checking');
-  if(!open){{main.classList.add('priv-locked');gate.hidden=false;return}}
-  var g=LOCK.grantOf('{ch["path"]}'), u=document.getElementById('until'), st=SITE.state;
-  if(g&&g.expires_at&&!st.profile.is_admin){{u.textContent='המדור פתוח לך עד '+LOCK.day(g.expires_at)+'.';u.hidden=false}}
-  // The text itself comes from Supabase, and only to readers whose permission is live.
-  var t=await SITE.sb.from('chapter_text').select('section,html').eq('chapter',ch);
+  // Tabs that are closed to this reader are not shown at all (list, menu and pages).
+  [].forEach.call(document.querySelectorAll('.sec'),function(s){{if(openP.indexOf(pathOf(+s.id.slice(1)))<0)s.classList.add('no-perm')}});
+  [].forEach.call(document.querySelectorAll('.toc .grp[data-from]'),function(g){{if(openP.indexOf(pathOf(+g.getAttribute('data-from')))<0)g.classList.add('no-perm')}});
+  // The address names a closed tab (or nothing is open): the request window for that tab instead of the text.
+  async function gatePaint(){{
+    var w=wanted()||(openP.length?null:paths[0]);
+    if(w&&openP.indexOf(w)<0){{await LOCK.paint(gate,w);main.classList.add('priv-locked');gate.hidden=false;u.hidden=true;return}}
+    main.classList.remove('priv-locked');gate.hidden=true;
+    var g=LOCK.grantOf(w||openP[0]);
+    if(g&&g.expires_at&&!st.profile.is_admin){{u.textContent='המדור פתוח לך עד '+LOCK.day(g.expires_at)+'.';u.hidden=false}}else u.hidden=true;
+  }}
+  await gatePaint();addEventListener('hashchange',gatePaint);
+  if(!openP.length)return;
+  // The text itself comes from Supabase, and only to readers whose permission is live (each tab's text under its path).
+  var t=await SITE.sb.from('chapter_text').select('chapter,section,html').in('chapter',paths.indexOf(ch)<0?paths.concat([ch]):paths);
+  t.data=(t.data||[]).filter(function(r){{return openP.indexOf(pathOf(r.section))>=0}});
   (t.data||[]).forEach(function(r){{var c=document.querySelector('#s'+r.section+' .content');if(c)c.innerHTML=r.html}});
   if(t.error||!(t.data||[]).length) [].forEach.call(document.querySelectorAll('.sec .content'),function(c){{
     c.innerHTML='<p class="placeholder">'+(st.profile&&st.profile.is_admin?'הטקסט עוד לא הועלה ל־Supabase. צריך להריץ שם את v5.sql ואת קובץ התוכן של המדור.':'הטקסט לא נטען. נסה לרענן את הדף.')+'</p>'}});
@@ -291,11 +313,14 @@ page = f'''<!doctype html>
 {PRIVATE_TAIL if private else ""}</body></html>
 '''
 if private:
+    keys = sorted(set([slug] + list(LOCKS)))
     sql = ["-- Text of the chapter. Supabase: SQL Editor -> New query -> paste -> Run. Safe to run again (replaces the text).",
-           f"delete from public.chapter_text where chapter = '{slug}';"]
+           "-- Each tab's sections are stored under that tab's permission path (see tab_locks).",
+           "delete from public.chapter_text where chapter in (" + ", ".join(f"'{k}'" for k in keys) + ");"]
     for i, body in private_rows:
         assert "$t$" not in body
-        sql.append(f"insert into public.chapter_text (chapter, section, html) values ('{slug}', {i}, $t${body}$t$);")
+        key_i = next((p for p, (a, b) in LOCKS.items() if a <= i <= b), slug)
+        sql.append(f"insert into public.chapter_text (chapter, section, html) values ('{key_i}', {i}, $t${body}$t$);")
     open(f"{src}/content.sql", "w", encoding="utf-8").write("\n".join(sql) + "\n")
     print(f"wrote {src}/content.sql ({len(private_rows)} sections)")
 os.makedirs(f"halacha/{slug}", exist_ok=True)
