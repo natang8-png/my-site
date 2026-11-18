@@ -133,6 +133,9 @@ else if(PROOF){document.documentElement.classList.add('proof');
   if(crumbs){var t=bar.querySelector('.cb-title');var cc=crumbs.cloneNode(true);cc.className='crumbs cb-crumbs';t.parentNode.replaceChild(cc,t)}
   document.body.appendChild(bar);
   document.documentElement.classList.add('has-tbar');
+  // The bar grows with its text (two lines of navigation can wrap on a phone), so the page's top padding follows its height.
+  function fitBar(){document.body.style.paddingTop=bar.getBoundingClientRect().bottom+'px'}
+  if(window.ResizeObserver)new ResizeObserver(fitBar).observe(bar);window.addEventListener('resize',fitBar);fitBar();
   var panel=bar.querySelector('.cb-panel');
   // The menu lists every heading; a chapter split into topics gets a title line before each topic.
   var grps=[].filter.call(toc.querySelectorAll('.grp'),function(g){return g.querySelector('ol > li')}); // topics with headings
