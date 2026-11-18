@@ -25,6 +25,13 @@ main{max-width:52rem}
 .pr{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-top:1px dashed var(--line)}
 .pr-n{min-width:6.5em;font-weight:600}
 .pr-v{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:1}
+.pr-gate{border-top:2px solid var(--line);margin-top:6px}.perm .pr-gate:first-child{border-top:0;margin-top:0}.pr-gate .pr-n b{font-size:1.05rem}
+.pr-m .pr-n{font-weight:400;padding-inline-start:14px}
+.plabel{font:inherit;font-size:.88rem;border:0;background:#e3f1e8;color:#2e7d4f;border-radius:999px;padding:3px 12px;font-weight:600;cursor:pointer}
+.plabel.static{cursor:default}
+.pbtn{font:inherit;font-size:.85rem;border-radius:999px;padding:3px 14px;cursor:pointer;background:none}
+.pclose{border:1px solid #b4473a;color:#b4473a}
+.popen{border:1px solid var(--accent);background:var(--accent);color:#fff}
 .pr .wk{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;border:1px solid var(--accent);background:none;color:var(--accent);cursor:pointer}
 a.chip{text-decoration:none}
 .user{scroll-margin-top:12px}
@@ -454,33 +461,34 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div></label>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
       if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
-      // Permissions (Natan, 2026-11-18: "the area is messy"): one small table, a row per מדור, grouped by שער.
-      // Each row: the מדור's name, its state (a button that opens the change menu, or "סגור" / "פתוח דרך ..."),
-      // and for a מדור with its own weekly permission, the open / extend button in the same row.
-      function prow(name,cell){return '<div class="pr"><span class="pr-n">'+esc(name)+'</span><span class="pr-v">'+cell+'</span></div>'}
-      h+='<div class="perm"><div class="perm-h">הרשאות</div>';
+      // Permissions (Natan, 2026-11-18): per שער a bold row, its מדורים below it (not bold).
+      // Open = a label "פתוח" (tap: dates menu) + one button "סגירה". Closed = one button "פתיחה". No kind to choose: a permission includes everything.
+      function pstate(g){var now=new Date();
+        if(g.starts_at&&new Date(g.starts_at)>now)return 'ייפתח '+dt(g.starts_at);
+        return 'פתוח'+(g.expires_at?' עד '+dt(g.expires_at):'')}
+      function openCell(g,closeAttr){return '<button type="button" class="plabel" data-gid="'+g.id+'" title="תזמון פתיחה / סגירה">'+esc(pstate(g))+'</button><button type="button" class="pbtn pclose" '+closeAttr+'>סגירה</button>'}
+      function closedCell(openAttr,gone){return (gone?'<span class="none">'+esc(gone)+'</span>':'')+'<button type="button" class="pbtn popen" '+openAttr+'>פתיחה</button>'}
+      function prow(name,cell,cls){return '<div class="pr'+(cls?' '+cls:'')+'"><span class="pr-n">'+name+'</span><span class="pr-v">'+cell+'</span></div>'}
+      h+='<div class="perm">';
       GATES.forEach(function(G,gi){
-        if(!G.madors.some(function(m){return m[0]}))return;
-        h+='<div class="pg-name">'+esc(G.name)+'</div>';
-        var wide=all.filter(function(g){return gateOf(g.path)===gi&&!G.madors.some(function(m){return m[0]===g.path})});
-        if(wide.length)h+=prow('כל השער',wide.map(function(g){return gchip(g,g.path==='halacha')}).join(''));
-        G.madors.forEach(function(m){
-          if(!m[0])return;
-          var ex=all.filter(function(g){return g.path===m[0]}), cell;
-          if(ex.length)cell=ex.map(function(g){return gchip(g,true)}).join('');
-          else{var via=all.find(function(g){return g.path!==m[0]&&covers(g,m[0])&&SITE.live(g)});var vn=via&&(SITE.TREE.find(function(x){return x.path===via.path})||{title:via.path});cell='<span class="none">'+(via?'פתוח עם '+esc(via.path==='halacha'?'כל שער הלכה':vn.title):'סגור')+'</span>'}
-          var n=SITE.TREE.find(function(x){return x.path===m[0]});
-          if(n&&n.own)cell+='<button type="button" class="wk" data-week="'+m[0]+'">'+(ex.some(SITE.live)?'הארכה':'פתיחה')+' ל־'+n.days+' ימים</button>';
-          h+=prow(m[1],cell);
+        var md=G.madors.filter(function(m){return m[0]});
+        if(!md.length)return;
+        var inGate=all.filter(function(g){return gateOf(g.path)===gi}), liveIn=inGate.filter(SITE.live);
+        var wide=liveIn.filter(function(g){return !md.some(function(m){return m[0]===g.path})})[0];
+        var allOpen=!!wide||md.every(function(m){return liveIn.some(function(g){return covers(g,m[0])})});
+        var gcell=wide?openCell(wide,'data-gclose="'+gi+'"'):allOpen?'<span class="plabel static">פתוח</span><button type="button" class="pbtn pclose" data-gclose="'+gi+'">סגירה</button>':closedCell('data-gopen="'+gi+'"');
+        h+=prow('<b>'+esc(G.name)+'</b>',gcell,'pr-gate');
+        md.forEach(function(m){
+          var ex=all.filter(function(g){return g.path===m[0]}), lv=ex.filter(SITE.live)[0], cell;
+          if(lv)cell=openCell(lv,'data-pc="'+m[0]+'"');
+          else if(wide&&covers(wide,m[0]))cell='<span class="none">פתוח עם השער</span>';
+          else{var old=ex[0];cell=closedCell('data-po="'+m[0]+'"',old&&old.expires_at?'הסתיים '+day(old.expires_at):'')}
+          h+=prow(esc(m[1]),cell,'pr-m');
         });
       });
       var olds=all.filter(function(g){return gateOf(g.path)<0});
-      if(olds.length)h+='<div class="pg-name">הרשאות ישנות</div>'+prow('',olds.map(function(g){return gchip(g)}).join(''));
+      if(olds.length)h+=prow('<span class="none">ישן</span>',olds.map(function(g){return gchip(g)}).join(''),'pr-m');
       h+='</div>';
-      // One button: approve (with the chosen access) when closed, close (remove all access) when open.
-      h+='<div class="add">'+(ug.length?'':'<select data-path>'+opts()+'</select><input type="hidden" data-mode value="study">')+
-        '<button type="button" class="'+(ug.length?'close':'primary')+'" data-toggle="'+(ug.length?'close':'open')+'" title="'+(ug.length?'חסימת כל הגישה של התלמיד (אפשר לפתוח שוב)':'פתיחת הגישה שבחרת ברשימות')+'">'+(ug.length?'סגירה':'אישור')+'</button>'+
-        '<span class="none">'+(ug.length?'סגירה חוסמת לו את כל הגישה':'בחר מה לפתוח ולחץ אישור')+'</span></div>';
       Object.keys(CHAPTERS).forEach(function(c){
         var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
         var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
@@ -758,6 +766,31 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       if(r1.error){alert(r1.error.message);rq.disabled=false;return}
       var r2=await sb.from('access_requests').update({handled_at:new Date().toISOString(),approved:ok}).eq('id',q.id);
       if(r2.error)alert(r2.error.message);load();return;
+    }
+    // Gate / מדור buttons in the student card (Natan, 2026-11-18).
+    var po=e.target.closest('[data-po],[data-pc],[data-gopen],[data-gclose]');
+    if(po){
+      var uidp=po.closest('[data-u]').getAttribute('data-u'), mine=(window.__grants||[]).filter(function(g){return g.user_id===uidp}), rr=null;
+      var openPath=function(p){var n=SITE.TREE.find(function(x){return x.path===p})||{};
+        return (n.own?openFor(uidp,p):sb.from('grants').upsert({user_id:uidp,path:p,mode:'study',starts_at:null,expires_at:null},{onConflict:'user_id,path'})).then(function(r){
+          sb.from('access_requests').update({handled_at:new Date().toISOString(),approved:true}).eq('user_id',uidp).eq('path',p).is('handled_at',null).then(function(){});return r})};
+      po.disabled=true;
+      if(po.hasAttribute('data-po'))rr=await openPath(po.getAttribute('data-po'));
+      else if(po.hasAttribute('data-pc'))rr=await sb.from('grants').delete().eq('user_id',uidp).eq('path',po.getAttribute('data-pc'));
+      else{
+        var gi2=+(po.getAttribute('data-gopen')||po.getAttribute('data-gclose')), G=GATES[gi2];
+        if(po.hasAttribute('data-gclose')){
+          var paths=mine.filter(function(g){return gateOf(g.path)===gi2}).map(function(g){return g.path});
+          rr=paths.length?await sb.from('grants').delete().eq('user_id',uidp).in('path',paths):{error:null};
+        }else{
+          // שער הלכה opens with its one wider path ('halacha'); a gate without one opens each מדור on its own.
+          var md2=G.madors.filter(function(m){return m[0]}), top=md2[0][0].split('/')[0];
+          if(md2.every(function(m){return m[0].indexOf(top+'/')===0}))rr=await openPath(top);
+          else for(var k=0;k<md2.length;k++){rr=await openPath(md2[k][0]);if(rr.error)break}
+        }
+      }
+      if(rr&&rr.error){alert(/expires_at|starts_at/.test(rr.error.message)?'צריך קודם להריץ ב־Supabase את supabase/v7.sql.':rr.error.message);po.disabled=false;return}
+      load();return;
     }
     if(wk){
       wk.disabled=true;
