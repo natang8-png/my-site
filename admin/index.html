@@ -26,7 +26,8 @@ main{max-width:52rem}
 :root[data-theme="dark"]{--clay:#c9714a;--clay-soft:#2a1d17;--clay-ink:#f0b598}
 .pr.has-tk .pr-v{flex:0 0 auto}
 /* all clay lines start at the same line (Natan, 2026-11-19) */
-@media (min-width:621px){.pr.has-tk .pr-v{flex:0 0 9.5em}}
+@media (min-width:621px){.pr.has-tk .pr-v{flex:0 0 auto;min-width:9.5em}}
+.plabel,.pbtn{white-space:nowrap}
 .tk{all:unset;box-sizing:border-box;position:relative;flex:1;min-width:250px;height:32px;border:1.5px solid var(--clay);border-radius:999px;overflow:hidden;cursor:pointer;background:var(--clay-soft);color:var(--clay-ink);font-size:.92rem;font-weight:600;font-variant-numeric:tabular-nums}
 .tk:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .tk .bg{position:absolute;top:0;bottom:0;right:0;width:var(--p);background:var(--clay)}
@@ -47,6 +48,9 @@ dialog.tk-dlg::backdrop{background:rgba(0,0,0,.5)}
 .pr-m .pr-n{font-weight:400;padding-inline-start:14px}
 .plabel{font:inherit;font-size:.88rem;border:0;background:#e3f1e8;color:#2e7d4f;border-radius:999px;padding:3px 12px;font-weight:600;cursor:pointer}
 .plabel.static{cursor:default}
+.plabel.half{background:#fbefd6;color:#8a5a00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .plabel.half{background:#3a2e16;color:#f0c674}}
+:root[data-theme="dark"] .plabel.half{background:#3a2e16;color:#f0c674}
 .pbtn{font:inherit;font-size:.85rem;border-radius:999px;padding:3px 14px;cursor:pointer;background:none}
 .pclose{border:1px solid #b4473a;color:#b4473a}
 .popen{border:1px solid var(--accent);background:var(--accent);color:#fff}
@@ -537,12 +541,16 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         var inGate=all.filter(function(g){return gateOf(g.path)===gi}), liveIn=inGate.filter(SITE.live);
         var wide=liveIn.filter(function(g){return !md.some(function(m){return m[0]===g.path})})[0];
         var allOpen=!!wide||md.every(function(m){return liveIn.some(function(g){return covers(g,m[0])})});
-        var gcell=wide?openCell(wide,'data-gclose="'+gi+'"'):allOpen?'<span class="plabel static">פתוח</span><button type="button" class="pbtn pclose" data-gclose="'+gi+'">סגירה</button>':closedCell('data-gopen="'+gi+'"');
+        // Some מדורים open, not all: "פתוח חלקית", with both "פתיחה" (opens the rest) and "סגירה" (closes all).
+        var someOpen=md.some(function(m){return liveIn.some(function(g){return covers(g,m[0])})});
+        var gcell=wide?openCell(wide,'data-gclose="'+gi+'"'):allOpen?'<span class="plabel static">פתוח</span><button type="button" class="pbtn pclose" data-gclose="'+gi+'">סגירה</button>':
+          someOpen?'<span class="plabel static half">פתוח חלקית</span><button type="button" class="pbtn popen" data-gopen="'+gi+'">פתיחה</button><button type="button" class="pbtn pclose" data-gclose="'+gi+'">סגירה</button>':closedCell('data-gopen="'+gi+'"');
         h+=prow('<b>'+esc(G.name)+'</b>',gcell,'pr-gate');
         md.forEach(function(m){
           var ex=all.filter(function(g){return g.path===m[0]}), lv=ex.filter(SITE.live)[0], cell;
           if(lv)cell=openCell(lv,'data-pc="'+m[0]+'"');
-          else if(wide&&covers(wide,m[0]))cell='<span class="none">פתוח עם השער</span>';
+          // Open through the whole gate: it still gets its own "סגירה" (the gate becomes "פתוח חלקית").
+          else if(wide&&covers(wide,m[0]))cell='<span class="plabel static">פתוח</span><button type="button" class="pbtn pclose" data-pcw="'+m[0]+'">סגירה</button>';
           // Opens together with another מדור (מעגל החיים opens with הרחקות): say so, there is nothing to close here.
           else if(liveIn.some(function(g){return covers(g,m[0])})){var w2=liveIn.find(function(g){return covers(g,m[0])}), n2=SITE.TREE.find(function(x){return x.path===w2.path})||{title:w2.path};cell='<span class="none">פתוח עם '+esc(n2.title)+'</span>'}
           else{var old=ex[0];cell=closedCell('data-po="'+m[0]+'"',old&&old.expires_at?'הסתיים '+day(old.expires_at):'')}
@@ -827,7 +835,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       if(r2.error)alert(r2.error.message);load();return;
     }
     // Gate / מדור buttons in the student card (Natan, 2026-11-18).
-    var po=e.target.closest('[data-po],[data-pc],[data-gopen],[data-gclose]');
+    var po=e.target.closest('[data-po],[data-pc],[data-pcw],[data-gopen],[data-gclose]');
     if(po){
       var uidp=po.closest('[data-u]').getAttribute('data-u'), mine=(window.__grants||[]).filter(function(g){return g.user_id===uidp}), rr=null;
       var openPath=function(p){var n=SITE.TREE.find(function(x){return x.path===p})||{};
@@ -836,6 +844,13 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       po.disabled=true;
       if(po.hasAttribute('data-po'))rr=await openPath(po.getAttribute('data-po'));
       else if(po.hasAttribute('data-pc'))rr=await sb.from('grants').delete().eq('user_id',uidp).eq('path',po.getAttribute('data-pc'));
+      else if(po.hasAttribute('data-pcw')){
+        // Closing one מדור that is open through the whole gate: the gate grant goes, the other מדורים get their own.
+        var pw=po.getAttribute('data-pcw'), gw=gateOf(pw), Gw=GATES[gw], mdw=Gw.madors.filter(function(m){return m[0]}).map(function(m){return m[0]});
+        var wides=mine.filter(function(g){return gateOf(g.path)===gw&&mdw.indexOf(g.path)<0&&covers(g,pw)}).map(function(g){return g.path});
+        for(var q=0;q<mdw.length;q++){if(mdw[q]===pw||mine.some(function(g){return g.path===mdw[q]&&SITE.live(g)}))continue;rr=await openPath(mdw[q]);if(rr.error)break}
+        if(!rr||!rr.error)rr=wides.length?await sb.from('grants').delete().eq('user_id',uidp).in('path',wides):{error:null};
+      }
       else{
         var gi2=+(po.getAttribute('data-gopen')||po.getAttribute('data-gclose')), G=GATES[gi2];
         if(po.hasAttribute('data-gclose')){
@@ -845,7 +860,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
           // שער הלכה opens with its one wider path ('halacha'); a gate without one opens each מדור on its own.
           var md2=G.madors.filter(function(m){return m[0]}), top=md2[0][0].split('/')[0];
           if(md2.every(function(m){return m[0].indexOf(top+'/')===0}))rr=await openPath(top);
-          else for(var k=0;k<md2.length;k++){rr=await openPath(md2[k][0]);if(rr.error)break}
+          else for(var k=0;k<md2.length;k++){if(mine.some(function(g){return SITE.live(g)&&covers(g,md2[k][0])}))continue;rr=await openPath(md2[k][0]);if(rr.error)break}
         }
       }
       if(rr&&rr.error){alert(/expires_at|starts_at/.test(rr.error.message)?'צריך קודם להריץ ב־Supabase את supabase/v7.sql.':rr.error.message);po.disabled=false;return}
