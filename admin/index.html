@@ -532,7 +532,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         if(g.starts_at&&new Date(g.starts_at)>now)return 'ייפתח '+dt(g.starts_at);
         return 'פתוח'+(g.expires_at?' עד '+dt(g.expires_at):'')}
       function openCell(g,closeAttr){return '<button type="button" class="plabel" data-gid="'+g.id+'" title="תזמון פתיחה / סגירה">'+esc(pstate(g))+'</button><button type="button" class="pbtn pclose" '+closeAttr+'>סגירה</button>'}
-      function closedCell(openAttr,gone){return (gone?'<span class="none">'+esc(gone)+'</span>':'')+'<button type="button" class="pbtn popen" '+openAttr+'>פתיחה</button>'}
+      function closedCell(openAttr,gone){return '<button type="button" class="pbtn popen" '+openAttr+'>פתיחה</button>'+(gone?'<span class="none">'+esc(gone)+'</span>':'')}
       function prow(name,cell,cls,tk){return '<div class="pr'+(cls?' '+cls:'')+(tk?' has-tk':'')+'"><span class="pr-n">'+name+'</span><span class="pr-v">'+cell+'</span>'+(tk||'')+'</div>'}
       h+='<div class="perm">';
       GATES.forEach(function(G,gi){
@@ -563,8 +563,6 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
           h+=prow(esc(m[1]),cell,'pr-m',tk);
         });
       });
-      var olds=all.filter(function(g){return gateOf(g.path)<0});
-      if(olds.length)h+=prow('<span class="none">ישן</span>',olds.map(function(g){return gchip(g)}).join(''),'pr-m');
       h+='</div>';
       // The full tracking of each מדור (pill, headings, topics strip) now opens from its clay line above, in its own window.
       // Headings list: read rows shaded, with the date; on the left one mark per question (first question on the right).
