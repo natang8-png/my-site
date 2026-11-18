@@ -14,7 +14,11 @@
     {path:'halacha/family/yoledet', title:'יולדת', with:'halacha/family/harchakot'},
     // Opens only with its own grant (a wider grant does not cover it), for one week at a time.
     {path:'tumat-betulim', title:'טומאת בתולים', own:true, days:7},
-    {path:'leil-hachatuna', title:'סדר ליל החתונה', own:true, days:7}
+    // שער הדרכה (Natan, 2026-11-18): each מדור opens with its own grant. 'leil-hachatuna' is now ליל הכלולות only.
+    // label = the name in the admin page, where 'הלכה' alone would mix with שער הלכה.
+    {path:'hadracha-halacha', title:'הלכה', label:'הדרכה: הלכה', own:true, days:7},
+    {path:'hadracha-hashkafa', title:'השקפה', label:'הדרכה: השקפה', own:true, days:7},
+    {path:'leil-hachatuna', title:'ליל הכלולות', label:'הדרכה: ליל הכלולות', own:true, days:7}
   ];
 
   // Edit mode (admin only): on for this device until switched off from the warning line at the top.

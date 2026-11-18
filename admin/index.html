@@ -188,10 +188,10 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 <script>
 (async function(){
   var app=document.getElementById('app'), sb=SITE.sb;
-  var CHAPTERS={harchakot:{title:'הרחקות',total:26,heads:["הקדמה", "סיפור מהגמרא", "האיסור הכללי", "איסור נגיעה", "הרחקות נוספות", "הנהגת האשה", "הסתכלות בה", "מסירת דבר מאחד לשני", "אכילה מצלחת אחת", "אכילה על שולחן אחד", "שיירי מאכל ומשקה", "מזיגה והושטה", "הרחקה בין המיטות", "ישיבה ושכיבה על מיטת בן הזוג", "ישיבה על ספסל אחד", "טיול", "אכילה במסעדה ושהייה במלון", "ההנהגה בין אנשים", "מתנה", "הצעת המיטה לבן הזוג", "יציקת מים", "כשאחד מבני הזוג חולה", "הליכת האשה לבית-הקברות או להלוויה", "הליכת האשה לבית-הכנסת", "חיוב האשה בתפילות וברכות", "ההנהגה ביום הכיפורים ובתשעה באב"]},yoledet:{title:'דיני יולדת ומפלת',total:17,heads:["ימי טומאה וימי טוהר מן התורה", "המנהג לטמא כל דם", "מנהג ארבעים ושמונים יום", "מאימתי נטמאת בתהליך הלידה", "הפלה וניתוח קיסרי", "טומאת היולדת", "צירי לידה וחדר הלידה", "סדר טהרת היולדת", "מפלת", "ניתוח קיסרי", "חילול שבת עבור יולדת", "יולדת בשבת", "מאימתי נאסרת היולדת", "הבעל בזמן הלידה", "ההמתנה אחר לידה והפלה", "בדיקת רופא אחר הלידה", "הבאת ילדים לעולם"]},'leil-hachatuna':{title:'סדר ליל החתונה',total:40,own:true,heads:["כניסה לבית", "חופת נדה", "חופה טהורה", "סידור החדר", "כדי להימנע מאי נעימות ומכאב", "דברי אהבה וריצוי", "הביאה", "בשעת התשמיש", "בכלה בתולה", "טומאת בתולים", "לאחר שעברו את טומאת בתולים", "התארגנות שאחרי", "לבעול בזמן המוקדם האפשרי", "קשר עם המדריך/כה", "ומה עוד לגבי המשך החיים?", "השוני בין האיש לאשה", "קרבה - בגוף ונפש", "ללמוד אנו צריכים", "סגנון אישי", "הכנה", "הכנה - קרבה נפשית", "רגישות", "פתיחות", "סעיף א - קדושה וצניעות בשעת התשמיש", "סעיף ב - הרהור בדברי תורה", "סעיף ג - אור הנר, היום והלבנה", "סעיף ד - בפני אדם אחר", "סעיף ה - הסתכלות", "סעיף ו - ספרי קודש ומזוזה בחדר", "סעיף ז - מצות עונה", "סעיף ח - מתי חייב לפקוד את אשתו", "סעיף ט - הכוונה בשעת התשמיש", "סעיף י - הזמן בלילה ונטילת ידיים", "סעיף יא - מקום התשמיש, והכתובה", "סעיף יב - בשעת רעב וצרה", "סעיף יג - רק מרצונה", "סעיף יד - אורח ומלון", "סעיף טו - מדרכי הרפואה", "סעיף טז - תינוק, בית הכסא והנקה", "סעיף יז - שמירת הכח"]}};
+  var CHAPTERS={harchakot:{title:'הרחקות',total:26,heads:["הקדמה", "סיפור מהגמרא", "האיסור הכללי", "איסור נגיעה", "הרחקות נוספות", "הנהגת האשה", "הסתכלות בה", "מסירת דבר מאחד לשני", "אכילה מצלחת אחת", "אכילה על שולחן אחד", "שיירי מאכל ומשקה", "מזיגה והושטה", "הרחקה בין המיטות", "ישיבה ושכיבה על מיטת בן הזוג", "ישיבה על ספסל אחד", "טיול", "אכילה במסעדה ושהייה במלון", "ההנהגה בין אנשים", "מתנה", "הצעת המיטה לבן הזוג", "יציקת מים", "כשאחד מבני הזוג חולה", "הליכת האשה לבית-הקברות או להלוויה", "הליכת האשה לבית-הכנסת", "חיוב האשה בתפילות וברכות", "ההנהגה ביום הכיפורים ובתשעה באב"]},yoledet:{title:'דיני יולדת ומפלת',total:17,heads:["ימי טומאה וימי טוהר מן התורה", "המנהג לטמא כל דם", "מנהג ארבעים ושמונים יום", "מאימתי נטמאת בתהליך הלידה", "הפלה וניתוח קיסרי", "טומאת היולדת", "צירי לידה וחדר הלידה", "סדר טהרת היולדת", "מפלת", "ניתוח קיסרי", "חילול שבת עבור יולדת", "יולדת בשבת", "מאימתי נאסרת היולדת", "הבעל בזמן הלידה", "ההמתנה אחר לידה והפלה", "בדיקת רופא אחר הלידה", "הבאת ילדים לעולם"]},'leil-hachatuna':{title:'סדר ליל החתונה',total:40,own:true,paths:['hadracha-halacha','hadracha-hashkafa','leil-hachatuna'],heads:["כניסה לבית", "חופת נדה", "חופה טהורה", "סידור החדר", "כדי להימנע מאי נעימות ומכאב", "דברי אהבה וריצוי", "הביאה", "בשעת התשמיש", "בכלה בתולה", "טומאת בתולים", "לאחר שעברו את טומאת בתולים", "התארגנות שאחרי", "לבעול בזמן המוקדם האפשרי", "קשר עם המדריך/כה", "ומה עוד לגבי המשך החיים?", "השוני בין האיש לאשה", "קרבה - בגוף ונפש", "ללמוד אנו צריכים", "סגנון אישי", "הכנה", "הכנה - קרבה נפשית", "רגישות", "פתיחות", "סעיף א - קדושה וצניעות בשעת התשמיש", "סעיף ב - הרהור בדברי תורה", "סעיף ג - אור הנר, היום והלבנה", "סעיף ד - בפני אדם אחר", "סעיף ה - הסתכלות", "סעיף ו - ספרי קודש ומזוזה בחדר", "סעיף ז - מצות עונה", "סעיף ח - מתי חייב לפקוד את אשתו", "סעיף ט - הכוונה בשעת התשמיש", "סעיף י - הזמן בלילה ונטילת ידיים", "סעיף יא - מקום התשמיש, והכתובה", "סעיף יב - בשעת רעב וצרה", "סעיף יג - רק מרצונה", "סעיף יד - אורח ומלון", "סעיף טו - מדרכי הרפואה", "סעיף טז - תינוק, בית הכסא והנקה", "סעיף יז - שמירת הכח"]}};
   function esc(t){var d=document.createElement('div');d.textContent=t==null?'':t;return d.innerHTML}
   function when(t){if(!t)return'—';var d=new Date(t);return d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
-  function title(path){var n=SITE.TREE.find(function(x){return x.path===path});return n?n.title:path}
+  function title(path){var n=SITE.TREE.find(function(x){return x.path===path});return n?(n.label||n.title):path}
   function depth(path){return path.split('/').length-1}
   var st=await SITE.ready;
   if(!st.user){app.innerHTML='<p>צריך <a href="/login/?next=/admin/">להיכנס</a> קודם.</p>';return}
@@ -399,7 +399,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         all.filter(function(g){return isOwn(g.path)}).map(gchip).join('')+'</div>';
       // Chapters with their own permission: open for a week from here too, without waiting for a request.
       h+=SITE.TREE.filter(function(n){return n.own}).map(function(n){var g=all.find(function(x){return x.path===n.path&&SITE.live(x)});
-        return '<div class="add"><button type="button" data-week="'+n.path+'">'+(g?'הארכה':'פתיחה')+' של '+esc(n.title)+' ל־'+n.days+' ימים</button></div>'}).join('');
+        return '<div class="add"><button type="button" data-week="'+n.path+'">'+(g?'הארכה':'פתיחה')+' של '+esc(n.label||n.title)+' ל־'+n.days+' ימים</button></div>'}).join('');
       // One button: approve (with the chosen access) when closed, close (remove all access) when open.
       h+='<div class="add">'+(ug.length?'':'<select data-path>'+opts()+'</select><select data-mode><option value="study">קריאה + שאלון</option><option value="read">קריאה בלבד</option></select>')+
         '<button type="button" class="'+(ug.length?'close':'primary')+'" data-toggle="'+(ug.length?'close':'open')+'" title="'+(ug.length?'חסימת כל הגישה של התלמיד (אפשר לפתוח שוב)':'פתיחת הגישה שבחרת ברשימות')+'">'+(ug.length?'סגירה':'אישור')+'</button>'+
@@ -407,7 +407,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       Object.keys(CHAPTERS).forEach(function(c){
         var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
         var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
-        if(CHAPTERS[c].own&&!n&&!all.some(function(g){return g.path===c}))return;
+        if(CHAPTERS[c].own&&!n&&!all.some(function(g){return (CHAPTERS[c].paths||[c]).indexOf(g.path)>=0}))return;
         // Chapters with headings get the pill, the headings list and the topics strip (no quiz = reading only).
         var qb=CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
         if(qb){
@@ -485,7 +485,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     SITE.TREE.forEach(function(n,i){
       var o=n.own?[['keep','בלי שינוי'],['week','פתיחה ל־'+n.days+' ימים'],['off','סגירה']]
                  :[['keep','בלי שינוי'],['study','קריאה + שאלון'],['read','קריאה בלבד'],['off','סגירה']];
-      h+='<div class="rowp"><b>'+'\u00a0\u00a0'.repeat(n.own?0:depth(n.path))+esc(n.title)+'</b><div class="opts">'+
+      h+='<div class="rowp"><b>'+'\u00a0\u00a0'.repeat(n.own?0:depth(n.path))+esc(n.label||n.title)+'</b><div class="opts">'+
         o.map(function(x,j){return '<label><input type="radio" name="p'+i+'" value="'+x[0]+'"'+(j?'':' checked')+'>'+x[1]+'</label>'}).join('')+'</div></div>';
     });
     h+='<div class="add acts"><button type="button" class="primary" data-apply>שמירה</button><button type="button" data-x>ביטול</button></div><p class="msg" role="status"></p>';

@@ -20,7 +20,7 @@
   async function paint(box, path, inDialog){
     await SITE.ready;
     if(SITE.access(path)) return true;
-    var n=node(path), s=SITE.state, next=encodeURIComponent('/halacha/'+path+'/');
+    var n=node(path), s=SITE.state, next=encodeURIComponent(location.pathname+location.hash);
     box.className='req-box';
     if(!s.user){
       box.innerHTML='<p><b>אין לך הרשאה למדור "'+n.title+'".</b></p><p>המדור נפתח בהרשאה אישית מנתן. כדי לבקש אותה צריך קודם להיכנס לאתר.</p>'+
