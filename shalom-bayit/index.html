@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>שער שלום בית · הלכה בבית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+<style>main.gate-wait{visibility:hidden}main.home>header{border-bottom:3px solid var(--accent);padding-bottom:14px}.topic{position:relative}
+.acct a,.crumbs a{color:var(--accent)}
+.art h2{font-family:var(--display);color:var(--accent);font-weight:700;font-size:1.35rem;margin:28px 0 8px}
+.art p{margin:0 0 12px;line-height:1.75}.art ul,.art ol{margin:0 0 12px;padding-inline-start:1.3em;line-height:1.75}.art li{margin-bottom:4px}
+.art table{border-collapse:collapse;width:100%;margin:8px 0 16px;font-size:.95rem}.art th,.art td{border:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:top}.art th{background:var(--soft)}
+.lead{font-size:1.08rem}.pager{display:flex;justify-content:space-between;gap:12px;margin-top:24px;flex-wrap:wrap}.pager a{color:var(--accent)}</style>
+</head><body>
+<main dir="rtl" lang="he" class="home gate-wait">
+  <header>
+    <nav class="crumbs" aria-label="ניווט"><a href="/">בית</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><span class="cur">שער שלום בית</span></nav>
+    <h1>שער שלום בית</h1>
+  </header>
+
+  <section aria-labelledby="sub-h">
+    <h2 id="sub-h">מאמרים</h2>
+    <ol class="topics">
+      <li><div class="topic" data-lock="shalom-bayit/todah"><h3><a class="stretch" href="/shalom-bayit/todah/" data-lock="shalom-bayit/todah"><span class="num">1</span>תודה, בבקשה, סליחה</a></h3><p class="req-hint" style="margin:0;color:var(--muted);font-size:.92rem">הגש בקשה</p><span class="go" aria-hidden="true">←</span></div></li>
+      <li><div class="topic" data-lock="shalom-bayit/hakshava"><h3><a class="stretch" href="/shalom-bayit/hakshava/" data-lock="shalom-bayit/hakshava"><span class="num">2</span>הקשבה</a></h3><p class="req-hint" style="margin:0;color:var(--muted);font-size:.92rem">הגש בקשה</p><span class="go" aria-hidden="true">←</span></div></li>
+      <li><div class="topic" data-lock="shalom-bayit/sheva-shaot"><h3><a class="stretch" href="/shalom-bayit/sheva-shaot/" data-lock="shalom-bayit/sheva-shaot"><span class="num">3</span>שש שעות בשבוע</a></h3><p class="req-hint" style="margin:0;color:var(--muted);font-size:.92rem">הגש בקשה</p><span class="go" aria-hidden="true">←</span></div></li>
+      <li><div class="topic" data-lock="shalom-bayit/shicha"><h3><a class="stretch" href="/shalom-bayit/shicha/" data-lock="shalom-bayit/shicha"><span class="num">4</span>שיחה שמפרקת מטען</a></h3><p class="req-hint" style="margin:0;color:var(--muted);font-size:.92rem">הגש בקשה</p><span class="go" aria-hidden="true">←</span></div></li>
+      <li><div class="topic" data-lock="shalom-bayit/shicha-b"><h3><a class="stretch" href="/shalom-bayit/shicha-b/" data-lock="shalom-bayit/shicha-b"><span class="num">5</span>שיחה שמפרקת מטען: השלבים הבאים</a></h3><p class="req-hint" style="margin:0;color:var(--muted);font-size:.92rem">הגש בקשה</p><span class="go" aria-hidden="true">←</span></div></li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>נבנה בהדרגה, צעד אחר צעד.</span>
+    <button id="theme" type="button">מצב כהה</button>
+  </footer>
+</main>
+<script src="/site.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
+<script src="/private.js"></script>
+<script>
+(function(){
+  if(!window.SITE){document.querySelector('main').classList.remove('gate-wait');return}
+  SITE.ready.then(function(st){
+    // Guests never see the מדורים of a gate: straight to sign-in (as in the other gates).
+    if(!st.user){location.replace('/login/?next='+encodeURIComponent(location.pathname));return}
+    document.querySelector('main').classList.remove('gate-wait');
+    [].forEach.call(document.querySelectorAll('.topic[data-lock]'),function(t){if(SITE.access(t.getAttribute('data-lock'))){var h=t.querySelector('.req-hint');if(h)h.hidden=true}else t.classList.add('off')});
+  });
+})();
+</script>
+</body></html>
