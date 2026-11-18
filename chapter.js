@@ -169,7 +169,10 @@ else if(PROOF){document.documentElement.classList.add('proof');
     if(!sec){bar.querySelector('.cb-sname').textContent='תוכן עניינים';return}
     var all=main.hasAttribute('data-flow')&&window.visSecs?visSecs():APART&&window.tabSecs?tabSecs(sec):[].slice.call(document.querySelectorAll('.sec'));
     var i=all.indexOf(sec)+1, total=all.length; // place on the page (in a flow chapter: in the open tab), not the section's number
-    bar.querySelector('.cb-sname').textContent=sec.querySelector('.sec-head h2').textContent;
+    var sn=bar.querySelector('.cb-sname'), who=sec.querySelector('.sec-head .hw');
+    sn.textContent=sec.querySelector('.sec-head h2').textContent;
+    // Natan, 2026-11-18: the man/woman icon moved from the big heading up to the top bar, after the section name.
+    if(who){var w=document.createElement('span');w.className='cb-who';w.innerHTML=who.innerHTML;sn.appendChild(w)}
     num.textContent='סעיף '+i+'/'+total;num.setAttribute('aria-label','סעיף '+i+' מתוך '+total);
   }
   window.addEventListener('hashchange',function(){setTimeout(current,0)});document.addEventListener('sec-change',current);current();
