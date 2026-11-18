@@ -42,7 +42,7 @@
     // with no sign-in. No grants, nothing saved or sent. Stays on in this tab until ?demo=off or the brown bar's button.
     try{
       if(/[?&]demo=off\b/.test(location.search)) sessionStorage.removeItem('demo');
-      else if(/[?&]demo=pending\b/.test(location.search)) sessionStorage.setItem('demo','pending');
+      else if(/[?&]demo=pending\b/.test(location.search)){ sessionStorage.setItem('demo','pending'); sessionStorage.removeItem('demoReq') }
       if(sessionStorage.getItem('demo')==='pending'&&location.hostname!=='my-site-c18.pages.dev'){
         state.user={id:'00000000-0000-0000-0000-000000000000',email:'demo'};
         state.profile={first_name:'תלמיד',last_name:'שממתין לאישור',phone:'000',is_admin:false};
@@ -74,7 +74,7 @@
     state.profile={id:state.user.id, first_name:'תלמיד', last_name:'לדוגמה', phone:'000', is_admin:false};
     state.grants=(v.paths||[]).map(function(p){return {user_id:state.user.id, path:p, mode:v.mode||'study'}});
   }
-  function setViewAs(v){ try{ if(!v) sessionStorage.removeItem('demo') }catch(e){} try{ v?localStorage.setItem('viewAs',JSON.stringify(v)):localStorage.removeItem('viewAs') }catch(e){} }
+  function setViewAs(v){ try{ if(!v){ sessionStorage.removeItem('demo'); sessionStorage.removeItem('demoReq') } }catch(e){} try{ v?localStorage.setItem('viewAs',JSON.stringify(v)):localStorage.removeItem('viewAs') }catch(e){} }
   function viewBar(){
     var v=state.viewAs; if(!v) return;
     var b=document.createElement('div'); b.className='view-as'; b.dir='rtl';
