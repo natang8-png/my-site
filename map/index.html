@@ -136,6 +136,8 @@ main.gate-wait{visibility:hidden}
   SITE.ready.then(function(st){
     // Admin only. While "צפייה כ..." is on, the admin still reaches this page to switch or stop.
     var admin=st.viewAs||(st.profile&&st.profile.is_admin);
+    // Not signed in on this address (the preview keeps its own sign-in, apart from the live site): straight to sign-in, then back here.
+    if(!st.user&&!st.viewAs){location.replace('/login/?next=/map/');return}
     if(!admin){main.innerHTML='<p class="msg">הדף הזה פתוח רק למנהל.</p>';main.classList.remove('gate-wait');return}
     main.classList.remove('gate-wait');
     var v=st.viewAs, picks=SITE.TREE.filter(function(n){return n.path.split('/').length===3||n.own&&n.path!=='tumat-betulim'});
