@@ -29,7 +29,7 @@
     }
     var open=await SITE.sb.from('access_requests').select('created_at').eq('user_id',s.user.id).eq('path',path).is('handled_at',null).maybeSingle();
     if(open.data){
-      box.innerHTML='<p><b>הבקשה שלך נשלחה ✓</b></p><p>שלחת בקשה ב־'+day(open.data.created_at)+'. כשנתן יאשר, המדור ייפתח לך ל־'+(n.days||7)+' ימים.</p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');
+      box.innerHTML='<p><b>הבקשה נשלחה ותיבחן בהקדם ✓</b></p><p>שלחת בקשה ב־'+day(open.data.created_at)+'. כשהבקשה תאושר, המדור ייפתח לך'+(n.own?' ל־'+(n.days||7)+' ימים':'')+'.</p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');
       return false;
     }
     var g=grantOf(path);
@@ -42,7 +42,7 @@
       '<div class="acts"><button type="button" class="primary" data-ask>שליחת בקשה</button>'+(inDialog?'<button type="button" data-x>לא עכשיו</button>':'')+'</div><p class="msg" role="status"></p>';
     box.querySelector('[data-ask]').onclick=async function(){
       this.disabled=true;
-      if(s.viewAs){var vm=box.querySelector('.msg');vm.textContent='זו תצוגה לדוגמה: הבקשה לא נשלחת.';this.disabled=false;return}
+      if(s.viewAs){box.innerHTML='<p><b>הבקשה נשלחה ותיבחן בהקדם ✓</b></p><p style="color:var(--muted)">(תצוגה לדוגמה: הבקשה לא נשלחה באמת.)</p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');return}
       var r=await SITE.sb.from('access_requests').insert({user_id:s.user.id,path:path});
       if(r.error&&r.error.code!=='23505'){
         var m=box.querySelector('.msg');m.classList.add('err');
