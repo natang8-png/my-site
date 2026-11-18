@@ -4,7 +4,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
 <link rel="stylesheet" href="/style.css?v=3d2b8822">
-<style>main.gate-wait{visibility:hidden}main.home>header{border-bottom:3px solid var(--accent);padding-bottom:14px}</style>
+<style>main.gate-wait{visibility:hidden}main.home>header{border-bottom:3px solid var(--accent);padding-bottom:14px}
+/* Each card is its own tap area: without this, the last card's link covered all of them (Natan, 2026-11-18). */
+.topic{position:relative}
+/* שער הדרכה is all blue (Natan, 2026-11-18). */
+:root{--bg:#f5f7fa;--fg:#1c2230;--muted:#5b6678;--line:#d6e0ec;--accent:#2d5f93;--soft:#e6eef7}
+:root[data-theme="dark"]{--bg:#11151b;--fg:#e4e9f0;--muted:#96a3b5;--line:#263140;--accent:#8fbbe8;--soft:#18212c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11151b;--fg:#e4e9f0;--muted:#96a3b5;--line:#263140;--accent:#8fbbe8;--soft:#18212c}}
+.acct a,.crumbs a{color:var(--accent)}</style>
 </head><body>
 <main dir="rtl" lang="he" class="home gate-wait">
   <header>
@@ -40,6 +47,8 @@
     // Guests never see the מדורים of a gate: straight to sign-in (Natan, 2026-11-15).
     if(!st.user){location.replace('/login/?next='+encodeURIComponent(location.pathname));return}
     document.querySelector('main').classList.remove('gate-wait');
+    // A reader who already has the מדור open does not see "הגש בקשה לפתיחה" on it.
+    [].forEach.call(document.querySelectorAll('.topic[data-lock]'),function(t){if(SITE.access(t.getAttribute('data-lock'))){var h=t.querySelector('.req-hint');if(h)h.hidden=true}});
     [].forEach.call(document.querySelectorAll('[data-qsum]'),async function(box){
       var ch=box.getAttribute('data-qsum'), a=SITE.access(box.getAttribute('data-path'));
       if(a!=='study'&&a!=='quiz')return;
