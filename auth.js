@@ -18,7 +18,14 @@
     // label = the name in the admin page, where 'הלכה' alone would mix with שער הלכה.
     {path:'hadracha-halacha', title:'הלכה', label:'הדרכה: הלכה', own:true, days:7},
     {path:'hadracha-hashkafa', title:'השקפה', label:'הדרכה: השקפה', own:true, days:7},
-    {path:'leil-hachatuna', title:'ליל הכלולות', label:'הדרכה: ליל הכלולות', own:true, days:7}
+    {path:'leil-hachatuna', title:'ליל הכלולות', label:'הדרכה: ליל הכלולות', own:true, days:7},
+    // שער שלום בית (Natan, 2026-11-19): articles. A grant on 'shalom-bayit' opens them all; each article can also be opened alone.
+    {path:'shalom-bayit', title:'שלום בית'},
+    {path:'shalom-bayit/todah', title:'תודה, בבקשה, סליחה', label:'שלום בית: תודה, בבקשה, סליחה'},
+    {path:'shalom-bayit/hakshava', title:'הקשבה', label:'שלום בית: הקשבה'},
+    {path:'shalom-bayit/sheva-shaot', title:'שש שעות בשבוע', label:'שלום בית: שש שעות בשבוע'},
+    {path:'shalom-bayit/shicha', title:'שיחה שמפרקת מטען', label:'שלום בית: שיחה שמפרקת מטען'},
+    {path:'shalom-bayit/shicha-b', title:'שיחה שמפרקת מטען: השלבים הבאים', label:'שלום בית: השלבים הבאים בשיחה'}
   ];
 
   // Edit mode (admin only): on for this device until switched off from the warning line at the top.

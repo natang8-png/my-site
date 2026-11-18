@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>שיחה שמפרקת מטען: השלבים הבאים · הלכה בבית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+<style>main.gate-wait{visibility:hidden}main.home>header{border-bottom:3px solid var(--accent);padding-bottom:14px}.topic{position:relative}
+.acct a,.crumbs a{color:var(--accent)}
+.art h2{font-family:var(--display);color:var(--accent);font-weight:700;font-size:1.35rem;margin:28px 0 8px}
+.art p{margin:0 0 12px;line-height:1.75}.art ul,.art ol{margin:0 0 12px;padding-inline-start:1.3em;line-height:1.75}.art li{margin-bottom:4px}
+.art table{border-collapse:collapse;width:100%;margin:8px 0 16px;font-size:.95rem}.art th,.art td{border:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:top}.art th{background:var(--soft)}
+.lead{font-size:1.08rem}.pager{display:flex;justify-content:space-between;gap:12px;margin-top:24px;flex-wrap:wrap}.pager a{color:var(--accent)}</style>
+</head><body>
+<main dir="rtl" lang="he" class="home gate-wait">
+  <header>
+    <nav class="crumbs" aria-label="ניווט"><a href="/">בית</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><a href="/shalom-bayit/">שער שלום בית</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><span class="cur">שיחה שמפרקת מטען: השלבים הבאים</span></nav>
+    <h1>שיחה שמפרקת מטען: השלבים הבאים</h1>
+  </header>
+  <div id="lockbox" hidden></div>
+  <article class="art" hidden>
+<p class="lead">אחרי שהתרגלנו לשלד הבסיסי, אחד מדבר והשני חוזר, אפשר להעמיק. השלבים האלה באים אחרי הסיכום ולפני התודה, והם עוזרים למי שדיבר להרגיש לא רק ששמעו אותו, אלא שהבינו אותו.</p>
+<h2>מה הרגשת?</h2>
+<p>המקשיב שואל: "מה הרגשת באותו רגע?". לא מה קרה, אלא מה קרה בפנים. עצב, כעס, בדידות, פחד, אכזבה. המקשיב חוזר על הרגש במילים פשוטות: "הרגשת לבד, וזה העציב אותך". לא מתווכחים עם רגש. רגש פשוט קיים.</p>
+<h2>מה היה הצורך?</h2>
+<p>מאחורי כל רגש קשה יש צורך שלא קיבל מענה. המקשיב שואל: "מה היית צריך באותו רגע?". התשובה יכולה להיות קרבה, הערכה, עזרה, שקט, או פשוט לדעת שהוא חשוב. כשמבינים את הצורך, הרבה פעמים מתברר שהמריבה לא הייתה בכלל על מה שחשבנו.</p>
+<h2>תיקוף: "זה מובן"</h2>
+<p>תיקוף פירושו לומר לשני שמה שהוא מרגיש הגיוני מנקודת המבט שלו: "זה מובן לי שהרגשת ככה, כי...". שימו לב: תיקוף הוא לא הסכמה. אפשר לראות את המצב אחרת, ועדיין להבין למה השני הרגיש כך. זה בדיוק "להגיע למקומו".</p>
+<h2>אישוש: "אני מרגיש איתך"</h2>
+<p>אחרי שהבנתי, אני מראה שהרגש נגע גם בי: "אני מדמיין שהרגשת ממש לבד". זה הרגע שבו מי שדיבר מרגיש שהוא כבר לא לבד עם מה שעבר. לרוב כאן המטען מתחיל באמת להתפרק.</p>
+<h2>ואז תודה</h2>
+<p>כמו בשלד הבסיסי, סוגרים בתודה הדדית, ולא עוברים מיד לתשובות או לפתרונות.</p>
+<nav class="pager" aria-label="מאמרים"><a href="/shalom-bayit/shicha/">→ שיחה שמפרקת מטען</a><span></span></nav>
+  </article>
+
+  <footer>
+    <span>נבנה בהדרגה, צעד אחר צעד.</span>
+    <button id="theme" type="button">מצב כהה</button>
+  </footer>
+</main>
+<script src="/site.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
+<script src="/private.js"></script>
+<script>
+// The article shows only to a reader with a grant on it (or on all of שער שלום בית), and to the admin.
+(function(){
+  var path='shalom-bayit/shicha-b', m=document.querySelector('main');
+  if(!window.SITE||!window.LOCK){m.classList.remove('gate-wait');return}
+  SITE.ready.then(async function(st){
+    if(!st.user){location.replace('/login/?next='+encodeURIComponent(location.pathname));return}
+    var box=document.getElementById('lockbox');
+    if(await LOCK.paint(box,path,false)) document.querySelector('article').hidden=false; else box.hidden=false;
+    m.classList.remove('gate-wait');
+  });
+})();
+</script>
+</body></html>
