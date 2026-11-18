@@ -128,6 +128,9 @@ else if(PROOF){document.documentElement.classList.add('proof');
     '<span class="cb-snum"></span></div>'+
     '<div class="cb-panel" hidden></div>';
   bar.querySelector('.cb-title').textContent=title;
+  // Natan, 2026-11-18: the top bar shows the same navigation line as the page (בית < שער < מדור), in place of the title.
+  var crumbs=head.querySelector('nav.crumbs');
+  if(crumbs){var cc=crumbs.cloneNode(true);cc.className='crumbs cb-crumbs';bar.querySelector('.cb-mid').insertBefore(cc,bar.querySelector('.cb-mid').firstChild);bar.querySelector('.cb-title').hidden=true}
   document.body.appendChild(bar);
   document.documentElement.classList.add('has-tbar');
   var panel=bar.querySelector('.cb-panel');
