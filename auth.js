@@ -38,6 +38,18 @@
   var state={user:null, profile:null, grants:[]};
   var ready=(async function(){
     if(!sb) return state;
+    // Demo link (Natan, 2026-11-18, preview only): ?demo=pending shows the site as a student who signed up and is not approved yet,
+    // with no sign-in. No grants, nothing saved or sent. Stays on in this tab until ?demo=off or the brown bar's button.
+    try{
+      if(/[?&]demo=off\b/.test(location.search)) sessionStorage.removeItem('demo');
+      else if(/[?&]demo=pending\b/.test(location.search)) sessionStorage.setItem('demo','pending');
+      if(sessionStorage.getItem('demo')==='pending'&&location.hostname!=='my-site-c18.pages.dev'){
+        state.user={id:'00000000-0000-0000-0000-000000000000',email:'demo'};
+        state.profile={first_name:'תלמיד',last_name:'שממתין לאישור',phone:'000',is_admin:false};
+        state.grants=[]; state.viewAs={as:'student',paths:[],demo:true};
+        return state;
+      }
+    }catch(e){}
     try{
       var s=(await sb.auth.getSession()).data.session;
       if(!s) return state;
@@ -62,15 +74,16 @@
     state.profile={id:state.user.id, first_name:'תלמיד', last_name:'לדוגמה', phone:'000', is_admin:false};
     state.grants=(v.paths||[]).map(function(p){return {user_id:state.user.id, path:p, mode:v.mode||'study'}});
   }
-  function setViewAs(v){ try{ v?localStorage.setItem('viewAs',JSON.stringify(v)):localStorage.removeItem('viewAs') }catch(e){} }
+  function setViewAs(v){ try{ if(!v) sessionStorage.removeItem('demo') }catch(e){} try{ v?localStorage.setItem('viewAs',JSON.stringify(v)):localStorage.removeItem('viewAs') }catch(e){} }
   function viewBar(){
     var v=state.viewAs; if(!v) return;
     var b=document.createElement('div'); b.className='view-as'; b.dir='rtl';
     b.style.cssText='position:sticky;top:0;z-index:60;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:8px 12px;background:#7a4b00;color:#fff;font-size:.95rem';
     var names=(v.paths||[]).map(function(p){var n=TREE.find(function(x){return x.path===p});return n?(n.label||n.title):p});
-    b.innerHTML='<b>👁 תצוגה כ'+(v.as==='guest'?'אורח (לא מחובר)':'תלמיד'+(names.length?' · פתוח לו: '+names.join(', '):' בלי הרשאות'))+'</b>'+
+    b.innerHTML=v.demo?'<b>👁 דוגמה: תלמיד שנרשם ועוד לא אושר</b><button type="button" style="background:#fff;color:#7a4b00;border:0;border-radius:999px;padding:4px 12px;cursor:pointer">יציאה מהדוגמה</button>'
+      :'<b>👁 תצוגה כ'+(v.as==='guest'?'אורח (לא מחובר)':'תלמיד'+(names.length?' · פתוח לו: '+names.join(', '):' בלי הרשאות'))+'</b>'+
       '<a href="/map/" style="color:#fff">החלפה</a><button type="button" style="background:#fff;color:#7a4b00;border:0;border-radius:999px;padding:4px 12px;cursor:pointer">חזרה לתצוגת מנהל</button>';
-    b.querySelector('button').onclick=function(){setViewAs(null);location.reload()};
+    b.querySelector('button').onclick=function(){setViewAs(null);location.href=location.pathname};
     document.body.insertBefore(b,document.body.firstChild);
   }
 
