@@ -428,6 +428,8 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
               (CHAPTERS[c].own?'<p class="muted" style="margin:4px 0 0;font-size:.85rem">מוצלל = נקרא בקצב קריאה (זמן על המסך לפי אורך הסעיף). V = החתן סימן בעצמו "קראתי".</p>':'');
       }
       h+=rounds(u,uq)+studentReset(u,uq);
+      // A student who cannot get the reset mail: back to the temporary password, to be changed on the next login.
+      h+='<div class="add"><button type="button" class="link" data-pwreset title="למי שלא מקבל את מייל שחזור הסיסמה. בכניסה הבאה הוא יבחר סיסמה חדשה משלו.">איפוס הסיסמה ל־123456</button></div>';
       h+='</article>';
     });
     app.innerHTML=h+'</div>'+inviteBlock(invites);
@@ -688,6 +690,16 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       if(tg.getAttribute('data-toggle')==='open') r=await sb.from('grants').upsert({user_id:uid,path:card.querySelector('[data-path]').value,mode:card.querySelector('[data-mode]').value},{onConflict:'user_id,path'});
       else r=await sb.from('grants').delete().eq('user_id',uid);
       if(r.error)alert(r.error.message);load();return;
+    }
+    var pr=e.target.closest('[data-pwreset]');
+    if(pr){
+      var pc=pr.closest('[data-u]'), pn=pc.querySelector('h3').firstChild.textContent;
+      if(!confirm('לאפס את הסיסמה של '+pn+' ל־123456?\n\nהסיסמה הנוכחית שלו תפסיק לעבוד. בכניסה הבאה עם 123456 האתר יבקש ממנו לבחור סיסמה חדשה משלו.'))return;
+      pr.disabled=true;
+      var rr=await sb.rpc('admin_reset_password',{p_user:pc.getAttribute('data-u')});
+      if(rr.error){alert(/admin_reset_password/.test(rr.error.message)?'צריך קודם להריץ ב־Supabase את supabase/v15.sql.':rr.error.message);pr.disabled=false;return}
+      alert('הסיסמה אופסה ✓\nשלח לו: '+location.origin+'/login/\nמייל: '+(pc.querySelector('small').textContent)+'\nסיסמה: 123456 (יחליף בכניסה הבאה)');
+      load();return;
     }
     var mk=e.target.closest('[data-mkacc]');
     if(mk){

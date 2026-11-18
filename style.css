@@ -545,3 +545,5 @@ html main.locked .q-gap,html main.locked .iq,html main.read-only .q-gap,html mai
 
 /* Natan, 2026-11-18: the navigation line in the chapter top bar is links without underline; the body copy of it is hidden. */
 main.chapter > header > nav.crumbs{display:none}
+.forgot{margin:-4px 0 4px;font-size:.92rem}
+#fg-google{color:var(--muted);font-size:.9rem}

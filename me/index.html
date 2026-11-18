@@ -32,8 +32,8 @@
         <a href="/login/?complete=1&amp;next=/me/" id="details" hidden>השלמת פרטים</a>
       </div>
       <form class="form" id="pwf" hidden style="margin-top:16px">
-        <label>סיסמה חדשה<input name="p1" type="password" required minlength="6" autocomplete="new-password" dir="ltr"></label>
-        <label>שוב, לאימות<input name="p2" type="password" required minlength="6" autocomplete="new-password" dir="ltr"></label>
+        <label>סיסמה חדשה<span class="pw"><input name="p1" type="password" required minlength="6" autocomplete="new-password" dir="ltr"><button type="button" class="eye" aria-label="הצגת הסיסמה" aria-pressed="false">👁</button></span></label>
+        <label>שוב, לאימות<span class="pw"><input name="p2" type="password" required minlength="6" autocomplete="new-password" dir="ltr"><button type="button" class="eye" aria-label="הצגת הסיסמה" aria-pressed="false">👁</button></span></label>
         <div class="me-row"><button class="primary" type="submit">שמירת הסיסמה</button><button type="button" id="pw-cancel">ביטול</button></div>
         <p class="msg" id="pmsg" role="status"></p>
       </form>
@@ -114,6 +114,10 @@
   });
 
   // Change password.
+  [].forEach.call(document.querySelectorAll('.eye'),function(eye){
+    var inp=eye.previousElementSibling;
+    eye.onclick=function(){var show=inp.type==='password';inp.type=show?'text':'password';eye.setAttribute('aria-pressed',show);eye.setAttribute('aria-label',show?'הסתרת הסיסמה':'הצגת הסיסמה');eye.textContent=show?'🙈':'👁';inp.focus()};
+  });
   var pwf=document.getElementById('pwf'), pm=document.getElementById('pmsg'), ob=document.getElementById('pw-open');
   ob.onclick=function(){pwf.hidden=false;ob.hidden=true;say(pm,'');pwf.p1.focus()};
   document.getElementById('pw-cancel').onclick=function(){pwf.reset();pwf.hidden=true;ob.hidden=false};

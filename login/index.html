@@ -27,14 +27,23 @@
         <label data-only="up" hidden>טלפון<input name="phone" type="tel" autocomplete="tel" dir="ltr" inputmode="tel"></label>
         <label>מייל<input name="email" type="email" required autocomplete="email" dir="ltr"></label>
         <label>סיסמה<span class="pw"><input name="password" type="password" required minlength="6" autocomplete="current-password" dir="ltr"><button type="button" class="eye" aria-label="הצגת הסיסמה" aria-pressed="false">👁</button></span></label>
+        <p class="forgot" data-only="in"><button type="button" class="link" id="forgot-open">שכחתי את הסיסמה</button></p>
         <label data-only="up" hidden>הערה (לא חובה)<textarea name="note" rows="3" placeholder="למשל: מי הפנה אותך, או מה תרצה ללמוד"></textarea></label>
         <button class="primary" type="submit">כניסה</button>
         <p class="msg" id="msg" role="status"></p>
       </form>
     </div>
+    <form class="form" id="fg" hidden>
+      <h2>שכחתי את הסיסמה</h2>
+      <p class="lead">כתוב את המייל שאיתו נרשמת. נשלח אליו קישור, ובלחיצה עליו תבחר סיסמה חדשה.</p>
+      <label>מייל<input name="email" type="email" required autocomplete="email" dir="ltr"></label>
+      <div class="me-row"><button class="primary" type="submit">שליחת קישור</button><button type="button" id="fg-back">חזרה לכניסה</button></div>
+      <p class="msg" id="fmsg" role="status"></p>
+      <p class="me-meta" id="fg-google" hidden>נרשמת עם חשבון גוגל? אין צורך בסיסמה: חזור לכניסה ולחץ "המשך עם חשבון גוגל".</p>
+    </form>
     <form class="form" id="pwf" hidden>
       <h2>בחירת סיסמה חדשה</h2>
-      <p class="lead">זו הכניסה הראשונה שלך. בחר סיסמה משלך במקום הסיסמה הזמנית.</p>
+      <p class="lead" id="pw-lead">זו הכניסה הראשונה שלך. בחר סיסמה משלך במקום הסיסמה הזמנית.</p>
       <label>סיסמה חדשה<span class="pw"><input name="p1" type="password" required minlength="6" autocomplete="new-password" dir="ltr"><button type="button" class="eye" aria-label="הצגת הסיסמה" aria-pressed="false">👁</button></span></label>
       <label>שוב, לאימות<span class="pw"><input name="p2" type="password" required minlength="6" autocomplete="new-password" dir="ltr"><button type="button" class="eye" aria-label="הצגת הסיסמה" aria-pressed="false">👁</button></span></label>
       <button class="primary" type="submit">שמירה והמשך</button>
@@ -72,7 +81,7 @@
   function setMode(m){
     mode=m;
     [].forEach.call(document.querySelectorAll('[data-tab]'),function(x){x.setAttribute('aria-pressed',x.getAttribute('data-tab')===m)});
-    [].forEach.call(f.querySelectorAll('[data-only="up"]'),function(x){x.hidden=m!=='up'});
+    [].forEach.call(f.querySelectorAll('[data-only]'),function(x){x.hidden=x.getAttribute('data-only')!==m});
     f.first.required=f.last.required=f.phone.required=m==='up';
     f.password.autocomplete=m==='up'?'new-password':'current-password';
     btn.textContent=m==='up'?'הרשמה':'כניסה';say(msg,'');
@@ -87,6 +96,29 @@
   var g=document.getElementById('google');
   if(SITE.GOOGLE){g.hidden=false;g.onclick=function(){SITE.sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:back}})}}
 
+  // Forgot the password: Supabase mails a one-time link back to this page (?reset=1), which signs the reader in for choosing a new one.
+  var fg=document.getElementById('fg'), fm=document.getElementById('fmsg');
+  function showForgot(t,err){document.getElementById('auth').hidden=true;document.getElementById('pwf').hidden=true;fg.hidden=false;fg.email.value=fg.email.value||f.email.value.trim();
+    document.getElementById('fg-google').hidden=!SITE.GOOGLE;say(fm,t||'',err);fg.email.focus()}
+  document.getElementById('forgot-open').onclick=function(){showForgot()};
+  document.getElementById('fg-back').onclick=function(){fg.hidden=true;document.getElementById('auth').hidden=false;say(fm,'')};
+  fg.onsubmit=async function(e){
+    e.preventDefault();
+    if(!SITE.sb){say(fm,'אין חיבור לשרת כרגע. נסה שוב מאוחר יותר.',true);return}
+    var b=fg.querySelector('.primary');b.disabled=true;say(fm,'רגע…');
+    var r=await SITE.sb.auth.resetPasswordForEmail(fg.email.value.trim(),{redirectTo:location.origin+'/login/?reset=1&next='+encodeURIComponent(next)});
+    b.disabled=false;
+    if(r.error){var t=r.error.message||'';say(fm,/rate limit|security purposes|seconds/i.test(t)?'כבר נשלח קישור לפני רגע. חכה כמה דקות ונסה שוב.':'השליחה לא הצליחה: '+t,true);return}
+    say(fm,'אם המייל הזה רשום באתר, שלחנו אליו עכשיו קישור לבחירת סיסמה חדשה. אם הוא לא מגיע תוך כמה דקות, בדוק גם בתיבת הספאם.');
+  };
+  var recovering=!!(q.get('reset')||SITE.recovery);
+  if(recovering&&SITE.authError)showForgot('הקישור כבר לא בתוקף (הוא עובד פעם אחת ולזמן מוגבל). כתוב את המייל ונשלח קישור חדש.',true);
+  function showNewPw(){
+    var pwf=document.getElementById('pwf');document.getElementById('auth').hidden=true;fg.hidden=true;pwf.hidden=false;
+    var pl=document.getElementById('pw-lead'), bd=document.createElement('bdi');bd.textContent=SITE.state.user.email||'';pl.textContent='בחר סיסמה חדשה לחשבון ';pl.appendChild(bd);pl.appendChild(document.createTextNode('. מעכשיו נכנסים איתה.'));
+    pwf.p1.focus();
+  }
+
   // Logged in already: either finish the details or move on.
   function showComplete(){
     var p=SITE.state.profile||{};
@@ -95,6 +127,7 @@
   }
   SITE.ready.then(function(st){
     if(!st.user)return;
+    if(recovering&&!SITE.authError){showNewPw();return}
     if(st.profile&&st.profile.must_change_pw){document.getElementById('auth').hidden=true;pwf.hidden=false;return}
     if(SITE.incomplete())showComplete();
     else if(q.get('complete')||q.get('change')||location.hash.indexOf('access_token')>-1||q.get('code'))location.replace(next);
@@ -109,8 +142,11 @@
     say(m,'רגע…');
     var r=await SITE.sb.auth.updateUser({password:pwf.p1.value});
     if(r.error){say(m,/different from the old/i.test(r.error.message)?'בחר סיסמה אחרת מהקודמת.':'משהו השתבש: '+r.error.message,true);return}
-    await SITE.sb.from('profiles').update({must_change_pw:false}).eq('id',SITE.state.user.id);
-    SITE.state.profile.must_change_pw=false;
+    if(SITE.state.profile&&SITE.state.profile.must_change_pw){
+      await SITE.sb.from('profiles').update({must_change_pw:false}).eq('id',SITE.state.user.id);
+      SITE.state.profile.must_change_pw=false;
+    }
+    if(recovering&&next==='/'){say(m,'הסיסמה עודכנה ✓');setTimeout(function(){location.replace('/me/')},1200);return}
     if(SITE.incomplete()){pwf.hidden=true;showComplete()}else location.replace(next);
   };
 
