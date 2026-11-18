@@ -264,7 +264,7 @@ page = f'''<!doctype html>
   <header>
     <a class="back" href="{ch.get("back", "/halacha/")}">→ חזרה{ch.get("back_label", " ללידה" if ch.get("back") else " להלכה")}</a>
     <nav class="crumbs" aria-label="ניווט"><a href="/">בית</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><a href="/halacha/">{html.escape("שער "+ch.get("topic", "הלכה"))}</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><a href="./">מדור {html.escape(ch["title"])}</a></nav>
-    <h1>{ch["title"]}</h1>
+    <h1>{("מדור " if ch["title"]=="הרחקות" else "")}{ch["title"]}</h1>
     {f'<p class="lead">{ch["subtitle"]}</p>' if ch.get("subtitle") else ""}
     {'<p class="until" id="until" hidden></p>' if private else ""}
     {f'<p class="credit">{ch["credit"]}</p>' if ch.get("credit") else ""}

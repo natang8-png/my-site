@@ -538,3 +538,7 @@ html main.locked .q-gap,html main.locked .iq,html main.read-only .q-gap,html mai
 /* Top bar of a chapter: the navigation line in place of the title (Natan, 2026-11-18). */
 .cb-crumbs{font-size:.8rem;margin:0;justify-content:flex-start;gap:0 4px;line-height:1.5}
 .cb-crumbs a{color:var(--accent)}
+
+/* Natan, 2026-11-18: the navigation line in the chapter top bar is links without underline; the body copy of it is hidden. */
+.cb-crumbs a{text-decoration:none}
+main.chapter > header > nav.crumbs{display:none}
