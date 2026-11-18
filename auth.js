@@ -12,7 +12,7 @@
     {path:'halacha/family', title:'טהרת המשפחה', old:true},
     {path:'halacha/family/harchakot', title:'הרחקות', label:'הלכה: הרחקות'},
     // Opens together with הרחקות: a grant on הרחקות opens it too (it can also have a grant of its own).
-    {path:'halacha/family/yoledet', title:'יולדת', label:'הלכה: מעגל החיים (יולדת)', with:'halacha/family/harchakot'},
+    {path:'halacha/family/yoledet', title:'יולדת', label:'הלכה: מעגל החיים (יולדת)'},
     // Opens only with its own grant (a wider grant does not cover it), for one week at a time.
     {path:'tumat-betulim', title:'טומאת בתולים', own:true, days:7, old:true},
     // שער הדרכה (Natan, 2026-11-18): each מדור opens with its own grant. 'leil-hachatuna' is now ליל הכלולות only.
