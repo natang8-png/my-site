@@ -43,6 +43,7 @@ dialog.tk-dlg::backdrop{background:rgba(0,0,0,.5)}
 .pg-name{font-weight:700;color:var(--accent);margin-top:10px;font-size:.95rem}
 .pr{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-top:1px dashed var(--line)}
 .pr-n{min-width:6.5em;font-weight:600}
+@media (min-width:621px){.perm .pr-n{flex:0 0 11em;min-width:0}}
 .pr-v{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:1}
 .pr-gate{border-top:2px solid var(--line);margin-top:6px}.perm .pr-gate:first-child{border-top:0;margin-top:0}.pr-gate .pr-n b{font-size:1.05rem}
 .pr-m .pr-n{font-weight:400;padding-inline-start:14px}
@@ -248,7 +249,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   var GATES=[
     {name:'שער הלכה', href:'/halacha/', madors:[['halacha/family/harchakot','הרחקות','/halacha/harchakot/'],['halacha/family/yoledet','מעגל החיים','/halacha/maagal-hachaim/']]},
     {name:'שער הדרכה', href:'/hadracha/', madors:[['hadracha-halacha','הלכה','/halacha/leil-hachatuna/#s24'],['hadracha-hashkafa','השקפה','/halacha/leil-hachatuna/#s16'],['leil-hachatuna','ליל הכלולות','/halacha/leil-hachatuna/#s1'],[null,'המשך החיים']]},
-    {name:'שער שלום בית', madors:[]}
+    {name:'שער שלום בית', href:'/shalom-bayit/', madors:[['shalom-bayit/todah','תודה, בבקשה, סליחה','/shalom-bayit/todah/'],['shalom-bayit/hakshava','הקשבה','/shalom-bayit/hakshava/'],['shalom-bayit/sheva-shaot','שש שעות בשבוע','/shalom-bayit/sheva-shaot/'],['shalom-bayit/shicha','שיחה שמפרקת מטען','/shalom-bayit/shicha/'],['shalom-bayit/shicha-b','שיחה שמפרקת מטען: השלבים הבאים','/shalom-bayit/shicha-b/']]}
   ];
   // Does grant g open מדור path? Same rule as SITE.access: exact path, a wider path (unless the מדור needs its own), or its "with".
   // Which chapter (and which sections of it) each מדור tracks. The 3 hadracha מדורים are parts of סדר ליל החתונה.
