@@ -45,7 +45,6 @@ main.gate-wait{visibility:hidden}
     <div class="row"><button type="button" class="primary" data-guest>צפייה כאורח (לפני כניסה)</button></div>
     <fieldset><legend>צפייה כתלמיד: אילו מדורים פתוחים לו?</legend>
       <div id="va-paths"></div>
-      <label><input type="checkbox" id="va-read"> קריאה בלבד (בלי שאלון)</label>
       <div class="row" style="margin-top:6px"><button type="button" class="primary" data-student>צפייה כתלמיד</button></div>
     </fieldset>
     <div class="row"><button type="button" data-off hidden>חזרה לתצוגת מנהל</button></div>
@@ -69,7 +68,7 @@ main.gate-wait{visibility:hidden}
               <li class="pg"><h3><span class="k">מדור</span>הרחקות <a href="/halacha/harchakot/">/halacha/harchakot/</a></h3>
                 <p class="what">7 פרקים: כללי, חיי היום יום, אכילה ושתייה, חדר השינה, מחוץ לבית, הנהגה אישית, מצבים מיוחדים. 26 סעיפים, שאלון בסוף כל סעיף. הרשאה: "הרחקות".</p>
                 <dl><dt>אורח</dt><dd>(בקישור ישיר) הכותרות, ובמקום הטקסט "התוכן פתוח למשתמשים רשומים". הטקסט עצמו נמצא בקוד הדף הציבורי, כלומר מוסתר ולא מוגן.</dd>
-                <dt>תלמיד</dt><dd>בלי הרשאה: "החשבון שלך עוד לא קיבל גישה". עם הרשאה: טקסט ושאלון, או טקסט בלבד ("קריאה בלבד").</dd>
+                <dt>תלמיד</dt><dd>בלי הרשאה: "החשבון שלך עוד לא קיבל גישה". עם הרשאה: הכול פתוח, הטקסט והשאלון (הרשאה אחת כוללת הכול).</dd>
                 <dt>מנהל</dt><dd>הכול.</dd></dl></li>
               <li class="pg"><h3><span class="k">מדור</span>מעגל החיים <a href="/halacha/maagal-hachaim/">/halacha/maagal-hachaim/</a></h3>
                 <p class="what">3 פרקים: הריון (ריק), לידה, הנקה (ריק). הפרק "לידה" מוביל לדיני יולדת ומפלת <a href="/halacha/yoledet/" dir="ltr">/halacha/yoledet/</a>: 17 סעיפים בשלושה חלקים. הרשאה: "יולדת", ונפתח גם למי שיש לו הרשאה להרחקות.</p>
@@ -144,14 +143,13 @@ main.gate-wait{visibility:hidden}
     var v=st.viewAs, picks=SITE.TREE.filter(function(n){return n.path.split('/').length===3||n.own&&n.path!=='tumat-betulim'});
     var box=document.getElementById('va-paths');
     box.innerHTML=picks.map(function(n){return '<label><input type="checkbox" value="'+n.path+'"'+(v&&v.paths&&v.paths.indexOf(n.path)>=0?' checked':'')+'> '+(n.label||('הלכה: '+n.title))+'</label>'}).join('');
-    if(v&&v.mode==='read')document.getElementById('va-read').checked=true;
     document.getElementById('va-now').textContent=v?('עכשיו: צפייה כ'+(v.as==='guest'?'אורח':'תלמיד')):'עכשיו: תצוגת מנהל (רגילה)';
     var off=document.querySelector('[data-off]');off.hidden=!v;
     off.onclick=function(){SITE.setViewAs(null);location.reload()};
     document.querySelector('[data-guest]').onclick=function(){SITE.setViewAs({as:'guest'});location.href='/'};
     document.querySelector('[data-student]').onclick=function(){
       var paths=[].map.call(box.querySelectorAll('input:checked'),function(i){return i.value});
-      SITE.setViewAs({as:'student',paths:paths,mode:document.getElementById('va-read').checked?'read':'study'});location.href='/';
+      SITE.setViewAs({as:'student',paths:paths,mode:'study'});location.href='/';
     };
   });
 })();

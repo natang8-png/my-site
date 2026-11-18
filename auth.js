@@ -7,13 +7,14 @@
 
   // Content tree. A grant on a path opens it and everything under it.
   var TREE=[
-    {path:'halacha', title:'הלכה'},
-    {path:'halacha/family', title:'טהרת המשפחה'},
-    {path:'halacha/family/harchakot', title:'הרחקות'},
+    {path:'halacha', title:'הלכה', label:'שער הלכה (כל המדורים)'},
+    // old: a level from before the שער > מדור names. Grants on it still work; the admin page no longer offers it (Natan, 2026-11-18).
+    {path:'halacha/family', title:'טהרת המשפחה', old:true},
+    {path:'halacha/family/harchakot', title:'הרחקות', label:'הלכה: הרחקות'},
     // Opens together with הרחקות: a grant on הרחקות opens it too (it can also have a grant of its own).
-    {path:'halacha/family/yoledet', title:'יולדת', with:'halacha/family/harchakot'},
+    {path:'halacha/family/yoledet', title:'יולדת', label:'הלכה: מעגל החיים (יולדת)', with:'halacha/family/harchakot'},
     // Opens only with its own grant (a wider grant does not cover it), for one week at a time.
-    {path:'tumat-betulim', title:'טומאת בתולים', own:true, days:7},
+    {path:'tumat-betulim', title:'טומאת בתולים', own:true, days:7, old:true},
     // שער הדרכה (Natan, 2026-11-18): each מדור opens with its own grant. 'leil-hachatuna' is now ליל הכלולות only.
     // label = the name in the admin page, where 'הלכה' alone would mix with שער הלכה.
     {path:'hadracha-halacha', title:'הלכה', label:'הדרכה: הלכה', own:true, days:7},
@@ -103,7 +104,7 @@
     sb.from('profiles').update({last_seen:new Date().toISOString()}).eq('id',state.user.id).then(function(){});
   }
 
-  // 'study' (text + quiz), 'read' (text only), 'quiz' (quiz only, older grants) or null.
+  // 'study' (text + quiz) or null. (Until 2026-11-18 there were also 'read' and 'quiz'; any live grant now opens everything.)
   // A grant counts between its opening time (if scheduled) and its closing time (if any).
   function live(g){ var now=new Date(); return (!g.starts_at||new Date(g.starts_at)<=now)&&(!g.expires_at||new Date(g.expires_at)>now) }
   function access(path){
@@ -111,10 +112,11 @@
     var best=null, own=TREE.some(function(n){return n.path===path&&n.own});
     state.grants.forEach(function(g){
       if(!live(g)) return;
-      if(path===g.path||(!own&&path.indexOf(g.path+'/')===0)){ var rank={study:3,read:2,quiz:1}; if((rank[g.mode]||0)>(rank[best]||0)) best=g.mode }
+      // Natan, 2026-11-18: a permission includes everything — reading and the quiz. Old 'read' / 'quiz' grants open everything too.
+      if(path===g.path||(!own&&path.indexOf(g.path+'/')===0)) best='study'
     });
     var node=TREE.find(function(n){return n.path===path});
-    if(node&&node.with){ var w=access(node.with), rank={study:3,read:2,quiz:1}; if((rank[w]||0)>(rank[best]||0)) best=w }
+    if(node&&node.with&&access(node.with)) best='study'
     return best;
   }
 

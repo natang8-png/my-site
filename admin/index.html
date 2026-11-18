@@ -7,6 +7,56 @@
 <link rel="stylesheet" href="/style.css">
 <style>
 main{max-width:52rem}
+.part{margin-top:36px;scroll-margin-top:12px}
+.part-h{border-bottom:3px solid var(--accent);padding-bottom:8px;margin-bottom:12px}
+.part-h .cnt{display:inline-block;min-width:1.6em;text-align:center;background:#b4473a;color:#fff;border-radius:999px;font-size:.8em;padding:0 8px}
+.jump{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.jump a{border:1px solid var(--line);border-radius:999px;padding:4px 12px;text-decoration:none;color:var(--accent);background:var(--soft)}
+.gate{border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:12px}
+.gate h3{margin:0 0 6px}.gate h3 a{color:inherit}
+.mador{border-top:1px dashed var(--line);padding:6px 0}
+.mador summary{cursor:pointer}
+.mador ul{margin:6px 0 4px;padding-inline-start:22px}.mador li.off{opacity:.6}
+.mador .r{color:#b4473a;font-weight:600}.mador .go-m{text-decoration:none}
+.mador-x{border-top:1px dashed var(--line);padding:6px 0;margin:0}
+.perm{border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+/* "סמל המעקב" (Natan, 2026-11-19): one clay line per מדור in the permissions table; the clay fill = reading, snapped between letters. Click = the full tracking in a locked window. */
+:root{--clay:#c0663f;--clay-soft:#f7e9e1;--clay-ink:#8a4325}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--clay:#c9714a;--clay-soft:#2a1d17;--clay-ink:#f0b598}}
+:root[data-theme="dark"]{--clay:#c9714a;--clay-soft:#2a1d17;--clay-ink:#f0b598}
+.pr.has-tk .pr-v{flex:0 0 auto}
+/* all clay lines start at the same line (Natan, 2026-11-19) */
+@media (min-width:621px){.pr.has-tk .pr-v{flex:0 0 auto;min-width:9.5em}}
+.plabel,.pbtn{white-space:nowrap}
+.tk{all:unset;box-sizing:border-box;position:relative;flex:1;min-width:250px;height:32px;border:1.5px solid var(--clay);border-radius:999px;overflow:hidden;cursor:pointer;background:var(--clay-soft);color:var(--clay-ink);font-size:.92rem;font-weight:600;font-variant-numeric:tabular-nums}
+.tk:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.tk .bg{position:absolute;top:0;bottom:0;right:0;width:var(--p);background:var(--clay)}
+.tk .lay{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 14px;white-space:nowrap}
+.tk .c.on{color:#fff}
+html.tk-lock{overflow:hidden}
+dialog.tk-dlg{width:min(1100px,calc(100vw - 24px));max-width:none;max-height:calc(100vh - 24px);box-sizing:border-box;border:2px solid var(--clay);border-radius:14px;padding:14px 18px 18px;background:var(--bg);color:var(--fg);overscroll-behavior:contain}
+dialog.tk-dlg::backdrop{background:rgba(0,0,0,.5)}
+.tk-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.tk-head h3{margin:0;font-size:1.1rem}.tk-head h3 small{font-weight:400;color:var(--muted)}
+.tk-x{font:inherit;font-weight:600;border:1.5px solid var(--clay);color:var(--clay-ink);background:none;border-radius:999px;padding:4px 16px;cursor:pointer}
+.perm-h{font-weight:700;font-size:1.02rem;margin-bottom:2px}
+.pg-name{font-weight:700;color:var(--accent);margin-top:10px;font-size:.95rem}
+.pr{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-top:1px dashed var(--line)}
+.pr-n{min-width:6.5em;font-weight:600}
+.pr-v{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:1}
+.pr-gate{border-top:2px solid var(--line);margin-top:6px}.perm .pr-gate:first-child{border-top:0;margin-top:0}.pr-gate .pr-n b{font-size:1.05rem}
+.pr-m .pr-n{font-weight:400;padding-inline-start:14px}
+.plabel{font:inherit;font-size:.88rem;border:0;background:#e3f1e8;color:#2e7d4f;border-radius:999px;padding:3px 12px;font-weight:600;cursor:pointer}
+.plabel.static{cursor:default}
+.plabel.half{background:#fbefd6;color:#8a5a00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .plabel.half{background:#3a2e16;color:#f0c674}}
+:root[data-theme="dark"] .plabel.half{background:#3a2e16;color:#f0c674}
+.pbtn{font:inherit;font-size:.85rem;border-radius:999px;padding:3px 14px;cursor:pointer;background:none}
+.pclose{border:1px solid #b4473a;color:#b4473a}
+.popen{border:1px solid var(--accent);background:var(--accent);color:#fff}
+.pr .wk{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;border:1px solid var(--accent);background:none;color:var(--accent);cursor:pointer}
+a.chip{text-decoration:none}
+.user{scroll-margin-top:12px}
 .stats{display:flex;gap:12px;flex-wrap:wrap}
 .stat{flex:1 1 9rem;border:1px solid var(--line);border-radius:14px;padding:12px 16px}
 .stat b{display:block;font-family:var(--display);font-size:2rem;color:var(--accent);line-height:1.1}
@@ -192,6 +242,26 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   function esc(t){var d=document.createElement('div');d.textContent=t==null?'':t;return d.innerHTML}
   function when(t){if(!t)return'—';var d=new Date(t);return d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
   function title(path){var n=SITE.TREE.find(function(x){return x.path===path});return n?(n.label||n.title):path}
+  // The admin lists offer only today's tree (old levels stay readable on existing grants).
+  var TREEA=SITE.TREE.filter(function(n){return !n.old});
+  // The site's hierarchy (Natan, 2026-11-18): שער > מדור. Each מדור = one permission path; null = no content yet.
+  var GATES=[
+    {name:'שער הלכה', href:'/halacha/', madors:[['halacha/family/harchakot','הרחקות','/halacha/harchakot/'],['halacha/family/yoledet','מעגל החיים','/halacha/maagal-hachaim/']]},
+    {name:'שער הדרכה', href:'/hadracha/', madors:[['hadracha-halacha','הלכה','/halacha/leil-hachatuna/#s24'],['hadracha-hashkafa','השקפה','/halacha/leil-hachatuna/#s16'],['leil-hachatuna','ליל הכלולות','/halacha/leil-hachatuna/#s1'],[null,'המשך החיים']]},
+    {name:'שער שלום בית', madors:[]}
+  ];
+  // Does grant g open מדור path? Same rule as SITE.access: exact path, a wider path (unless the מדור needs its own), or its "with".
+  // Which chapter (and which sections of it) each מדור tracks. The 3 hadracha מדורים are parts of סדר ליל החתונה.
+  var TRACK={'halacha/family/harchakot':{c:'harchakot'},'halacha/family/yoledet':{c:'yoledet'},
+    'hadracha-halacha':{c:'leil-hachatuna',from:24,to:40},'hadracha-hashkafa':{c:'leil-hachatuna',from:16,to:23},'leil-hachatuna':{c:'leil-hachatuna',from:1,to:15}};
+  var TKH={}, tkOpen=null;
+  function covers(g,path){
+    if(g.path===path)return true;
+    var n=SITE.TREE.find(function(x){return x.path===path})||{};
+    if(!n.own&&path.indexOf(g.path+'/')===0)return true;
+    return !!(n.with&&covers(g,n.with));
+  }
+  function gateOf(path){for(var i=0;i<GATES.length;i++){if(GATES[i].madors.some(function(m){return m[0]&&(m[0]===path||m[0].indexOf(path+'/')===0)}))return i}return -1}
   function depth(path){return path.split('/').length-1}
   var st=await SITE.ready;
   if(!st.user){app.innerHTML='<p>צריך <a href="/login/?next=/admin/">להיכנס</a> קודם.</p>';return}
@@ -258,16 +328,17 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 
   // Quiz results bar for הרחקות (current round): three levels, all -> topics -> one topic's questions.
   var QB={};
-  function qbHTML(u,ur,uq,c){
-    var key=u.id+'|'+c, qd=(QUIZ||{})[c]||{}, heads=CHAPTERS[c].heads;
+  function qbHTML(u,ur,uq,c,rng,key){
+    key=key||u.id+'|'+c; rng=rng||{}; var lo=rng.from||1, hi=rng.to||1e9;
+    var qd=(QUIZ||{})[c]||{}, heads=CHAPTERS[c].heads;
     var cuts=RESETS.filter(function(z){return z.user_id===u.id&&z.chapter===c}).map(function(z){return z.reset_at}).sort(), from=cuts[cuts.length-1]||null;
     var last={};uq.forEach(function(x){if(x.chapter===c&&(!from||x.taken_at>from)&&(!last[x.section]||last[x.section].taken_at<x.taken_at))last[x.section]=x});
     var rd={};ur.forEach(function(x){if(x.chapter===c)rd[x.section]=1});
-    QB[key]=heads.map(function(t,i){var n=i+1,qs=qd[n]||[],r=last[n],k=[];
+    QB[key]=heads.map(function(t,i){return i}).filter(function(i){return i+1>=lo&&i+1<=hi}).map(function(i){var t=heads[i],n=i+1,qs=qd[n]||[],r=last[n],k=[];
       // k = one mark per question: 'ok', 'bad' or 'no'. Old results without saved answers: right ones first.
       qs.forEach(function(q,j){k.push(!r?'no':r.answers?(r.answers[j]===q.c?'ok':'bad'):(j<r.score?'ok':'bad'))});
-      return {n:n,t:t,qs:qs,read:!!rd[n],r:r,k:k}});
-    var sc=0,tt=0;Object.keys(last).forEach(function(k){sc+=last[k].score;tt+=last[k].total});
+      return {n:n,d:n-lo+1,t:t,qs:qs,read:!!rd[n],r:r,k:k}});
+    var sc=0,tt=0;Object.keys(last).forEach(function(k){if(k>=lo&&k<=hi){sc+=last[k].score;tt+=last[k].total}});
     QB[key].avg=tt?Math.round(100*sc/tt):null;
     QB[key].noq=!QB[key].some(function(s){return s.qs.length}); // chapter without a quiz: reading only
     return '<div class="qb" data-qb="'+key+'">'+(from?'<div class="none">סבב נוכחי, מאז '+when(from)+'</div>':'')+'<div class="qb-in">'+qbDraw(key,0)+'</div></div>';
@@ -290,6 +361,44 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       '<span class="side"><span>'+W('<span class="ic">✓</span> '+o.ok)+'</span><span>'+W('<span class="ic">✗</span> '+o.bad)+'</span></span>'+
       '</span></button>';
   }
+  // "סמל המעקב": one line, e.g. 7/26-27%   ציון 95%   1✗-18✓-19/68 (no quiz: reading only). Click = the full tracking.
+  function trackBar(key,label){
+    var secs=QB[key], o=qbCount(secs), n=secs.length, p=P(o.read,n), avg=secs.avg;
+    function C(t){return t.split('').map(function(ch){return '<span class="c">'+(ch===' '?'&nbsp;':esc(ch))+'</span>'}).join('')}
+    var lay='<span dir="ltr">'+C(o.read+'/'+n+'-'+p+'%')+'</span>'+
+      (secs.noq?'<span>'+C('מעקב קריאה')+'</span><span></span>':
+      '<span>'+C('ציון '+(avg==null?'—':avg+'%'))+'</span><span dir="ltr">'+C(o.bad+'✗-'+o.ok+'✓-'+(o.ok+o.bad)+'/'+o.tot)+'</span>');
+    return '<button type="button" class="tk" data-tk="'+key+'" data-p="'+p+'" style="--p:'+p+'%" title="מעקב '+esc(label)+'"><span class="bg"></span><span class="lay">'+lay+'</span></button>';
+  }
+  // The clay fill stops before or after a letter, never across one; letters inside it turn white.
+  function tkSnap(){
+    document.querySelectorAll('.tk').forEach(function(pl){
+      var bg=pl.querySelector('.bg'), cs=[].slice.call(pl.querySelectorAll('.c'));
+      bg.style.width='';cs.forEach(function(w){w.classList.remove('on')});
+      var p=+pl.getAttribute('data-p'), box=pl.getBoundingClientRect();if(!box.width)return;
+      var e=box.right-box.width*p/100;
+      if(p>0&&p<100){var hit=cs.find(function(w){var r=w.getBoundingClientRect();return r.left<e&&r.right>e});
+        if(hit){var r=hit.getBoundingClientRect();e=(e-r.left<r.right-e)?r.left:r.right}
+        bg.style.width=Math.max(0,Math.min(box.width,box.right-e))+'px'}
+      cs.forEach(function(w){var r=w.getBoundingClientRect();if(p>0&&(p>=100||r.left>=e-1))w.classList.add('on')});
+    });
+  }
+  window.addEventListener('resize',function(){clearTimeout(tkSnap.t);tkSnap.t=setTimeout(tkSnap,120)});
+  function tkOpenWin(key){
+    if(!TKH[key])return;
+    var d=document.createElement('dialog');d.className='tk-dlg';d.innerHTML=TKH[key];app.appendChild(d);
+    d.addEventListener('close',function(){tkOpen=null;d.remove();document.documentElement.classList.remove('tk-lock')});
+    tkOpen=key;document.documentElement.classList.add('tk-lock');d.showModal();
+    var x=d.querySelector('[data-tkx]');if(x)x.focus();
+    qbSnap();
+    if(!matchMedia('(max-width:620px)').matches)d.querySelectorAll('.qb-ttl').forEach(function(b){var p=b.parentNode.querySelector('.qb-pill');if(!p)return;
+      var tops=new Set([].map.call(b.getClientRects(),function(r){return Math.round(r.top)}));
+      if(tops.size===1){b.classList.add('one');b.style.marginTop=Math.max(0,(p.offsetHeight-b.offsetHeight)/2)+'px'}});
+  }
+  app.addEventListener('click',function(e){
+    var t=e.target.closest('[data-tk]');if(t){tkOpenWin(t.getAttribute('data-tk'));return}
+    var x=e.target.closest('[data-tkx]');if(x)x.closest('dialog').close();
+  });
   // Move the fill edge to the nearest gap between words, so no word is cut; words inside the fill turn white.
   function qbSnap(){
     document.querySelectorAll('.qb-pill').forEach(function(pl){
@@ -307,16 +416,16 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   // Topics strip (always shown); clicking a topic opens its questions below, clicking it again closes them.
   function qbDraw(uid,n){
     var secs=QB[uid];
-    if(secs.noq)return '<div class="qb-secs">'+secs.map(function(s){return '<span class="qb-seg noq" title="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.n+'</b></span></span>'}).join('')+'</div>';
-    var h='<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg'+(s.n===n?' on':'')+'" data-qbgo="'+s.n+'" title="'+esc(s.n+'. '+s.t)+'" aria-label="'+esc(s.n+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.n+'</b></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>';
+    if(secs.noq)return '<div class="qb-secs">'+secs.map(function(s){return '<span class="qb-seg noq" title="'+esc(s.d+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.d+'</b></span></span>'}).join('')+'</div>';
+    var h='<div class="qb-secs">'+secs.map(function(s){return '<button type="button" class="qb-seg'+(s.n===n?' on':'')+'" data-qbgo="'+s.n+'" title="'+esc(s.d+'. '+s.t)+'" aria-label="'+esc(s.d+'. '+s.t)+'"><span class="s '+(s.read?'rd':'ur')+'"><b>'+s.d+'</b></span><span class="q">'+(s.k.length?s.k.map(function(k){return '<i class="'+k+'"></i>'}).join(''):'<i class="no"></i>')+'</span></button>'}).join('')+'</div>';
     var ax='';
     return n?h+qbTopic(uid,n)+ax:h+ax;
   }
   // One topic's questions with the student's answers (used by the strip and by the headings list).
   function qbTopic(uid,n){
-    var s=QB[uid][n-1], a=s.r&&s.r.answers;
+    var s=QB[uid].find(function(x){return x.n===n}), a=s.r&&s.r.answers;
     var TAG={ok:'<span class="qb-tag ok">✓ נכון</span>',bad:'<span class="qb-tag bad">✗ שגוי</span>',no:'<span class="qb-tag no">לא נענה</span>'};
-    return '<div class="qb-topic"><span class="qb-thick '+(s.read?'rd':'ur')+'" title="'+(s.read?'נקרא':'לא נקרא')+'"></span><h4>'+esc(s.n+'. '+s.t)+'</h4>'+
+    return '<div class="qb-topic"><span class="qb-thick '+(s.read?'rd':'ur')+'" title="'+(s.read?'נקרא':'לא נקרא')+'"></span><h4>'+esc(s.d+'. '+s.t)+'</h4>'+
       (s.r&&!a?'<p class="none">התשובות עצמן לא נשמרו בבחינה הזאת (לפני שהתחלנו לשמור אותן). הציון: '+s.r.score+'/'+s.r.total+'.</p>':'')+
       '<ol class="qb-list">'+s.qs.map(function(q,j){var k=s.k[j], g=a?a[j]:null;
         return '<li class="l-'+k+'"><div class="t"><span>'+(j+1)+'. '+esc(q.q)+'</span>'+TAG[k]+'</div>'+
@@ -367,7 +476,8 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 
   function render(users,grants,reads,results,invites,requests){
     var others=users.filter(function(u){return !u.is_admin});
-    var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id&&!isOwn(g.path)})});
+    // Waiting for approval = signed up, and no permission of any kind yet (per מדור grants count too).
+    var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id})});
     var week=Date.now()-7*864e5;
     var active=others.filter(function(u){return u.last_seen&&new Date(u.last_seen)>week});
     var h='<div class="stats">'+
@@ -375,12 +485,34 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       '<div class="stat"><b>'+pending.length+'</b><span>ממתינים לאישור</span></div>'+
       '<div class="stat"><b>'+active.length+'</b><span>נכנסו השבוע</span></div>'+
       '<div class="stat"><b>'+results.filter(function(x){return others.some(function(u){return u.id===x.user_id})}).length+'</b><span>בחינות שנעשו</span></div></div>';
-    // Adding a student lives at the bottom; up here only a button that scrolls down to it.
-    h+='<div class="add" style="margin-top:16px"><button type="button" class="primary" data-goinv>+ הוספת תלמיד</button> <a href="/map/" style="margin-inline-start:12px">מפת האתר וצפייה כאורח / כתלמיד</a></div>';
-    h+='<h2 style="margin-top:32px">השאלון שלי</h2><p class="help">איפוס השאלון של הרחקות בחשבון שלך (סבב חדש). אפשר לבטל את האיפוס האחרון.</p><div id="myreset"></div>';
+    // Natan, 2026-11-18: the page follows the site — 1. דורש טיפול, 2. שערים ומדורים, 3. תלמידים, 4. כלים.
+    h+='<nav class="jump" aria-label="חלקי הדף"><a href="#p-todo">דורש טיפול</a><a href="#p-gates">שערים ומדורים</a><a href="#p-users">תלמידים</a><a href="#p-tools">כלים</a></nav>';
+    // 1. Needs action
+    var nReq=(requests||[]).length, nMsg=(MSGS||[]).length;
+    h+='<section class="part" id="p-todo"><h2 class="part-h">1. דורש טיפול'+((nReq+nMsg+pending.length)?' <span class="cnt">'+(nReq+nMsg+pending.length)+'</span>':'')+'</h2>';
+    if(!(nReq+nMsg+pending.length))h+='<p class="none">אין כרגע שום דבר שמחכה לך.</p>';
+    if(pending.length)h+='<h3 style="margin-top:12px">ממתינים לאישור ('+pending.length+')</h3><p class="help">נרשמו ועוד אין להם שום הרשאה. לחיצה על שם מובילה לכרטיס שלו, שם מאשרים.</p><div class="chips">'+
+      pending.map(function(u){return '<a class="chip" href="#u-'+u.id+'">'+esc(uname(u))+'</a>'}).join('')+'</div>';
     h+=requestBlock(requests,users);
     h+=contactBlock(MSGS);
-    h+='<h2 style="margin-top:32px">משתמשים</h2><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
+    h+='</section>';
+    // 2. Gates and מדורים: who each מדור is open to
+    h+='<section class="part" id="p-gates"><h2 class="part-h">2. שערים ומדורים</h2><p class="help">כל שער והמדורים שבו, כמו באתר. ליד כל מדור: לכמה תלמידים הוא פתוח עכשיו. לחיצה על מדור פותחת את הרשימה.</p>';
+    GATES.forEach(function(G){
+      h+='<div class="gate"><h3>'+(G.href?'<a href="'+G.href+'">'+esc(G.name)+'</a>':esc(G.name))+'</h3>';
+      if(!G.madors.length)h+='<p class="none">אין עדיין מדורים.</p>';
+      G.madors.forEach(function(m){
+        if(!m[0]){h+='<p class="none mador-x">'+esc(m[1])+' · אין עדיין תוכן</p>';return}
+        var open=others.map(function(u){var g=grants.filter(function(x){return x.user_id===u.id&&covers(x,m[0])});var live=g.filter(SITE.live);return {u:u,g:live[0]||g[0],live:live.length>0}}).filter(function(x){return x.g});
+        var nl=open.filter(function(x){return x.live}).length, rq=(requests||[]).filter(function(q){return q.path===m[0]}).length;
+        h+='<details class="mador"><summary><b>'+esc(m[1])+'</b> <span class="none">· פתוח ל־'+nl+(nl===1?' תלמיד':' תלמידים')+(rq?' · <span class="r">'+rq+' בקשות</span>':'')+'</span>'+(m[2]?' <a href="'+m[2]+'" class="go-m" title="פתיחת המדור">↗</a>':'')+'</summary>'+
+          (open.length?'<ul>'+open.map(function(x){return '<li class="'+(x.live?'':'off')+'"><a href="#u-'+x.u.id+'">'+esc(uname(x.u))+'</a> <span class="none">· '+esc(x.g.path===m[0]?gstate(x.g):'דרך '+title(x.g.path)+' · '+gstate(x.g))+'</span></li>'}).join('')+'</ul>':'<p class="none">עוד לא פתוח לאף תלמיד.</p>')+'</details>';
+      });
+      h+='</div>';
+    });
+    h+='<div class="gate"><h3><a href="/contact/">צור קשר</a></h3><p class="none">פתוח לכל תלמיד מחובר. ההודעות מופיעות למעלה, ב"דורש טיפול".</p></div></section>';
+    // 3. Students
+    h+='<section class="part" id="p-users"><h2 class="part-h">3. תלמידים</h2><div class="add" style="margin-bottom:12px"><button type="button" class="primary" data-goinv>+ הוספת תלמיד</button></div><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
     if(!others.length)h+='<p class="none">עוד אין משתמשים רשומים. כשמישהו יירשם דרך "כניסה / הרשמה", הוא יופיע כאן.</p>';
     if(others.length)h+='<p class="help">כדי לקבוע הרשאות לכמה תלמידים ביחד: סמן אותם בתיבה שליד השם, ולחץ <b class="g">הרשאות</b> בחלונית שתופיע למטה. · <button type="button" class="link" data-selall>בחירת כולם</button></p>';
     h+='<div class="users">';
@@ -389,55 +521,80 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       var all=grants.filter(function(g){return g.user_id===u.id}), ug=all.filter(function(g){return !isOwn(g.path)});
       var ur=reads.filter(function(x){return x.user_id===u.id});
       var uq=results.filter(function(x){return x.user_id===u.id});
-      h+='<article class="user'+(ug.length?'':' pending')+(sel.has(u.id)?' sel':'')+'" data-u="'+u.id+'">'+
+      h+='<article class="user'+(ug.length?'':' pending')+(sel.has(u.id)?' sel':'')+'" data-u="'+u.id+'" id="u-'+u.id+'">'+
         '<div class="u-head"><label class="pick"><input type="checkbox" data-sel="'+u.id+'"'+(sel.has(u.id)?' checked':'')+' aria-label="בחירה"><div><h3>'+esc(uname(u))+(u.invited?' <span class="tag">נוסף ע״י המנהל</span>':'')+(u.must_change_pw?' <span class="tag">עוד לא נכנס</span>':'')+'</h3><small dir="ltr">'+esc(u.email)+'</small>'+
         (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div></label>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
       if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
-      // Each permission is a button: it opens a menu to change, close or schedule it.
-      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(gchip).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+
-        all.filter(function(g){return isOwn(g.path)}).map(gchip).join('')+'</div>';
-      // Chapters with their own permission: open for a week from here too, without waiting for a request.
-      h+=SITE.TREE.filter(function(n){return n.own}).map(function(n){var g=all.find(function(x){return x.path===n.path&&SITE.live(x)});
-        return '<div class="add"><button type="button" data-week="'+n.path+'">'+(g?'הארכה':'פתיחה')+' של '+esc(n.label||n.title)+' ל־'+n.days+' ימים</button></div>'}).join('');
-      // One button: approve (with the chosen access) when closed, close (remove all access) when open.
-      h+='<div class="add">'+(ug.length?'':'<select data-path>'+opts()+'</select><select data-mode><option value="study">קריאה + שאלון</option><option value="read">קריאה בלבד</option></select>')+
-        '<button type="button" class="'+(ug.length?'close':'primary')+'" data-toggle="'+(ug.length?'close':'open')+'" title="'+(ug.length?'חסימת כל הגישה של התלמיד (אפשר לפתוח שוב)':'פתיחת הגישה שבחרת ברשימות')+'">'+(ug.length?'סגירה':'אישור')+'</button>'+
-        '<span class="none">'+(ug.length?'סגירה חוסמת לו את כל הגישה':'בחר מה לפתוח ולחץ אישור')+'</span></div>';
-      Object.keys(CHAPTERS).forEach(function(c){
-        var n=ur.filter(function(x){return x.chapter===c}).length, cq=uq.filter(function(x){return x.chapter===c});
-        var pct=cq.length?Math.round(100*cq.reduce(function(s,x){return s+x.score},0)/cq.reduce(function(s,x){return s+x.total},0)):null;
-        if(CHAPTERS[c].own&&!n&&!all.some(function(g){return (CHAPTERS[c].paths||[c]).indexOf(g.path)>=0}))return;
-        // Chapters with headings get the pill, the headings list and the topics strip (no quiz = reading only).
-        var qb=CHAPTERS[c].heads?qbHTML(u,ur,uq,c):'';
-        if(qb){
-          h+='<div class="qb-top">'+qbPill(u.id+'|'+c,c)+'<span class="qb-ttl" role="button" tabindex="0" aria-expanded="false" title="קריאה לפי כותרות"><span class="ar">◀</span>'+esc(CHAPTERS[c].title)+'</span></div>'+readHeads(c,u.id+'|'+c)+qb;return}
-        h+='<div class="prog"><div>'+esc(CHAPTERS[c].title)+': קרא '+n+' מתוך '+CHAPTERS[c].total+' סעיפים'+(cq.length?' · '+cq.length+' בחינות, ממוצע '+pct+'%':'')+'</div><div class="bar"><i style="width:'+(100*n/CHAPTERS[c].total)+'%"></i></div></div>';
-        // Which headings were read (chapters whose reading is tracked quietly).
-        h+=readHeads(c);
+      // Permissions (Natan, 2026-11-18): per שער a bold row, its מדורים below it (not bold).
+      // Open = a label "פתוח" (tap: dates menu) + one button "סגירה". Closed = one button "פתיחה". No kind to choose: a permission includes everything.
+      function pstate(g){var now=new Date();
+        if(g.starts_at&&new Date(g.starts_at)>now)return 'ייפתח '+dt(g.starts_at);
+        return 'פתוח'+(g.expires_at?' עד '+dt(g.expires_at):'')}
+      function openCell(g,closeAttr){return '<button type="button" class="plabel" data-gid="'+g.id+'" title="תזמון פתיחה / סגירה">'+esc(pstate(g))+'</button><button type="button" class="pbtn pclose" '+closeAttr+'>סגירה</button>'}
+      function closedCell(openAttr,gone){return (gone?'<span class="none">'+esc(gone)+'</span>':'')+'<button type="button" class="pbtn popen" '+openAttr+'>פתיחה</button>'}
+      function prow(name,cell,cls,tk){return '<div class="pr'+(cls?' '+cls:'')+(tk?' has-tk':'')+'"><span class="pr-n">'+name+'</span><span class="pr-v">'+cell+'</span>'+(tk||'')+'</div>'}
+      h+='<div class="perm">';
+      GATES.forEach(function(G,gi){
+        var md=G.madors.filter(function(m){return m[0]});
+        if(!md.length)return;
+        var inGate=all.filter(function(g){return gateOf(g.path)===gi}), liveIn=inGate.filter(SITE.live);
+        var wide=liveIn.filter(function(g){return !md.some(function(m){return m[0]===g.path})})[0];
+        var allOpen=!!wide||md.every(function(m){return liveIn.some(function(g){return covers(g,m[0])})});
+        // Some מדורים open, not all: "פתוח חלקית", with both "פתיחה" (opens the rest) and "סגירה" (closes all).
+        var someOpen=md.some(function(m){return liveIn.some(function(g){return covers(g,m[0])})});
+        var gcell=wide?openCell(wide,'data-gclose="'+gi+'"'):allOpen?'<span class="plabel static">פתוח</span><button type="button" class="pbtn pclose" data-gclose="'+gi+'">סגירה</button>':
+          someOpen?'<span class="plabel static half">פתוח חלקית</span><button type="button" class="pbtn popen" data-gopen="'+gi+'">פתיחה</button><button type="button" class="pbtn pclose" data-gclose="'+gi+'">סגירה</button>':closedCell('data-gopen="'+gi+'"');
+        h+=prow('<b>'+esc(G.name)+'</b>',gcell,'pr-gate');
+        md.forEach(function(m){
+          var ex=all.filter(function(g){return g.path===m[0]}), lv=ex.filter(SITE.live)[0], cell;
+          if(lv)cell=openCell(lv,'data-pc="'+m[0]+'"');
+          // Open through the whole gate: it still gets its own "סגירה" (the gate becomes "פתוח חלקית").
+          else if(wide&&covers(wide,m[0]))cell='<span class="plabel static">פתוח</span><button type="button" class="pbtn pclose" data-pcw="'+m[0]+'">סגירה</button>';
+          // Opens together with another מדור (מעגל החיים opens with הרחקות): say so, there is nothing to close here.
+          else if(liveIn.some(function(g){return covers(g,m[0])})){var w2=liveIn.find(function(g){return covers(g,m[0])}), n2=SITE.TREE.find(function(x){return x.path===w2.path})||{title:w2.path};cell='<span class="none">פתוח עם '+esc(n2.title)+'</span>'}
+          else{var old=ex[0];cell=closedCell('data-po="'+m[0]+'"',old&&old.expires_at?'הסתיים '+day(old.expires_at):'')}
+          // The tracking line: when the מדור is open, or the student already read / answered something in it.
+          var T=TRACK[m[0]], tk='';
+          if(T&&CHAPTERS[T.c]){var key=u.id+'|'+m[0], qbh=qbHTML(u,ur,uq,T.c,T,key), o=qbCount(QB[key]);
+            if(/pclose|פתוח/.test(cell)||o.read||o.ok||o.bad){tk=trackBar(key,m[1]);
+              TKH[key]='<div data-u="'+u.id+'"><div class="tk-head"><h3>'+esc(uname(u))+' <small>· מעקב '+esc(m[1])+'</small></h3><button type="button" class="tk-x" data-tkx>סגירה ✕</button></div>'+
+                '<div class="qb-top">'+qbPill(key,T.c)+'<span class="qb-ttl" role="button" tabindex="0" aria-expanded="false" title="קריאה לפי כותרות"><span class="ar">◀</span>'+esc(m[1])+'</span></div>'+readHeads(T.c,key)+qbh+'</div>'}}
+          h+=prow(esc(m[1]),cell,'pr-m',tk);
+        });
       });
+      var olds=all.filter(function(g){return gateOf(g.path)<0});
+      if(olds.length)h+=prow('<span class="none">ישן</span>',olds.map(function(g){return gchip(g)}).join(''),'pr-m');
+      h+='</div>';
+      // The full tracking of each מדור (pill, headings, topics strip) now opens from its clay line above, in its own window.
       // Headings list: read rows shaded, with the date; on the left one mark per question (first question on the right).
       function readHeads(c,key){
         if(!CHAPTERS[c].heads)return '';
         var secs=key&&QB[key];
-        return '<details class="qb-heads'+(key?' nosum':'')+'"'+(key?' data-hk="'+key+'"':'')+'><summary>קריאה לפי כותרות</summary><ol>'+CHAPTERS[c].heads.map(function(t,i){var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
+        return '<details class="qb-heads'+(key?' nosum':'')+'"'+(key?' data-hk="'+key+'"':'')+'><summary>קריאה לפי כותרות</summary><ol>'+(secs?secs.map(function(x){return x.n-1}):CHAPTERS[c].heads.map(function(t,i){return i})).map(function(i){var t=CHAPTERS[c].heads[i],sx=secs&&secs.find(function(x){return x.n===i+1}),dn=sx?sx.d:i+1;var r=ur.find(function(x){return x.chapter===c&&x.section===i+1});
             var v=ur.find(function(x){return x.chapter===c+':v'&&x.section===i+1}); // the student's own "קראתי" mark
-            var mk=secs&&secs[i]?secs[i].k.map(function(k){return k==='ok'?'<i class="ok">✓</i>':k==='bad'?'<i class="bad">✗</i>':'<i class="no"></i>'}).join(''):'';
-            var go=secs&&secs[i]&&secs[i].qs.length?' data-hgo="'+(i+1)+'" role="button" tabindex="0" title="בדיקת השאלות של הפרק"':'';
-            return '<li class="'+(r?'rd':'')+(go?' go':'')+'"'+go+'><span>'+(i+1)+'. '+esc(t)+(r?' <small>· '+when(r.read_at)+'</small>':'')+(v?' · <b>V סימן קראתי</b>':'')+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+'</li>'}).join('')+'</ol></details>'+
+            var mk=sx?sx.k.map(function(k){return k==='ok'?'<i class="ok">✓</i>':k==='bad'?'<i class="bad">✗</i>':'<i class="no"></i>'}).join(''):'';
+            var go=sx&&sx.qs.length?' data-hgo="'+(i+1)+'" role="button" tabindex="0" title="בדיקת השאלות של הפרק"':'';
+            return '<li class="'+(r?'rd':'')+(go?' go':'')+'"'+go+'><span>'+dn+'. '+esc(t)+(r?' <small>· '+when(r.read_at)+'</small>':'')+(v?' · <b>V סימן קראתי</b>':'')+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+'</li>'}).join('')+'</ol></details>'+
               (CHAPTERS[c].own?'<p class="muted" style="margin:4px 0 0;font-size:.85rem">מוצלל = נקרא בקצב קריאה (זמן על המסך לפי אורך הסעיף). V = החתן סימן בעצמו "קראתי".</p>':'');
       }
       h+=rounds(u,uq)+studentReset(u,uq);
       h+='</article>';
     });
-    app.innerHTML=h+'</div>'+inviteBlock(invites);
+    h+='</div></section>';
+    // 4. Tools
+    h+='<section class="part" id="p-tools"><h2 class="part-h">4. כלים</h2><div class="add"><a class="chip" href="/map/">מפת האתר וצפייה כאורח / כתלמיד</a><a class="chip" href="/admin/versions/">יומן גרסאות</a></div>'+
+      inviteBlock(invites)+
+      '<h3 style="margin-top:28px">השאלון שלי</h3><p class="help">איפוס השאלון של הרחקות בחשבון שלך (סבב חדש). אפשר לבטל את האיפוס האחרון.</p><div id="myreset"></div></section>';
+    app.innerHTML=h;
     // A one-line chapter name sits in the middle of the pill's height.
     (document.fonts?document.fonts.ready:Promise.resolve()).then(function(){
       if(matchMedia('(max-width:620px)').matches)return;
       app.querySelectorAll('.qb-ttl').forEach(function(b){var p=b.parentNode.querySelector('.qb-pill');if(!p)return;
         var tops=new Set([].map.call(b.getClientRects(),function(r){return Math.round(r.top)}));
         if(tops.size===1){b.classList.add('one');b.style.marginTop=Math.max(0,(p.offsetHeight-b.offsetHeight)/2)+'px'}})});
-    qbSnap();
+    qbSnap();tkSnap();
+    document.documentElement.classList.remove('tk-lock');if(tkOpen){var k0=tkOpen;tkOpen=null;tkOpenWin(k0)}
     var mr=document.getElementById('myreset');if(mr)SITE.quizResetControls(mr,'harchakot');
     window.__users=others;window.__grants=grants;
     sel.forEach(function(id){if(!others.some(function(u){return u.id===id}))sel.delete(id)});
@@ -476,16 +633,17 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   });
 
   // Permission levels: 'study' = reading + quiz, 'read' = reading only ('quiz' = quiz only, from before).
-  function modeName(m){return m==='study'?'קריאה + שאלון':m==='read'?'קריאה בלבד':'רק שאלון'}
+  // Natan, 2026-11-18: a permission opens everything in the מדור (reading and quiz); the old kinds are not shown any more.
+  function modeName(m){return 'פתוח'}
   function bulk(){
     var users=(window.__users||[]).filter(function(u){return sel.has(u.id)});
     var d=document.createElement('dialog');d.className='bulk';
     var h='<h3>הרשאות ל־'+users.length+' תלמידים</h3><p class="none">'+esc(users.map(uname).join(', '))+'</p>';
     h+='<p class="help" style="margin:8px 0 0">מה שמסומן "בלי שינוי" נשאר לכל אחד כמו שהוא היה.</p>';
-    SITE.TREE.forEach(function(n,i){
+    TREEA.forEach(function(n,i){
       var o=n.own?[['keep','בלי שינוי'],['week','פתיחה ל־'+n.days+' ימים'],['off','סגירה']]
-                 :[['keep','בלי שינוי'],['study','קריאה + שאלון'],['read','קריאה בלבד'],['off','סגירה']];
-      h+='<div class="rowp"><b>'+'\u00a0\u00a0'.repeat(n.own?0:depth(n.path))+esc(n.label||n.title)+'</b><div class="opts">'+
+                 :[['keep','בלי שינוי'],['study','פתיחה'],['off','סגירה']];
+      h+='<div class="rowp"><b>'+esc(n.label||n.title)+'</b><div class="opts">'+
         o.map(function(x,j){return '<label><input type="radio" name="p'+i+'" value="'+x[0]+'"'+(j?'':' checked')+'>'+x[1]+'</label>'}).join('')+'</div></div>';
     });
     h+='<div class="add acts"><button type="button" class="primary" data-apply>שמירה</button><button type="button" data-x>ביטול</button></div><p class="msg" role="status"></p>';
@@ -495,7 +653,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       if(e.target===d||e.target.closest('[data-x]')){d.close();return}
       var ap=e.target.closest('[data-apply]');if(!ap)return;
       var ids=users.map(function(u){return u.id}), ups=[], dels=[];
-      SITE.TREE.forEach(function(n,i){
+      TREEA.forEach(function(n,i){
         var v=d.querySelector('input[name="p'+i+'"]:checked').value;
         if(v==='keep')return;
         if(v==='off'){dels.push(n.path);return}
@@ -506,7 +664,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       if(dels.length){var r=await sb.from('grants').delete().in('user_id',ids).in('path',dels);err=r.error}
       if(!err&&ups.length){var r2=await sb.from('grants').upsert(ups,{onConflict:'user_id,path'});err=r2.error}
       // Opening a time-limited chapter also answers the students' waiting requests for it.
-      SITE.TREE.forEach(function(n,i){
+      TREEA.forEach(function(n,i){
         if(!err&&n.own&&d.querySelector('input[name="p'+i+'"]:checked').value==='week')
           sb.from('access_requests').update({handled_at:new Date().toISOString(),approved:true}).in('user_id',ids).eq('path',n.path).is('handled_at',null).then(function(){});
       });
@@ -522,14 +680,15 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   function dt(t){return t?new Date(t).toLocaleDateString('he-IL',{day:'numeric',month:'long'})+' '+new Date(t).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}):''}
   // Short status of one permission: its level, and when it opens or closes.
   function gstate(g){
-    var now=new Date(), parts=[isOwn(g.path)?'קריאה':modeName(g.mode)];
+    var now=new Date(), parts=['פתוח'];
     if(g.starts_at&&new Date(g.starts_at)>now)parts.push('ייפתח '+dt(g.starts_at));
     if(g.expires_at)parts.push(new Date(g.expires_at)>now?'עד '+dt(g.expires_at):'הסתיים '+day(g.expires_at));
     return parts.join(' · ');
   }
-  function gchip(g){
+  // short: the row already names the מדור, so the button shows the state only.
+  function gchip(g,short){
     var off=!SITE.live(g);
-    return '<button type="button" class="chip gch'+(off?' off':'')+'" data-gid="'+g.id+'">'+esc(title(g.path))+' · '+esc(gstate(g))+' <span aria-hidden="true">▾</span></button>';
+    return '<button type="button" class="chip gch'+(off?' off':'')+'" data-gid="'+g.id+'">'+(short?'':esc(title(g.path))+' · ')+esc(gstate(g))+' <span aria-hidden="true">▾</span></button>';
   }
   // For <input type="datetime-local">: local time, without seconds.
   function local(t){var d=new Date(t);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
@@ -539,7 +698,8 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     var d=document.createElement('dialog');d.className='bulk gmenu';
     var h='<h3>'+esc(title(g.path))+'</h3><p class="none">'+esc(name)+' · '+esc(gstate(g))+'</p><div class="gm">';
     if(own)h+='<button type="button" data-act="week">פתיחה ל־'+n.days+' ימים מעכשיו</button>';
-    else h+=[['read','קריאה בלבד'],['study','קריאה + שאלון']].map(function(m){return '<button type="button" data-act="mode" data-v="'+m[0]+'"'+(g.mode===m[0]?' class="on"':'')+'>'+(g.mode===m[0]?'✓ ':'')+m[1]+'</button>'}).join('');
+    // Natan, 2026-11-18: one permission includes everything (reading + quiz), so there is no kind to choose.
+    else if(false)h+=[['read','קריאה בלבד'],['study','קריאה + שאלון']].map(function(m){return '<button type="button" data-act="mode" data-v="'+m[0]+'"'+(g.mode===m[0]?' class="on"':'')+'>'+(g.mode===m[0]?'✓ ':'')+m[1]+'</button>'}).join('');
     h+='<button type="button" class="close" data-act="del">סגירה</button>';
     [['starts_at','תזמון מועד פתיחה','עד המועד הזה הגישה סגורה, ואז נפתחת מעצמה.'],['expires_at','תזמון מועד סגירה','במועד הזה הגישה נסגרת מעצמה.']].forEach(function(f){
       h+='<div class="when"><b>'+f[1]+'</b><small class="none">'+f[2]+'</small><div class="add"><input type="datetime-local" data-f="'+f[0]+'" value="'+(g[f[0]]?local(g[f[0]]):'')+'">'+
@@ -576,7 +736,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   // sender opened the details window and did not finish; once they send, the same row becomes a regular message.
   function contactBlock(list){
     if(list===null)return '<p class="msg" style="margin-top:24px">כדי לקבל הודעות מ"צור קשר", צריך להריץ קודם את supabase/v14.sql.</p>';
-    var h='<h2 style="margin-top:32px" id="cmsgs">הודעות מצור קשר'+(list.length?' ('+list.length+')':'')+'</h2>';
+    var h='<h3 style="margin-top:20px" id="cmsgs">הודעות מצור קשר'+(list.length?' ('+list.length+')':'')+'</h3>';
     if(!list.length)return h+'<p class="none">אין הודעות שממתינות.</p>';
     h+='<p class="help">הודעה שמסומנת <b>✱ טיוטה</b> נשמרה כשהכותב עוד היה בחלון הוספת הפרטים. אם ישלים וישלח, הסימון יירד מעצמו. <b class="g">טופל</b> מוריד את ההודעה מהרשימה.</p><div class="users">';
     return h+list.map(function(m){
@@ -588,7 +748,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   }
   function requestBlock(requests,users){
     if(requests===null)return '<p class="msg" style="margin-top:24px">כדי לקבל בקשות גישה (סדר ליל החתונה), צריך להריץ קודם את supabase/v4.sql.</p>';
-    var h='<h2 style="margin-top:32px">בקשות גישה'+(requests.length?' ('+requests.length+')':'')+'</h2>';
+    var h='<h3 style="margin-top:20px">בקשות גישה'+(requests.length?' ('+requests.length+')':'')+'</h3>';
     if(!requests.length)return h+'<p class="none">אין בקשות שממתינות.</p>';
     h+='<p class="help"><b class="g">אישור</b> פותח את המדור לתלמיד לשבוע מהיום, ואחר כך הוא נסגר מעצמו. <b class="r">דחייה</b> סוגרת את הבקשה, והתלמיד יכול לבקש שוב.</p><div class="users">';
     return h+requests.map(function(q){var u=users.find(function(x){return x.id===q.user_id})||{};
@@ -596,18 +756,18 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         '<div class="add"><button type="button" class="primary" data-rq="'+q.id+'" data-ok="1">אישור לשבוע</button><button type="button" class="close" data-rq="'+q.id+'">דחייה</button></div></article>'}).join('')+'</div>';
   }
 
-  function opts(){return SITE.TREE.filter(function(n){return !n.own}).map(function(n){return '<option value="'+n.path+'">'+'\u00a0\u00a0'.repeat(depth(n.path))+esc(n.title)+'</option>'}).join('')}
+  function opts(){return TREEA.filter(function(n){return !n.own}).map(function(n){return '<option value="'+n.path+'">'+esc(n.label||n.title)+'</option>'}).join('')}
 
   // Pre-registration: whoever signs up later with this email gets the access right away.
   function inviteBlock(invites){
     if(invites===null)return '<p class="msg" style="margin-top:24px">כדי להוסיף אנשים מראש, צריך להריץ קודם את supabase/v2.sql.</p>';
     var open=invites.filter(function(i){return !i.used_at});window.__invites=open;
-    var h='<h2 style="margin-top:40px;scroll-margin-top:16px" id="addst">הוספת תלמיד</h2><form class="form invite" id="inv">'+
+    var h='<h3 style="margin-top:20px;scroll-margin-top:16px" id="addst">הוספת תלמיד</h3><form class="form invite" id="inv">'+
       '<label>הדבקה מהירה (לא חובה)<textarea name="paste" rows="2" placeholder="שם: ...; משפחה: ...; טלפון: ...; אימייל: ..."></textarea></label>'+
       '<div class="row"><label>שם פרטי<input name="first" required></label><label>שם משפחה<input name="last"></label></div>'+
       '<div class="row"><label>מייל<input name="email" type="email" required dir="ltr"></label><label>טלפון<input name="phone" type="tel" dir="ltr"></label></div>'+
       '<div class="row"><label>הערה<input name="note"></label><label>סיסמה זמנית<input name="pw" value="123456" required minlength="6" dir="ltr"></label></div>'+
-      '<div class="row"><label>מה נפתח לו<select name="path">'+opts()+'</select></label><label>סוג<select name="mode"><option value="study">קריאה + שאלון</option><option value="read">קריאה בלבד</option></select></label></div>'+
+      '<div class="row"><label>מה נפתח לו<select name="path">'+opts()+'</select></label><input type="hidden" name="mode" value="study"></div>'+
       '<button class="primary" type="submit">הוספה</button><p class="none">התלמיד נכנס עם המייל והסיסמה הזמנית, ובכניסה הראשונה חייב לבחור סיסמה חדשה. הגישה שבחרת פתוחה לו מיד.</p><p class="msg" id="invmsg" role="status"></p></form>';
     if(open.length){
       h+='<h3 style="margin-top:20px">הוזמנו ועוד לא נרשמו ('+open.length+')</h3><p class="help">הגישה שלהם כבר מאושרת (בעמודה "גישה") ותיפתח ברגע שיירשמו. <b class="g">פתיחת חשבון</b> יוצר להם חשבון כבר עכשיו עם סיסמה זמנית 123456. <b class="r">ביטול הזמנה</b> מבטל את האישור.</p><table class="q"><thead><tr><th>שם</th><th>מייל</th><th>גישה</th><th></th></tr></thead><tbody>'+
@@ -673,6 +833,38 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       if(r1.error){alert(r1.error.message);rq.disabled=false;return}
       var r2=await sb.from('access_requests').update({handled_at:new Date().toISOString(),approved:ok}).eq('id',q.id);
       if(r2.error)alert(r2.error.message);load();return;
+    }
+    // Gate / מדור buttons in the student card (Natan, 2026-11-18).
+    var po=e.target.closest('[data-po],[data-pc],[data-pcw],[data-gopen],[data-gclose]');
+    if(po){
+      var uidp=po.closest('[data-u]').getAttribute('data-u'), mine=(window.__grants||[]).filter(function(g){return g.user_id===uidp}), rr=null;
+      var openPath=function(p){var n=SITE.TREE.find(function(x){return x.path===p})||{};
+        return (n.own?openFor(uidp,p):sb.from('grants').upsert({user_id:uidp,path:p,mode:'study',starts_at:null,expires_at:null},{onConflict:'user_id,path'})).then(function(r){
+          sb.from('access_requests').update({handled_at:new Date().toISOString(),approved:true}).eq('user_id',uidp).eq('path',p).is('handled_at',null).then(function(){});return r})};
+      po.disabled=true;
+      if(po.hasAttribute('data-po'))rr=await openPath(po.getAttribute('data-po'));
+      else if(po.hasAttribute('data-pc'))rr=await sb.from('grants').delete().eq('user_id',uidp).eq('path',po.getAttribute('data-pc'));
+      else if(po.hasAttribute('data-pcw')){
+        // Closing one מדור that is open through the whole gate: the gate grant goes, the other מדורים get their own.
+        var pw=po.getAttribute('data-pcw'), gw=gateOf(pw), Gw=GATES[gw], mdw=Gw.madors.filter(function(m){return m[0]}).map(function(m){return m[0]});
+        var wides=mine.filter(function(g){return gateOf(g.path)===gw&&mdw.indexOf(g.path)<0&&covers(g,pw)}).map(function(g){return g.path});
+        for(var q=0;q<mdw.length;q++){if(mdw[q]===pw||mine.some(function(g){return g.path===mdw[q]&&SITE.live(g)}))continue;rr=await openPath(mdw[q]);if(rr.error)break}
+        if(!rr||!rr.error)rr=wides.length?await sb.from('grants').delete().eq('user_id',uidp).in('path',wides):{error:null};
+      }
+      else{
+        var gi2=+(po.getAttribute('data-gopen')||po.getAttribute('data-gclose')), G=GATES[gi2];
+        if(po.hasAttribute('data-gclose')){
+          var paths=mine.filter(function(g){return gateOf(g.path)===gi2}).map(function(g){return g.path});
+          rr=paths.length?await sb.from('grants').delete().eq('user_id',uidp).in('path',paths):{error:null};
+        }else{
+          // שער הלכה opens with its one wider path ('halacha'); a gate without one opens each מדור on its own.
+          var md2=G.madors.filter(function(m){return m[0]}), top=md2[0][0].split('/')[0];
+          if(md2.every(function(m){return m[0].indexOf(top+'/')===0}))rr=await openPath(top);
+          else for(var k=0;k<md2.length;k++){if(mine.some(function(g){return SITE.live(g)&&covers(g,md2[k][0])}))continue;rr=await openPath(md2[k][0]);if(rr.error)break}
+        }
+      }
+      if(rr&&rr.error){alert(/expires_at|starts_at/.test(rr.error.message)?'צריך קודם להריץ ב־Supabase את supabase/v7.sql.':rr.error.message);po.disabled=false;return}
+      load();return;
     }
     if(wk){
       wk.disabled=true;
