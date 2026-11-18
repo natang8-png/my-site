@@ -41,6 +41,7 @@
 <script src="/vendor/supabase.js"></script>
 <script src="/auth.js"></script>
 <script src="/contact.js"></script>
+<script src="/private.js"></script>
 <script>
 // Each gate (שער) on the home page (Natan, 2026-11-12; guests too, 2026-11-15): a reader sees the list of its מדורים that are open to them.
 // With none open, the gate shows its name only, in the "not available" color (still a link, so a closed מדור can be requested).
@@ -58,7 +59,12 @@
       var open=JSON.parse(a.getAttribute('data-gate')).filter(function(m){return SITE.access(m[0])}).map(function(m){return m[1]});
       var p=a.querySelector('.gate-list');
       if(open.length){p.hidden=false;window.dotList?dotList(p,open):(p.textContent=open.join(' · '))}
-      else a.classList.add('off');
+      else{
+        a.classList.add('off');
+        // Natan, 2026-11-18: a signed-in student sees "הגש בקשה" on a gate with nothing open; inside, each closed מדור has the request button.
+        var m=JSON.parse(a.getAttribute('data-gate'));
+        if(st.user&&m.length){var h=document.createElement('p');h.className='req-hint';h.style.cssText='margin:0;color:var(--muted);font-size:.92rem';h.textContent='הגש בקשה';a.insertBefore(h,a.querySelector('.go'))}
+      }
     });
   });
 })();

@@ -47,7 +47,12 @@
     [].forEach.call(document.querySelectorAll('[data-mador]'),function(c){
       var d=c.querySelector('.desc'), nav=c.querySelector('.subtabs');
       if(d)d.remove();
-      if(!SITE.access(c.getAttribute('data-mador'))){c.classList.add('off');if(nav)nav.remove();return}
+      if(!SITE.access(c.getAttribute('data-mador'))){
+        // Closed מדור (Natan, 2026-11-18): grey, with "הגש בקשה"; a tap opens the request window instead of the page.
+        c.classList.add('off');if(nav)nav.remove();
+        var l=c.querySelector('a.stretch');if(l)l.setAttribute('data-lock',c.getAttribute('data-mador'));
+        var h=document.createElement('p');h.className='req-hint';h.style.cssText='margin:0;color:var(--muted);font-size:.92rem';h.textContent='הגש בקשה';c.insertBefore(h,c.querySelector('.go'));
+        return}
       if(!nav)return;
       [].forEach.call(nav.querySelectorAll('a'),function(a){
         var p=a.getAttribute('data-path');

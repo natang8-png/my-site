@@ -27,9 +27,10 @@
         '<div class="acts"><a class="primary" href="/login/?next='+next+'" style="text-decoration:none;border-radius:999px">כניסה / הרשמה</a>'+(inDialog?'<button type="button" data-x>סגירה</button>':'')+'</div>';
       return false;
     }
-    var open=await SITE.sb.from('access_requests').select('created_at').eq('user_id',s.user.id).eq('path',path).is('handled_at',null).maybeSingle();
+    var open=s.viewAs?{data:demoReq().indexOf(path)>=0?{created_at:new Date().toISOString()}:null}
+      :await SITE.sb.from('access_requests').select('created_at').eq('user_id',s.user.id).eq('path',path).is('handled_at',null).maybeSingle();
     if(open.data){
-      box.innerHTML='<p><b>הבקשה שלך נשלחה ✓</b></p><p>שלחת בקשה ב־'+day(open.data.created_at)+'. כשנתן יאשר, המדור ייפתח לך ל־'+(n.days||7)+' ימים.</p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');
+      box.innerHTML='<p><b>הבקשה נשלחה ותיבחן בהקדם ✓</b></p><p>שלחת בקשה ב־'+day(open.data.created_at)+'. כשהבקשה תאושר, המדור ייפתח לך'+(n.own?' ל־'+(n.days||7)+' ימים':'')+'.</p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');
       return false;
     }
     var g=grantOf(path);
@@ -42,12 +43,14 @@
       '<div class="acts"><button type="button" class="primary" data-ask>שליחת בקשה</button>'+(inDialog?'<button type="button" data-x>לא עכשיו</button>':'')+'</div><p class="msg" role="status"></p>';
     box.querySelector('[data-ask]').onclick=async function(){
       this.disabled=true;
+      if(s.viewAs){var dl=demoReq();if(dl.indexOf(path)<0){dl.push(path);try{sessionStorage.setItem('demoReq',JSON.stringify(dl))}catch(e){}}mark();box.innerHTML='<p><b>הבקשה נשלחה ותיבחן בהקדם ✓</b></p><p style="color:var(--muted)">(תצוגה לדוגמה: הבקשה לא נשלחה באמת.)</p>'+(inDialog?'<div class="acts"><button type="button" data-x>סגירה</button></div>':'');return}
       var r=await SITE.sb.from('access_requests').insert({user_id:s.user.id,path:path});
       if(r.error&&r.error.code!=='23505'){
         var m=box.querySelector('.msg');m.classList.add('err');
         m.textContent=/access_requests/.test(r.error.message)?'אי אפשר לשלוח בקשות עדיין, המערכת בהכנה.':r.error.message;
         this.disabled=false;return;
       }
+      mark();
       paint(box,path,inDialog);
     };
     return false;
@@ -66,5 +69,24 @@
     d.showModal();
   });
 
-  window.LOCK={paint:paint, grantOf:grantOf, day:day};
+  // Requests already sent (Natan, 2026-11-18): "הגש בקשה" on a card becomes "בקשה הוגשה · ממתינה לאישור".
+  // In the demo / "צפייה כ..." nothing is saved, so the requests of this tab are kept in sessionStorage.
+  function demoReq(){try{return JSON.parse(sessionStorage.getItem('demoReq')||'[]')}catch(e){return []}}
+  async function pending(){
+    var s=SITE.state; if(!s.user) return [];
+    if(s.viewAs) return demoReq();
+    var r=await SITE.sb.from('access_requests').select('path').eq('user_id',s.user.id).is('handled_at',null);
+    return (r.data||[]).map(function(x){return x.path});
+  }
+  async function mark(){
+    await SITE.ready; var list=await pending();
+    [].forEach.call(document.querySelectorAll('.req-hint'),function(h){
+      var c=h.closest('[data-mador],.topic[data-lock],[data-gate]'); if(!c) return;
+      var paths=c.hasAttribute('data-gate')?JSON.parse(c.getAttribute('data-gate')).map(function(m){return m[0]}):[c.getAttribute('data-mador')||c.getAttribute('data-lock')];
+      if(paths.some(function(p){return list.indexOf(p)>=0})){h.textContent='בקשה הוגשה · ממתינה לאישור';h.classList.add('sent')}
+    });
+  }
+  if(window.SITE) SITE.ready.then(function(){setTimeout(mark,0)});
+
+  window.LOCK={paint:paint, grantOf:grantOf, day:day, mark:mark};
 })();
