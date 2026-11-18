@@ -128,6 +128,9 @@ else if(PROOF){document.documentElement.classList.add('proof');
     '<span class="cb-snum"></span></div>'+
     '<div class="cb-panel" hidden></div>';
   bar.querySelector('.cb-title').textContent=title;
+  // Natan, 2026-11-18: the navigation line sits in the top line of the bar (where the title was); the section name stays under it.
+  var crumbs=head.querySelector('nav.crumbs');
+  if(crumbs){var t=bar.querySelector('.cb-title');var cc=crumbs.cloneNode(true);cc.className='crumbs cb-crumbs';t.parentNode.replaceChild(cc,t)}
   document.body.appendChild(bar);
   document.documentElement.classList.add('has-tbar');
   var panel=bar.querySelector('.cb-panel');
