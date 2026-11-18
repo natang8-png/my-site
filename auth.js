@@ -38,12 +38,12 @@
   var state={user:null, profile:null, grants:[]};
   var ready=(async function(){
     if(!sb) return state;
-    // Demo link (Natan, 2026-11-18, preview only): ?demo=pending shows the site as a student who signed up and is not approved yet,
+    // Demo link (Natan, 2026-11-18, preview addresses only: <branch>.my-site-c18.pages.dev, never the live site): ?demo=pending shows the site as a student who signed up and is not approved yet,
     // with no sign-in. No grants, nothing saved or sent. Stays on in this tab until ?demo=off or the brown bar's button.
     try{
       if(/[?&]demo=off\b/.test(location.search)) sessionStorage.removeItem('demo');
       else if(/[?&]demo=pending\b/.test(location.search)){ sessionStorage.setItem('demo','pending'); sessionStorage.removeItem('demoReq') }
-      if(sessionStorage.getItem('demo')==='pending'&&location.hostname!=='my-site-c18.pages.dev'){
+      if(sessionStorage.getItem('demo')==='pending'&&/\.my-site-c18\.pages\.dev$/.test(location.hostname)){
         state.user={id:'00000000-0000-0000-0000-000000000000',email:'demo'};
         state.profile={first_name:'תלמיד',last_name:'שממתין לאישור',phone:'000',is_admin:false};
         state.grants=[]; state.viewAs={as:'student',paths:[],demo:true};
