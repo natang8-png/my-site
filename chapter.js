@@ -63,7 +63,26 @@ else if(PROOF){document.documentElement.classList.add('proof');
   window.addEventListener('hashchange',function(){show();var t=document.getElementById(location.hash.slice(1));var cur=document.querySelector('.sec:not([hidden])');
     if(!cur){scrollTo(0,0);return}
     var el=(t&&t.closest('.sec'))?t:cur;(el.classList.contains('sec')?top(el):el).scrollIntoView({block:'start'})});
-  [].forEach.call(document.querySelectorAll('[data-open-toc]'),function(b){b.addEventListener('click',function(){toc.open=true;toc.scrollIntoView({block:'start'});var c=toc.querySelector('a.current');if(c)c.focus()})});
+  // "נגישות" in the pager too, left of "כל הכותרות" (Natan, 2026-11-19); it opens the same panel as the bottom button.
+  [].forEach.call(document.querySelectorAll('.pager .pn.mid[data-open-toc]'),function(m){if(m.nextElementSibling&&m.nextElementSibling.hasAttribute('data-open-a11y'))return;
+    var a=document.createElement('button');a.type='button';a.className='pn mid';a.setAttribute('data-open-a11y','');a.innerHTML='<small>הגדרות</small>נגישות';m.after(a);
+    m.parentNode.classList.add('pager4')});
+  // Each tab of a chapter whose tabs stand apart is a מדור of its own (Natan, 2026-11-19): its first section has no "הקודם"
+  // into the previous tab, and its last section's "הבא" goes back to the gate (from there one picks the next מדור).
+  [].forEach.call(document.querySelectorAll('.pager .pn.prev:not([href^="#"])'),function(a){a.innerHTML=a.innerHTML.replace('לתפריט ','לשער ')});
+  if(document.querySelector('main.chapter[data-tabs-apart]')&&TABS.length){
+    var backA=document.querySelector('.pager .pn.prev:not([href^="#"])'), gateHref=backA?backA.getAttribute('href'):'/', gateTx=backA?backA.lastChild.textContent:'לשער';
+    secs.forEach(function(s){var t=tabOf(s.id);if(!t)return;
+      [].forEach.call(s.querySelectorAll('.pager .pn.prev[href^="#"],.pager .pn.next[href^="#"]'),function(a){var o=tabOf(a.getAttribute('href').slice(1));
+        if(o===t)return;a.setAttribute('href',gateHref);a.innerHTML='<small>'+(a.classList.contains('next')?'סיום':'חזרה')+'</small>'+gateTx});
+      var pg=s.querySelector('.pager');if(pg&&!pg.querySelector('.pn.next')&&pg.lastElementChild&&pg.lastElementChild.tagName==='SPAN'){var e=document.createElement('a');e.className='pn next';e.href=gateHref;e.innerHTML='<small>סיום</small>'+gateTx;pg.replaceChild(e,pg.lastElementChild)}});
+  }
+  document.addEventListener('click',function(e){if(e.target.closest('[data-open-a11y]')){var o=document.querySelector('dialog.prefs');if(o&&!o.open)o.showModal()}});
+  // "כל הכותרות": the list lives on the chapter's opening page (hidden inside a section), so go there, with the current tab open.
+  [].forEach.call(document.querySelectorAll('[data-open-toc]'),function(b){b.addEventListener('click',function(){
+    var c=toc.querySelector('a.current'), g=c&&c.closest('.grp');
+    if(location.hash){history.pushState(null,'',location.pathname+location.search);show()}
+    toc.open=true;if(g)g.open=true;toc.scrollIntoView({block:'start'});if(c)c.focus({preventScroll:true})})});
   show();
   if(location.hash){var t0=document.getElementById(location.hash.slice(1)), cur=t0&&t0.closest&&t0.closest('.sec')||document.querySelector('.sec:not([hidden])');if(cur)top(cur).scrollIntoView({block:'start'})}
 })();

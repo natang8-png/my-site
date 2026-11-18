@@ -55,6 +55,7 @@ ol.topics{list-style:none;margin:0;padding:0;display:grid;gap:12px}
 .num{display:inline-block;min-width:1.6em;color:var(--accent);font-variant-numeric:tabular-nums}
 .placeholder{color:var(--muted);padding:20px;border:1px dashed var(--line);border-radius:14px}
 .pager{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch}
+.pager.pager4{grid-template-columns:1fr auto auto 1fr}
 .pn{display:grid;gap:2px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;text-decoration:none}
 .pn:hover{border-color:var(--accent)}
 .pn small{color:var(--muted);font-size:.8rem}
@@ -88,7 +89,7 @@ sup.fn a{color:var(--accent);text-decoration:none;font-family:var(--body);font-s
 [hidden]{display:none!important}
 .pn{font:inherit;color:var(--fg);background:transparent;cursor:pointer;text-align:start}
 .pn.mid{background:var(--soft);text-align:center;justify-items:center}
-@media (max-width:520px){.pager{grid-template-columns:1fr 1fr}.pn.mid{grid-column:1/-1;grid-row:2}}
+@media (max-width:520px){.pager{grid-template-columns:1fr 1fr}.pn.mid{grid-column:1/-1;grid-row:2}.pager.pager4{grid-template-columns:1fr 1fr}.pager4 .pn.mid{grid-column:auto;grid-row:2}}
 .credit{font-size:.85rem;color:var(--muted);margin:8px 0 0}
 .credit a{color:var(--accent)}
 .credit b{color:var(--fg)}
@@ -120,6 +121,9 @@ html.later-sec main.chapter > header,html.later-sec #toc{display:none}
   .sec-foot .pn small{font-size:.85rem;color:var(--fg)}
   .sec-foot .pn.prev small::before{content:"→ "}
   .sec-foot .pn.next small::after{content:" ←"}
+  .sec-foot .pager.pager4{grid-template-columns:1fr auto auto 1fr;gap:8px}
+  .sec-foot .pager4 .pn.mid{grid-row:auto}
+  .sec-foot [data-open-a11y] small{font-size:0}.sec-foot [data-open-a11y] small::after{content:"נגישות";font-size:.85rem}
 }
 dialog.quiz{max-width:36rem;width:calc(100% - 32px);max-height:85vh;border:1px solid var(--line);border-radius:16px;padding:20px;background:var(--bg);color:var(--fg);font-family:var(--body)}
 dialog.quiz::backdrop{background:rgb(0 0 0 / .45)}
@@ -545,3 +549,7 @@ html main.locked .q-gap,html main.locked .iq,html main.read-only .q-gap,html mai
 
 /* Natan, 2026-11-18: the navigation line in the chapter top bar is links without underline; the body copy of it is hidden. */
 main.chapter > header > nav.crumbs{display:none}
+
+/* Natan, 2026-11-19: no bottom bar anywhere (no "נגישות" button, no "נבנה בהדרגה" line). The button stays in the page,
+   hidden, so the accessibility panel still exists; chapters open it from the "נגישות" button next to "כל הכותרות". */
+footer:has(#theme){display:none !important}
