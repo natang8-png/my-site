@@ -111,7 +111,7 @@
     var bar=document.createElement('div'); bar.className='acct';
     var next=encodeURIComponent(location.pathname+location.hash);
     if(state.user){
-      bar.innerHTML=(state.profile&&state.profile.is_admin?'<a href="/admin/">ניהול</a><span>·</span>'+(EDIT?'':'<button type="button" class="link" data-edit-on>מצב עריכה</button><span>·</span>'):'')+
+      bar.innerHTML=(state.profile&&state.profile.is_admin?'<a href="/admin/">ניהול</a><span>·</span><a href="/map/">מפת האתר</a><span>·</span>'+(EDIT?'':'<button type="button" class="link" data-edit-on>מצב עריכה</button><span>·</span>'):'')+
         '<a class="acct-name" href="/me/" title="האזור האישי"></a>'+(incomplete()?'<span>·</span><a href="/login/?complete=1&next='+next+'">השלמת פרטים</a>':'')+'<span>·</span><button type="button" class="link" data-out>יציאה</button>';
       bar.querySelector('.acct-name').textContent=name();
       var eo=bar.querySelector('[data-edit-on]'); if(eo) eo.onclick=function(){setEdit(true)};
