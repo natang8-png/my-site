@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>מפת האתר · הלכה בבית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+<style>
+main.gate-wait{visibility:hidden}
+.m-help{color:var(--muted);margin:6px 0 14px}
+.va{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--soft);display:grid;gap:10px}
+.va h2{margin:0;font-size:1.15rem}
+.va .row{display:flex;gap:8px;flex-wrap:wrap}
+.va button{border-radius:999px}
+.va fieldset{border:1px dashed var(--line);border-radius:12px;padding:8px 12px;margin:0}
+.va fieldset legend{padding:0 6px;font-weight:600}
+.va label{display:flex;gap:8px;align-items:center;padding:3px 0}
+.va .now{margin:0;font-weight:600}
+.lvl{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.lvl .lvl{margin-top:10px;padding-inline-start:14px;border-inline-start:3px solid var(--line)}
+.pg{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--bg)}
+.pg>h3{margin:0;font-size:1.05rem;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.pg>h3 .k{font-size:.78rem;font-weight:600;color:#fff;background:var(--accent);border-radius:999px;padding:1px 9px}
+.pg>h3 a{font-size:.85rem;font-weight:400;direction:ltr;unicode-bidi:isolate}
+.pg .what{margin:4px 0 6px;color:var(--muted);font-size:.95rem}
+.pg dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:6px 0 0;font-size:.95rem}
+.pg dt{font-weight:600;white-space:nowrap}
+.pg dd{margin:0}
+.inf{color:#a35d00;font-size:.85em}
+.k.adm{background:#7a4b00!important}
+</style>
+</head><body>
+<main dir="rtl" lang="he" class="home gate-wait">
+  <header>
+    <nav class="crumbs" aria-label="ניווט"><a href="/">בית</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><a href="/admin/">ניהול</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><span class="cur">מפת האתר</span></nav>
+    <h1>מפת האתר</h1>
+    <p class="m-help">כל הדפים באתר לפי הסדר: שער &gt; מדור &gt; פרק &gt; סעיף. ליד כל דף: מה רואה <b>אורח</b> (לא מחובר), <b>תלמיד</b> ו<b>מנהל</b>. <span class="inf">(הסקה)</span> מסמן דבר שהבנתי מהקוד ולא בדקתי עד הסוף.</p>
+  </header>
+
+  <section class="va" id="va" aria-labelledby="va-h">
+    <h2 id="va-h">👁 צפייה באתר כמו מישהו אחר</h2>
+    <p class="m-help" style="margin:0">כך אפשר לראות איך האתר ייראה בפתיחה, בלי לצאת מהחשבון. בזמן הצפייה פס חום בראש כל דף, ולחיצה עליו מחזירה לתצוגת מנהל. שום דבר לא נשמר בזמן הצפייה (קריאה, שאלון, בקשות, הודעות).</p>
+    <p class="now" id="va-now"></p>
+    <div class="row"><button type="button" class="primary" data-guest>צפייה כאורח (לפני כניסה)</button></div>
+    <fieldset><legend>צפייה כתלמיד: אילו מדורים פתוחים לו?</legend>
+      <div id="va-paths"></div>
+      <label><input type="checkbox" id="va-read"> קריאה בלבד (בלי שאלון)</label>
+      <div class="row" style="margin-top:6px"><button type="button" class="primary" data-student>צפייה כתלמיד</button></div>
+    </fieldset>
+    <div class="row"><button type="button" data-off hidden>חזרה לתצוגת מנהל</button></div>
+  </section>
+
+  <section aria-labelledby="map-h" style="margin-top:28px">
+    <h2 id="map-h">הדפים</h2>
+    <ul class="lvl">
+
+      <li class="pg"><h3><span class="k">בית</span>דף הבית <a href="/">/</a></h3>
+        <dl><dt>אורח</dt><dd>3 שערים באפור (הלכה, הדרכה, שלום בית). לחיצה על שער מובילה לכניסה. מתחת: תיבת "אפשר לכתוב כאן" לשליחת הודעה. אין כרטיס צור קשר.</dd>
+        <dt>תלמיד</dt><dd>3 השערים, ומתחת לכל שער שמות המדורים הפתוחים לו. שער בלי מדור פתוח באפור. כרטיס רביעי: צור קשר.</dd>
+        <dt>מנהל</dt><dd>הכול פתוח, ובראש הדף "ניהול · מצב עריכה".</dd></dl>
+        <ul class="lvl">
+
+          <li class="pg"><h3><span class="k">שער</span>שער הלכה <a href="/halacha/">/halacha/</a></h3>
+            <dl><dt>אורח</dt><dd>מועבר מיד לדף הכניסה.</dd>
+            <dt>תלמיד</dt><dd>2 מדורים. מדור פתוח: כפתור עם שמות הפרקים והציון בשאלון. מדור סגור: באפור.</dd>
+            <dt>מנהל</dt><dd>שני המדורים פתוחים, כולל פרקים שעוד אין בהם טקסט (הריון, הנקה).</dd></dl>
+            <ul class="lvl">
+              <li class="pg"><h3><span class="k">מדור</span>הרחקות <a href="/halacha/harchakot/">/halacha/harchakot/</a></h3>
+                <p class="what">7 פרקים: כללי, חיי היום יום, אכילה ושתייה, חדר השינה, מחוץ לבית, הנהגה אישית, מצבים מיוחדים. 26 סעיפים, שאלון בסוף כל סעיף. הרשאה: "הרחקות".</p>
+                <dl><dt>אורח</dt><dd>(בקישור ישיר) הכותרות, ובמקום הטקסט "התוכן פתוח למשתמשים רשומים". הטקסט עצמו נמצא בקוד הדף הציבורי, כלומר מוסתר ולא מוגן.</dd>
+                <dt>תלמיד</dt><dd>בלי הרשאה: "החשבון שלך עוד לא קיבל גישה". עם הרשאה: טקסט ושאלון, או טקסט בלבד ("קריאה בלבד").</dd>
+                <dt>מנהל</dt><dd>הכול.</dd></dl></li>
+              <li class="pg"><h3><span class="k">מדור</span>מעגל החיים <a href="/halacha/maagal-hachaim/">/halacha/maagal-hachaim/</a></h3>
+                <p class="what">3 פרקים: הריון (ריק), לידה, הנקה (ריק). הפרק "לידה" מוביל לדיני יולדת ומפלת <a href="/halacha/yoledet/" dir="ltr">/halacha/yoledet/</a>: 17 סעיפים בשלושה חלקים. הרשאה: "יולדת", ונפתח גם למי שיש לו הרשאה להרחקות.</p>
+                <dl><dt>אורח</dt><dd>(בקישור ישיר) רשימת הפרקים נראית; בדף היולדת הטקסט נעול כמו בהרחקות <span class="inf">(הסקה)</span>.</dd>
+                <dt>תלמיד</dt><dd>כמו בהרחקות.</dd>
+                <dt>מנהל</dt><dd>הכול.</dd></dl></li>
+            </ul></li>
+
+          <li class="pg"><h3><span class="k">שער</span>שער הדרכה <a href="/hadracha/">/hadracha/</a></h3>
+            <dl><dt>אורח</dt><dd>מועבר מיד לדף הכניסה.</dd>
+            <dt>תלמיד</dt><dd>4 כרטיסים כחולים. מדור סגור מציג "הגש בקשה לפתיחה", ולחיצה פותחת חלון לשליחת בקשה למנהל. "המשך החיים" באפור (אין עדיין תוכן).</dd>
+            <dt>מנהל</dt><dd>הכול פתוח.</dd></dl>
+            <p class="what">שלושת המדורים הם לשוניות של דף אחד <a href="/halacha/leil-hachatuna/" dir="ltr">/halacha/leil-hachatuna/</a>. הטקסט שלהם שמור בשרת, ונשלח רק למי שהמדור פתוח לו. כל הרשאה כאן היא אישית, ל־7 ימים.</p>
+            <ul class="lvl">
+              <li class="pg"><h3><span class="k">מדור</span>הלכה <a href="/halacha/leil-hachatuna/#s24">#s24</a></h3>
+                <p class="what">הלכות צניעות: 17 סעיפים (סעיף א עד סעיף יז). הרשאה: "הדרכה: הלכה".</p></li>
+              <li class="pg"><h3><span class="k">מדור</span>השקפה <a href="/halacha/leil-hachatuna/#s16">#s16</a></h3>
+                <p class="what">8 סעיפים בשלושה פרקים: ההבדל בין גברים לנשים, מקרבה נפשית - לבשר אחד, הפיוס שלפני. הרשאה: "הדרכה: השקפה".</p></li>
+              <li class="pg"><h3><span class="k">מדור</span>ליל הכלולות <a href="/halacha/leil-hachatuna/#s1">#s1</a></h3>
+                <p class="what">15 סעיפים בארבעה פרקים: ההכנות, ליל החתונה, טומאת בתולים, אחרי ליל החתונה. הרשאה: "הדרכה: ליל הכלולות".</p></li>
+              <li class="pg"><h3><span class="k">מדור</span>המשך החיים</h3><p class="what">אין עדיין דף. כרטיס אפור בלבד.</p></li>
+            </ul>
+            <dl><dt>אורח</dt><dd>(בקישור ישיר לדף הלשוניות) חלון "אין לך הרשאה" עם כפתור כניסה. בלי טקסט.</dd>
+            <dt>תלמיד</dt><dd>רק הלשוניות הפתוחות לו מציגות טקסט. לשונית סגורה: חלון לשליחת בקשה.</dd></dl></li>
+
+          <li class="pg"><h3><span class="k">שער</span>שער שלום בית</h3>
+            <p class="what">אין עדיין דף ואין מדורים. כרטיס אפור בדף הבית לכולם.</p></li>
+
+          <li class="pg"><h3><span class="k">שער</span>צור קשר <a href="/contact/">/contact/</a></h3>
+            <dl><dt>אורח</dt><dd>הכרטיס לא מופיע; בקישור ישיר מועבר לכניסה. במקום זה, תיבת הכתיבה בדף הבית.</dd>
+            <dt>תלמיד</dt><dd>טלפון, וואטסאפ, SMS, מייל וכתובת המשרד, ומתחת תיבה לשליחת הודעה. הפרטים נלקחים מההגדרות בשרת, וכל עוד לא הוזנו שם הם לא יוצגו <span class="inf">(הסקה)</span>.</dd>
+            <dt>מנהל</dt><dd>כמו תלמיד; ההודעות מגיעות לדף הניהול.</dd></dl></li>
+        </ul></li>
+
+      <li class="pg"><h3><span class="k">חשבון</span>כניסה / הרשמה <a href="/login/">/login/</a></h3>
+        <p class="what">כניסה עם מייל וסיסמה, הרשמה, והחלפת סיסמה ראשונה (למי שנוסף ע"י המנהל עם 123456).</p></li>
+      <li class="pg"><h3><span class="k">חשבון</span>האזור האישי <a href="/me/">/me/</a></h3>
+        <dl><dt>אורח</dt><dd>הודעה שצריך להיכנס.</dd>
+        <dt>תלמיד</dt><dd>הפרטים שלו, ההתקדמות בקריאה והשאלונים, ואיפוס שאלון.</dd></dl></li>
+
+      <li class="pg"><h3><span class="k adm">מנהל</span>ניהול <a href="/admin/">/admin/</a></h3>
+        <p class="what">רק למנהל. לאורח: "צריך להיכנס". לתלמיד: "הדף הזה פתוח רק למנהל".</p>
+        <ul class="lvl">
+          <li class="pg"><h3><span class="k adm">מנהל</span>יומן גרסאות <a href="/admin/versions/">/admin/versions/</a></h3></li>
+          <li class="pg"><h3><span class="k adm">מנהל</span>מפת האתר (הדף הזה) <a href="/map/">/map/</a></h3></li>
+        </ul></li>
+
+      <li class="pg"><h3><span class="k" style="background:var(--muted)">ישן</span>כתובות ישנות שמעבירות הלאה</h3>
+        <p class="what">harchakot-intro, harchakot-meal, harchakot-roads, harchakot-beta, harchakot-graphic → מדור הרחקות. tumat-betulim → ליל הכלולות, סעיף טומאת בתולים. אף אחת מהן לא מופיעה באתר, הן רק שומרות על קישורים ישנים.</p></li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>נבנה בהדרגה, צעד אחר צעד.</span>
+    <button id="theme" type="button">מצב כהה</button>
+  </footer>
+</main>
+<script src="/site.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/auth.js"></script>
+<script>
+(function(){
+  var main=document.querySelector('main');
+  if(!window.SITE){main.classList.remove('gate-wait');return}
+  SITE.ready.then(function(st){
+    // Admin only. While "צפייה כ..." is on, the admin still reaches this page to switch or stop.
+    var admin=st.viewAs||(st.profile&&st.profile.is_admin);
+    if(!admin){main.innerHTML='<p class="msg">הדף הזה פתוח רק למנהל.</p>';main.classList.remove('gate-wait');return}
+    main.classList.remove('gate-wait');
+    var v=st.viewAs, picks=SITE.TREE.filter(function(n){return n.path.split('/').length===3||n.own&&n.path!=='tumat-betulim'});
+    var box=document.getElementById('va-paths');
+    box.innerHTML=picks.map(function(n){return '<label><input type="checkbox" value="'+n.path+'"'+(v&&v.paths&&v.paths.indexOf(n.path)>=0?' checked':'')+'> '+(n.label||('הלכה: '+n.title))+'</label>'}).join('');
+    if(v&&v.mode==='read')document.getElementById('va-read').checked=true;
+    document.getElementById('va-now').textContent=v?('עכשיו: צפייה כ'+(v.as==='guest'?'אורח':'תלמיד')):'עכשיו: תצוגת מנהל (רגילה)';
+    var off=document.querySelector('[data-off]');off.hidden=!v;
+    off.onclick=function(){SITE.setViewAs(null);location.reload()};
+    document.querySelector('[data-guest]').onclick=function(){SITE.setViewAs({as:'guest'});location.href='/'};
+    document.querySelector('[data-student]').onclick=function(){
+      var paths=[].map.call(box.querySelectorAll('input:checked'),function(i){return i.value});
+      SITE.setViewAs({as:'student',paths:paths,mode:document.getElementById('va-read').checked?'read':'study'});location.href='/';
+    };
+  });
+})();
+</script>
+</body></html>

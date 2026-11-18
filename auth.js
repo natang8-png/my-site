@@ -46,10 +46,33 @@
       state.profile=p.data||null;
       var g=await sb.from('grants').select('*').eq('user_id',s.user.id);
       state.grants=g.data||[];
-      touch();
+      viewAs();
+      if(!state.viewAs) touch();
     }catch(e){}
     return state;
   })();
+
+  // "צפייה כ..." (preview, Natan 2026-11-18): the admin sees the site as a guest, or as a student with chosen מדורים.
+  // Set from /map/ (localStorage 'viewAs'); only the admin's own account can turn it on. Nothing is saved while it is on.
+  function viewAs(){
+    var v=null; try{ v=JSON.parse(localStorage.getItem('viewAs')||'null') }catch(e){}
+    if(!v||!(state.profile&&state.profile.is_admin)) return;
+    state.viewAs=v; state.realUser=state.user;
+    if(v.as==='guest'){ state.user=null; state.profile=null; state.grants=[]; return }
+    state.profile={id:state.user.id, first_name:'תלמיד', last_name:'לדוגמה', phone:'000', is_admin:false};
+    state.grants=(v.paths||[]).map(function(p){return {user_id:state.user.id, path:p, mode:v.mode||'study'}});
+  }
+  function setViewAs(v){ try{ v?localStorage.setItem('viewAs',JSON.stringify(v)):localStorage.removeItem('viewAs') }catch(e){} }
+  function viewBar(){
+    var v=state.viewAs; if(!v) return;
+    var b=document.createElement('div'); b.className='view-as'; b.dir='rtl';
+    b.style.cssText='position:sticky;top:0;z-index:60;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:8px 12px;background:#7a4b00;color:#fff;font-size:.95rem';
+    var names=(v.paths||[]).map(function(p){var n=TREE.find(function(x){return x.path===p});return n?(n.label||n.title):p});
+    b.innerHTML='<b>👁 תצוגה כ'+(v.as==='guest'?'אורח (לא מחובר)':'תלמיד'+(names.length?' · פתוח לו: '+names.join(', '):' בלי הרשאות'))+'</b>'+
+      '<a href="/map/" style="color:#fff">החלפה</a><button type="button" style="background:#fff;color:#7a4b00;border:0;border-radius:999px;padding:4px 12px;cursor:pointer">חזרה לתצוגת מנהל</button>';
+    b.querySelector('button').onclick=function(){setViewAs(null);location.reload()};
+    document.body.insertBefore(b,document.body.firstChild);
+  }
 
   function touch(){
     try{
@@ -92,30 +115,32 @@
         '<a class="acct-name" href="/me/" title="האזור האישי"></a>'+(incomplete()?'<span>·</span><a href="/login/?complete=1&next='+next+'">השלמת פרטים</a>':'')+'<span>·</span><button type="button" class="link" data-out>יציאה</button>';
       bar.querySelector('.acct-name').textContent=name();
       var eo=bar.querySelector('[data-edit-on]'); if(eo) eo.onclick=function(){setEdit(true)};
-      bar.querySelector('[data-out]').onclick=async function(){await sb.auth.signOut();location.reload()};
+      bar.querySelector('[data-out]').onclick=async function(){if(state.viewAs){setViewAs(null);location.reload();return}await sb.auth.signOut();location.reload()};
     } else {
       bar.innerHTML='<a href="/login/?next='+next+'">כניסה / הרשמה</a>';
     }
     main.insertBefore(bar,main.firstChild);
   }
   ready.then(function(){
+    viewBar();
     if(location.pathname.indexOf('/login')===0) return;
     // A student the admin added still has the default password: change it before anything else.
     if(state.profile&&state.profile.must_change_pw){ location.replace('/login/?change=1&next='+encodeURIComponent(location.pathname+location.hash)); return }
     paintBar();
-    if(!EDIT) return;
+    if(!EDIT||state.viewAs) return;
     if(state.profile&&state.profile.is_admin){ var es=document.createElement('script'); es.src='/edit.js?v=4'; document.body.appendChild(es) }
     else setEdit(false);
   });
 
   window.SITE={sb:sb, ready:ready, setEdit:setEdit, state:state, access:access, live:live, name:name, incomplete:incomplete, GOOGLE:GOOGLE, TREE:TREE,
-    loadReads:async function(ch){ if(!state.user) return null; var r=await sb.from('reads').select('section').eq('user_id',state.user.id).eq('chapter',ch); return r.error?null:(r.data||[]).map(function(x){return String(x.section)}) },
-    saveRead:function(ch,sec,on){ if(!state.user) return; var q=on?sb.from('reads').upsert({user_id:state.user.id,chapter:ch,section:+sec}):sb.from('reads').delete().eq('user_id',state.user.id).eq('chapter',ch).eq('section',+sec); q.then(function(){}) },
+    setViewAs:setViewAs,
+    loadReads:async function(ch){ if(!state.user) return null; if(state.viewAs) return []; var r=await sb.from('reads').select('section').eq('user_id',state.user.id).eq('chapter',ch); return r.error?null:(r.data||[]).map(function(x){return String(x.section)}) },
+    saveRead:function(ch,sec,on){ if(!state.user||state.viewAs) return; var q=on?sb.from('reads').upsert({user_id:state.user.id,chapter:ch,section:+sec}):sb.from('reads').delete().eq('user_id',state.user.id).eq('chapter',ch).eq('section',+sec); q.then(function(){}) },
     // A section's quiz: the score and the chosen answers (the answers column comes with supabase/v8.sql; without it, score only).
-    saveQuiz:function(ch,sec,score,total,answers){ if(!state.user) return; var row={user_id:state.user.id,chapter:ch,section:+sec,score:score,total:total};
+    saveQuiz:function(ch,sec,score,total,answers){ if(!state.user||state.viewAs) return; var row={user_id:state.user.id,chapter:ch,section:+sec,score:score,total:total};
       sb.from('quiz_results').insert(Object.assign({answers:answers||null},row)).then(function(r){ if(r.error) sb.from('quiz_results').insert(row).then(function(){}) }) },
     // The current round of a chapter's quiz: results since the last reset (the latest per section), oldest first.
-    loadQuiz:async function(ch){ if(!state.user) return null;
+    loadQuiz:async function(ch){ if(!state.user) return null; if(state.viewAs) return {since:null,rows:[]};
       var z=await sb.from('quiz_resets').select('reset_at').eq('user_id',state.user.id).eq('chapter',ch).order('reset_at',{ascending:false}).limit(1);
       var since=!z.error&&z.data&&z.data[0]?z.data[0].reset_at:null;
       var q=sb.from('quiz_results').select('*').eq('user_id',state.user.id).eq('chapter',ch).order('taken_at');

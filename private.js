@@ -42,6 +42,7 @@
       '<div class="acts"><button type="button" class="primary" data-ask>שליחת בקשה</button>'+(inDialog?'<button type="button" data-x>לא עכשיו</button>':'')+'</div><p class="msg" role="status"></p>';
     box.querySelector('[data-ask]').onclick=async function(){
       this.disabled=true;
+      if(s.viewAs){var vm=box.querySelector('.msg');vm.textContent='זו תצוגה לדוגמה: הבקשה לא נשלחת.';this.disabled=false;return}
       var r=await SITE.sb.from('access_requests').insert({user_id:s.user.id,path:path});
       if(r.error&&r.error.code!=='23505'){
         var m=box.querySelector('.msg');m.classList.add('err');

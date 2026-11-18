@@ -22,6 +22,8 @@
   }
   function esc(t){var d=document.createElement('div');d.textContent=t==null?'':t;return d.innerHTML}
   function save(id,v,fin){
+    // צפייה כ... (preview): the message is not sent, the page acts as if it was.
+    if(SITE.state&&SITE.state.viewAs) return Promise.resolve({error:null,data:null});
     return SITE.sb.rpc('contact_save',{p_id:id,p_body:v.body,p_name:v.name||null,p_phone:v.phone||null,p_email:v.email||null,p_final:fin});
   }
   function fail(el,r){
