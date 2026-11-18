@@ -530,7 +530,7 @@ html:has(main[data-chapter="harchakot"]) .to-quiz,html:has(main[data-chapter="ha
 html main.locked .q-gap,html main.locked .iq,html main.read-only .q-gap,html main.read-only .iq,html main.checking .q-gap,html main.checking .iq{display:none!important}
 
 /* Navigation line at the top of a chapter (Natan, 2026-11-17, example ב): a left-pointing triangle between the levels. */
-.crumbs{font-size:.95rem;color:var(--muted);margin:0 0 6px;display:flex;flex-wrap:wrap;gap:0 6px;align-items:center}
+.crumbs{font-size:.95rem;color:var(--muted);margin:0 0 6px;display:flex;flex-wrap:wrap;gap:0 6px;align-items:center;direction:rtl;justify-content:flex-start;text-align:right;width:100%;align-self:stretch}
 .crumbs a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 .crumbs .tri{color:var(--muted);font-weight:700}
 .crumbs .cur{font-weight:inherit;color:var(--muted)}
