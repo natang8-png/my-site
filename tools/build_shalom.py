@@ -22,7 +22,7 @@ HEAD = '''<!doctype html>
 .art h2{{font-family:var(--display);color:var(--accent);font-weight:700;font-size:1.35rem;margin:28px 0 8px}}
 .art p{{margin:0 0 12px;line-height:1.75}}.art ul,.art ol{{margin:0 0 12px;padding-inline-start:1.3em;line-height:1.75}}.art li{{margin-bottom:4px}}
 .art table{{border-collapse:collapse;width:100%;margin:8px 0 16px;font-size:.95rem}}.art th,.art td{{border:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:top}}.art th{{background:var(--soft)}}
-.lead{{font-size:1.08rem}}.pager{{display:flex;justify-content:space-between;gap:12px;margin-top:24px;flex-wrap:wrap}}.pager a{{color:var(--accent)}}</style>
+.lead{{font-size:1.08rem}}.pager{{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:28px}}.pager a{{display:inline-flex;align-items:center;gap:6px;justify-content:center;text-align:center;padding:10px 14px;border:1px solid var(--accent);border-radius:14px;background:var(--soft);color:var(--accent);font-weight:600;text-decoration:none;max-width:100%}}.pager a:hover,.pager a:focus-visible{{background:var(--accent);color:var(--bg)}}</style>
 </head><body>
 '''
 TAIL_SCRIPTS = '''<script src="/site.js"></script>
