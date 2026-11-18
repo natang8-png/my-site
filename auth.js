@@ -7,13 +7,14 @@
 
   // Content tree. A grant on a path opens it and everything under it.
   var TREE=[
-    {path:'halacha', title:'הלכה'},
-    {path:'halacha/family', title:'טהרת המשפחה'},
-    {path:'halacha/family/harchakot', title:'הרחקות'},
+    {path:'halacha', title:'הלכה', label:'שער הלכה (כל המדורים)'},
+    // old: a level from before the שער > מדור names. Grants on it still work; the admin page no longer offers it (Natan, 2026-11-18).
+    {path:'halacha/family', title:'טהרת המשפחה', old:true},
+    {path:'halacha/family/harchakot', title:'הרחקות', label:'הלכה: הרחקות'},
     // Opens together with הרחקות: a grant on הרחקות opens it too (it can also have a grant of its own).
-    {path:'halacha/family/yoledet', title:'יולדת', with:'halacha/family/harchakot'},
+    {path:'halacha/family/yoledet', title:'יולדת', label:'הלכה: מעגל החיים (יולדת)', with:'halacha/family/harchakot'},
     // Opens only with its own grant (a wider grant does not cover it), for one week at a time.
-    {path:'tumat-betulim', title:'טומאת בתולים', own:true, days:7},
+    {path:'tumat-betulim', title:'טומאת בתולים', own:true, days:7, old:true},
     // שער הדרכה (Natan, 2026-11-18): each מדור opens with its own grant. 'leil-hachatuna' is now ליל הכלולות only.
     // label = the name in the admin page, where 'הלכה' alone would mix with שער הלכה.
     {path:'hadracha-halacha', title:'הלכה', label:'הדרכה: הלכה', own:true, days:7},

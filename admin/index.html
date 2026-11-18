@@ -7,6 +7,21 @@
 <link rel="stylesheet" href="/style.css">
 <style>
 main{max-width:52rem}
+.part{margin-top:36px;scroll-margin-top:12px}
+.part-h{border-bottom:3px solid var(--accent);padding-bottom:8px;margin-bottom:12px}
+.part-h .cnt{display:inline-block;min-width:1.6em;text-align:center;background:#b4473a;color:#fff;border-radius:999px;font-size:.8em;padding:0 8px}
+.jump{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.jump a{border:1px solid var(--line);border-radius:999px;padding:4px 12px;text-decoration:none;color:var(--accent);background:var(--soft)}
+.gate{border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:12px}
+.gate h3{margin:0 0 6px}.gate h3 a{color:inherit}
+.mador{border-top:1px dashed var(--line);padding:6px 0}
+.mador summary{cursor:pointer}
+.mador ul{margin:6px 0 4px;padding-inline-start:22px}.mador li.off{opacity:.6}
+.mador .r{color:#b4473a;font-weight:600}.mador .go-m{text-decoration:none}
+.mador-x{border-top:1px dashed var(--line);padding:6px 0;margin:0}
+.chips .gname{font-weight:600;font-size:.92rem}
+a.chip{text-decoration:none}
+.user{scroll-margin-top:12px}
 .stats{display:flex;gap:12px;flex-wrap:wrap}
 .stat{flex:1 1 9rem;border:1px solid var(--line);border-radius:14px;padding:12px 16px}
 .stat b{display:block;font-family:var(--display);font-size:2rem;color:var(--accent);line-height:1.1}
@@ -192,6 +207,22 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   function esc(t){var d=document.createElement('div');d.textContent=t==null?'':t;return d.innerHTML}
   function when(t){if(!t)return'—';var d=new Date(t);return d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
   function title(path){var n=SITE.TREE.find(function(x){return x.path===path});return n?(n.label||n.title):path}
+  // The admin lists offer only today's tree (old levels stay readable on existing grants).
+  var TREEA=SITE.TREE.filter(function(n){return !n.old});
+  // The site's hierarchy (Natan, 2026-11-18): שער > מדור. Each מדור = one permission path; null = no content yet.
+  var GATES=[
+    {name:'שער הלכה', href:'/halacha/', madors:[['halacha/family/harchakot','הרחקות','/halacha/harchakot/'],['halacha/family/yoledet','מעגל החיים','/halacha/maagal-hachaim/']]},
+    {name:'שער הדרכה', href:'/hadracha/', madors:[['hadracha-halacha','הלכה','/halacha/leil-hachatuna/#s24'],['hadracha-hashkafa','השקפה','/halacha/leil-hachatuna/#s16'],['leil-hachatuna','ליל הכלולות','/halacha/leil-hachatuna/#s1'],[null,'המשך החיים']]},
+    {name:'שער שלום בית', madors:[]}
+  ];
+  // Does grant g open מדור path? Same rule as SITE.access: exact path, a wider path (unless the מדור needs its own), or its "with".
+  function covers(g,path){
+    if(g.path===path)return true;
+    var n=SITE.TREE.find(function(x){return x.path===path})||{};
+    if(!n.own&&path.indexOf(g.path+'/')===0)return true;
+    return !!(n.with&&covers(g,n.with));
+  }
+  function gateOf(path){for(var i=0;i<GATES.length;i++){if(GATES[i].madors.some(function(m){return m[0]&&(m[0]===path||m[0].indexOf(path+'/')===0)}))return i}return -1}
   function depth(path){return path.split('/').length-1}
   var st=await SITE.ready;
   if(!st.user){app.innerHTML='<p>צריך <a href="/login/?next=/admin/">להיכנס</a> קודם.</p>';return}
@@ -367,7 +398,8 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
 
   function render(users,grants,reads,results,invites,requests){
     var others=users.filter(function(u){return !u.is_admin});
-    var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id&&!isOwn(g.path)})});
+    // Waiting for approval = signed up, and no permission of any kind yet (per מדור grants count too).
+    var pending=others.filter(function(u){return !grants.some(function(g){return g.user_id===u.id})});
     var week=Date.now()-7*864e5;
     var active=others.filter(function(u){return u.last_seen&&new Date(u.last_seen)>week});
     var h='<div class="stats">'+
@@ -375,12 +407,34 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       '<div class="stat"><b>'+pending.length+'</b><span>ממתינים לאישור</span></div>'+
       '<div class="stat"><b>'+active.length+'</b><span>נכנסו השבוע</span></div>'+
       '<div class="stat"><b>'+results.filter(function(x){return others.some(function(u){return u.id===x.user_id})}).length+'</b><span>בחינות שנעשו</span></div></div>';
-    // Adding a student lives at the bottom; up here only a button that scrolls down to it.
-    h+='<div class="add" style="margin-top:16px"><button type="button" class="primary" data-goinv>+ הוספת תלמיד</button> <a href="/map/" style="margin-inline-start:12px">מפת האתר וצפייה כאורח / כתלמיד</a></div>';
-    h+='<h2 style="margin-top:32px">השאלון שלי</h2><p class="help">איפוס השאלון של הרחקות בחשבון שלך (סבב חדש). אפשר לבטל את האיפוס האחרון.</p><div id="myreset"></div>';
+    // Natan, 2026-11-18: the page follows the site — 1. דורש טיפול, 2. שערים ומדורים, 3. תלמידים, 4. כלים.
+    h+='<nav class="jump" aria-label="חלקי הדף"><a href="#p-todo">דורש טיפול</a><a href="#p-gates">שערים ומדורים</a><a href="#p-users">תלמידים</a><a href="#p-tools">כלים</a></nav>';
+    // 1. Needs action
+    var nReq=(requests||[]).length, nMsg=(MSGS||[]).length;
+    h+='<section class="part" id="p-todo"><h2 class="part-h">1. דורש טיפול'+((nReq+nMsg+pending.length)?' <span class="cnt">'+(nReq+nMsg+pending.length)+'</span>':'')+'</h2>';
+    if(!(nReq+nMsg+pending.length))h+='<p class="none">אין כרגע שום דבר שמחכה לך.</p>';
+    if(pending.length)h+='<h3 style="margin-top:12px">ממתינים לאישור ('+pending.length+')</h3><p class="help">נרשמו ועוד אין להם שום הרשאה. לחיצה על שם מובילה לכרטיס שלו, שם מאשרים.</p><div class="chips">'+
+      pending.map(function(u){return '<a class="chip" href="#u-'+u.id+'">'+esc(uname(u))+'</a>'}).join('')+'</div>';
     h+=requestBlock(requests,users);
     h+=contactBlock(MSGS);
-    h+='<h2 style="margin-top:32px">משתמשים</h2><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
+    h+='</section>';
+    // 2. Gates and מדורים: who each מדור is open to
+    h+='<section class="part" id="p-gates"><h2 class="part-h">2. שערים ומדורים</h2><p class="help">כל שער והמדורים שבו, כמו באתר. ליד כל מדור: לכמה תלמידים הוא פתוח עכשיו. לחיצה על מדור פותחת את הרשימה.</p>';
+    GATES.forEach(function(G){
+      h+='<div class="gate"><h3>'+(G.href?'<a href="'+G.href+'">'+esc(G.name)+'</a>':esc(G.name))+'</h3>';
+      if(!G.madors.length)h+='<p class="none">אין עדיין מדורים.</p>';
+      G.madors.forEach(function(m){
+        if(!m[0]){h+='<p class="none mador-x">'+esc(m[1])+' · אין עדיין תוכן</p>';return}
+        var open=others.map(function(u){var g=grants.filter(function(x){return x.user_id===u.id&&covers(x,m[0])});var live=g.filter(SITE.live);return {u:u,g:live[0]||g[0],live:live.length>0}}).filter(function(x){return x.g});
+        var nl=open.filter(function(x){return x.live}).length, rq=(requests||[]).filter(function(q){return q.path===m[0]}).length;
+        h+='<details class="mador"><summary><b>'+esc(m[1])+'</b> <span class="none">· פתוח ל־'+nl+(nl===1?' תלמיד':' תלמידים')+(rq?' · <span class="r">'+rq+' בקשות</span>':'')+'</span>'+(m[2]?' <a href="'+m[2]+'" class="go-m" title="פתיחת המדור">↗</a>':'')+'</summary>'+
+          (open.length?'<ul>'+open.map(function(x){return '<li class="'+(x.live?'':'off')+'"><a href="#u-'+x.u.id+'">'+esc(uname(x.u))+'</a> <span class="none">· '+esc(x.g.path===m[0]?gstate(x.g):'דרך '+title(x.g.path)+' · '+gstate(x.g))+'</span></li>'}).join('')+'</ul>':'<p class="none">עוד לא פתוח לאף תלמיד.</p>')+'</details>';
+      });
+      h+='</div>';
+    });
+    h+='<div class="gate"><h3><a href="/contact/">צור קשר</a></h3><p class="none">פתוח לכל תלמיד מחובר. ההודעות מופיעות למעלה, ב"דורש טיפול".</p></div></section>';
+    // 3. Students
+    h+='<section class="part" id="p-users"><h2 class="part-h">3. תלמידים</h2><div class="add" style="margin-bottom:12px"><button type="button" class="primary" data-goinv>+ הוספת תלמיד</button></div><p class="help">לכל תלמיד יש כפתור אחד. <b class="g">אישור</b> (ירוק) פותח לו את מה שבחרת ברשימות שלידו. <b class="r">סגירה</b> (אדומה) חוסמת לו את כל הגישה, ואפשר לפתוח שוב באישור. שום כפתור כאן לא מוחק תלמיד, הוא והציונים שלו נשמרים תמיד.</p>';
     if(!others.length)h+='<p class="none">עוד אין משתמשים רשומים. כשמישהו יירשם דרך "כניסה / הרשמה", הוא יופיע כאן.</p>';
     if(others.length)h+='<p class="help">כדי לקבוע הרשאות לכמה תלמידים ביחד: סמן אותם בתיבה שליד השם, ולחץ <b class="g">הרשאות</b> בחלונית שתופיע למטה. · <button type="button" class="link" data-selall>בחירת כולם</button></p>';
     h+='<div class="users">';
@@ -389,16 +443,20 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       var all=grants.filter(function(g){return g.user_id===u.id}), ug=all.filter(function(g){return !isOwn(g.path)});
       var ur=reads.filter(function(x){return x.user_id===u.id});
       var uq=results.filter(function(x){return x.user_id===u.id});
-      h+='<article class="user'+(ug.length?'':' pending')+(sel.has(u.id)?' sel':'')+'" data-u="'+u.id+'">'+
+      h+='<article class="user'+(ug.length?'':' pending')+(sel.has(u.id)?' sel':'')+'" data-u="'+u.id+'" id="u-'+u.id+'">'+
         '<div class="u-head"><label class="pick"><input type="checkbox" data-sel="'+u.id+'"'+(sel.has(u.id)?' checked':'')+' aria-label="בחירה"><div><h3>'+esc(uname(u))+(u.invited?' <span class="tag">נוסף ע״י המנהל</span>':'')+(u.must_change_pw?' <span class="tag">עוד לא נכנס</span>':'')+'</h3><small dir="ltr">'+esc(u.email)+'</small>'+
         (u.phone?'<small dir="ltr"><a href="tel:'+esc(u.phone)+'">'+esc(u.phone)+'</a></small>':'')+'</div></label>'+
         '<div class="meta">נרשם: '+when(u.created_at)+'<br>כניסה אחרונה: '+when(u.last_seen)+'</div></div>';
       if(u.note)h+='<p class="note">הערה: '+esc(u.note)+'</p>';
       // Each permission is a button: it opens a menu to change, close or schedule it.
-      h+='<div class="chips"><span class="none">גישה:</span>'+(ug.length?ug.map(gchip).join(''):'<span class="none">סגור (ממתין לאישור)</span>')+
-        all.filter(function(g){return isOwn(g.path)}).map(gchip).join('')+'</div>';
+      // Permissions by שער, then מדור (Natan, 2026-11-18). Old paths outside today's tree show under "אחר".
+      if(!all.length)h+='<div class="chips"><span class="none">גישה: סגור (ממתין לאישור)</span></div>';
+      GATES.concat([{name:'אחר'}]).forEach(function(G,gi){
+        var gg=all.filter(function(g){return gateOf(g.path)===(G.madors?gi:-1)});
+        if(gg.length)h+='<div class="chips"><span class="gname">'+esc(G.name)+':</span>'+gg.map(gchip).join('')+'</div>';
+      });
       // Chapters with their own permission: open for a week from here too, without waiting for a request.
-      h+=SITE.TREE.filter(function(n){return n.own}).map(function(n){var g=all.find(function(x){return x.path===n.path&&SITE.live(x)});
+      h+=TREEA.filter(function(n){return n.own}).map(function(n){var g=all.find(function(x){return x.path===n.path&&SITE.live(x)});
         return '<div class="add"><button type="button" data-week="'+n.path+'">'+(g?'הארכה':'פתיחה')+' של '+esc(n.label||n.title)+' ל־'+n.days+' ימים</button></div>'}).join('');
       // One button: approve (with the chosen access) when closed, close (remove all access) when open.
       h+='<div class="add">'+(ug.length?'':'<select data-path>'+opts()+'</select><select data-mode><option value="study">קריאה + שאלון</option><option value="read">קריאה בלבד</option></select>')+
@@ -430,7 +488,12 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       h+=rounds(u,uq)+studentReset(u,uq);
       h+='</article>';
     });
-    app.innerHTML=h+'</div>'+inviteBlock(invites);
+    h+='</div></section>';
+    // 4. Tools
+    h+='<section class="part" id="p-tools"><h2 class="part-h">4. כלים</h2><div class="add"><a class="chip" href="/map/">מפת האתר וצפייה כאורח / כתלמיד</a><a class="chip" href="/admin/versions/">יומן גרסאות</a></div>'+
+      inviteBlock(invites)+
+      '<h3 style="margin-top:28px">השאלון שלי</h3><p class="help">איפוס השאלון של הרחקות בחשבון שלך (סבב חדש). אפשר לבטל את האיפוס האחרון.</p><div id="myreset"></div></section>';
+    app.innerHTML=h;
     // A one-line chapter name sits in the middle of the pill's height.
     (document.fonts?document.fonts.ready:Promise.resolve()).then(function(){
       if(matchMedia('(max-width:620px)').matches)return;
@@ -482,10 +545,10 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
     var d=document.createElement('dialog');d.className='bulk';
     var h='<h3>הרשאות ל־'+users.length+' תלמידים</h3><p class="none">'+esc(users.map(uname).join(', '))+'</p>';
     h+='<p class="help" style="margin:8px 0 0">מה שמסומן "בלי שינוי" נשאר לכל אחד כמו שהוא היה.</p>';
-    SITE.TREE.forEach(function(n,i){
+    TREEA.forEach(function(n,i){
       var o=n.own?[['keep','בלי שינוי'],['week','פתיחה ל־'+n.days+' ימים'],['off','סגירה']]
                  :[['keep','בלי שינוי'],['study','קריאה + שאלון'],['read','קריאה בלבד'],['off','סגירה']];
-      h+='<div class="rowp"><b>'+'\u00a0\u00a0'.repeat(n.own?0:depth(n.path))+esc(n.label||n.title)+'</b><div class="opts">'+
+      h+='<div class="rowp"><b>'+esc(n.label||n.title)+'</b><div class="opts">'+
         o.map(function(x,j){return '<label><input type="radio" name="p'+i+'" value="'+x[0]+'"'+(j?'':' checked')+'>'+x[1]+'</label>'}).join('')+'</div></div>';
     });
     h+='<div class="add acts"><button type="button" class="primary" data-apply>שמירה</button><button type="button" data-x>ביטול</button></div><p class="msg" role="status"></p>';
@@ -495,7 +558,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       if(e.target===d||e.target.closest('[data-x]')){d.close();return}
       var ap=e.target.closest('[data-apply]');if(!ap)return;
       var ids=users.map(function(u){return u.id}), ups=[], dels=[];
-      SITE.TREE.forEach(function(n,i){
+      TREEA.forEach(function(n,i){
         var v=d.querySelector('input[name="p'+i+'"]:checked').value;
         if(v==='keep')return;
         if(v==='off'){dels.push(n.path);return}
@@ -506,7 +569,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
       if(dels.length){var r=await sb.from('grants').delete().in('user_id',ids).in('path',dels);err=r.error}
       if(!err&&ups.length){var r2=await sb.from('grants').upsert(ups,{onConflict:'user_id,path'});err=r2.error}
       // Opening a time-limited chapter also answers the students' waiting requests for it.
-      SITE.TREE.forEach(function(n,i){
+      TREEA.forEach(function(n,i){
         if(!err&&n.own&&d.querySelector('input[name="p'+i+'"]:checked').value==='week')
           sb.from('access_requests').update({handled_at:new Date().toISOString(),approved:true}).in('user_id',ids).eq('path',n.path).is('handled_at',null).then(function(){});
       });
@@ -576,7 +639,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   // sender opened the details window and did not finish; once they send, the same row becomes a regular message.
   function contactBlock(list){
     if(list===null)return '<p class="msg" style="margin-top:24px">כדי לקבל הודעות מ"צור קשר", צריך להריץ קודם את supabase/v14.sql.</p>';
-    var h='<h2 style="margin-top:32px" id="cmsgs">הודעות מצור קשר'+(list.length?' ('+list.length+')':'')+'</h2>';
+    var h='<h3 style="margin-top:20px" id="cmsgs">הודעות מצור קשר'+(list.length?' ('+list.length+')':'')+'</h3>';
     if(!list.length)return h+'<p class="none">אין הודעות שממתינות.</p>';
     h+='<p class="help">הודעה שמסומנת <b>✱ טיוטה</b> נשמרה כשהכותב עוד היה בחלון הוספת הפרטים. אם ישלים וישלח, הסימון יירד מעצמו. <b class="g">טופל</b> מוריד את ההודעה מהרשימה.</p><div class="users">';
     return h+list.map(function(m){
@@ -588,7 +651,7 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
   }
   function requestBlock(requests,users){
     if(requests===null)return '<p class="msg" style="margin-top:24px">כדי לקבל בקשות גישה (סדר ליל החתונה), צריך להריץ קודם את supabase/v4.sql.</p>';
-    var h='<h2 style="margin-top:32px">בקשות גישה'+(requests.length?' ('+requests.length+')':'')+'</h2>';
+    var h='<h3 style="margin-top:20px">בקשות גישה'+(requests.length?' ('+requests.length+')':'')+'</h3>';
     if(!requests.length)return h+'<p class="none">אין בקשות שממתינות.</p>';
     h+='<p class="help"><b class="g">אישור</b> פותח את המדור לתלמיד לשבוע מהיום, ואחר כך הוא נסגר מעצמו. <b class="r">דחייה</b> סוגרת את הבקשה, והתלמיד יכול לבקש שוב.</p><div class="users">';
     return h+requests.map(function(q){var u=users.find(function(x){return x.id===q.user_id})||{};
@@ -596,13 +659,13 @@ body:has(.selbar:not([hidden])) main{padding-bottom:150px}
         '<div class="add"><button type="button" class="primary" data-rq="'+q.id+'" data-ok="1">אישור לשבוע</button><button type="button" class="close" data-rq="'+q.id+'">דחייה</button></div></article>'}).join('')+'</div>';
   }
 
-  function opts(){return SITE.TREE.filter(function(n){return !n.own}).map(function(n){return '<option value="'+n.path+'">'+'\u00a0\u00a0'.repeat(depth(n.path))+esc(n.title)+'</option>'}).join('')}
+  function opts(){return TREEA.filter(function(n){return !n.own}).map(function(n){return '<option value="'+n.path+'">'+esc(n.label||n.title)+'</option>'}).join('')}
 
   // Pre-registration: whoever signs up later with this email gets the access right away.
   function inviteBlock(invites){
     if(invites===null)return '<p class="msg" style="margin-top:24px">כדי להוסיף אנשים מראש, צריך להריץ קודם את supabase/v2.sql.</p>';
     var open=invites.filter(function(i){return !i.used_at});window.__invites=open;
-    var h='<h2 style="margin-top:40px;scroll-margin-top:16px" id="addst">הוספת תלמיד</h2><form class="form invite" id="inv">'+
+    var h='<h3 style="margin-top:20px;scroll-margin-top:16px" id="addst">הוספת תלמיד</h3><form class="form invite" id="inv">'+
       '<label>הדבקה מהירה (לא חובה)<textarea name="paste" rows="2" placeholder="שם: ...; משפחה: ...; טלפון: ...; אימייל: ..."></textarea></label>'+
       '<div class="row"><label>שם פרטי<input name="first" required></label><label>שם משפחה<input name="last"></label></div>'+
       '<div class="row"><label>מייל<input name="email" type="email" required dir="ltr"></label><label>טלפון<input name="phone" type="tel" dir="ltr"></label></div>'+
