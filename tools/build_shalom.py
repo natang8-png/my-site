@@ -22,7 +22,7 @@ HEAD = '''<!doctype html>
 .art h2{{font-family:var(--display);color:var(--accent);font-weight:700;font-size:1.35rem;margin:28px 0 8px}}
 .art p{{margin:0 0 12px;line-height:1.75}}.art ul,.art ol{{margin:0 0 12px;padding-inline-start:1.3em;line-height:1.75}}.art li{{margin-bottom:4px}}
 .art table{{border-collapse:collapse;width:100%;margin:8px 0 16px;font-size:.95rem}}.art th,.art td{{border:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:top}}.art th{{background:var(--soft)}}
-.lead{{font-size:1.08rem}}.pager{{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:28px}}.pager a{{display:inline-flex;align-items:center;gap:6px;justify-content:center;text-align:center;padding:10px 14px;border:1px solid var(--accent);border-radius:14px;background:var(--soft);color:var(--accent);font-weight:600;text-decoration:none;max-width:100%}}.pager a:hover,.pager a:focus-visible{{background:var(--accent);color:var(--bg)}}</style>
+.lead{{font-size:1.08rem}}html.has-rbar main > footer{{display:none}}a.rb-pill,a.rb-lite{{text-decoration:none}}dialog.arts{{border:1px solid var(--line);border-radius:16px;padding:18px 20px;background:var(--bg);color:var(--fg);width:min(26rem,calc(100vw - 32px))}}dialog.arts::backdrop{{background:rgb(0 0 0/.45)}}dialog.arts h2{{font-family:var(--display);margin:0 0 10px;font-size:1.3rem}}dialog.arts ol{{margin:0 0 12px;padding-inline-start:1.4em;line-height:2}}dialog.arts a{{color:var(--accent)}}dialog.arts .cur{{font-weight:700}}.pager{{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:28px}}.pager a{{display:inline-flex;align-items:center;gap:6px;justify-content:center;text-align:center;padding:10px 14px;border:1px solid var(--accent);border-radius:14px;background:var(--soft);color:var(--accent);font-weight:600;text-decoration:none;max-width:100%}}.pager a:hover,.pager a:focus-visible{{background:var(--accent);color:var(--bg)}}</style>
 </head><body>
 '''
 TAIL_SCRIPTS = '''<script src="/site.js"></script>
@@ -115,6 +115,21 @@ def main():
         pager = '<nav class="pager" aria-label="מאמרים">' + \
             ('<a href="/shalom-bayit/%s/">→ %s</a>' % (prev[0], html.escape(prev[1])) if prev else '<a href="/shalom-bayit/">→ שער שלום בית</a>') + \
             ('<a href="/shalom-bayit/%s/">%s ←</a>' % (nxt[0], html.escape(nxt[1])) if nxt else '<span></span>') + '</nav>'
+        # Bottom bar, like the chapters: הקודם · תפריט (all articles) · נגישות · הבא. Prev/next run across all the articles;
+        # before the first and after the last, the bar leads back to the gate.
+        ARR = lambda d: '<svg class="rb-arr" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="' + ('M13 4.5 21 12l-8 7.5V15H4.5a1.5 1.5 0 0 1-1.5-1.5v-3A1.5 1.5 0 0 1 4.5 9H13z' if d == 'r' else 'M11 4.5 3 12l8 7.5V15h8.5a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 19.5 9H11z') + '"/></svg>'
+        A11Y = '<svg class="rb-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="6.6" r="1.7" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M7.2 9.6h9.6M12 9.6v4.2M12 13.8l-1.9 4.5M12 13.8l1.9 4.5"/></svg>'
+        MENU = '<svg class="rb-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 7h14M5 12h14M5 17h14"/></svg>'
+        listing = ''.join('<li%s><a href="/shalom-bayit/%s/">%s</a></li>' % (' class="cur"' if a[0] == slug else '', a[0], html.escape(a[1])) for a in arts)
+        rbar = ('<nav class="rbar" dir="rtl" aria-label="ניווט בין המאמרים"><div class="rb-row">'
+                '<a class="rb-pill rb-prev" href="/shalom-bayit/%s">%s<span>%s</span></a>'
+                '<button type="button" class="rb-lite" data-arts aria-label="רשימת המאמרים">%s<span class="rb-tx"><b>תפריט</b><span class="rb-count">%d/%d</span></span></button>'
+                '<button type="button" class="rb-lite" data-open-a11y aria-label="נגישות ועיצוב">%s<span class="rb-tx"><b>נגישות</b><b>ועיצוב</b></span></button>'
+                '<a class="rb-pill rb-next" href="/shalom-bayit/%s"><span>%s</span>%s</a>'
+                '</div></nav>\n<dialog class="arts" dir="rtl"><h2>מאמרי שלום בית</h2><ol>%s</ol><button type="button" data-close>סגירה</button></dialog>\n') % (
+            (prev[0] + '/') if prev else '', ARR('r'), 'הקודם' if prev else 'לשער',
+            MENU, n + 1, len(arts), A11Y,
+            (nxt[0] + '/') if nxt else '', 'הבא' if nxt else 'סיום', ARR('l'), listing)
         page = HEAD.format(title=html.escape(title)) + '''<main dir="rtl" lang="he" class="home gate-wait">
   <header>
     <nav class="crumbs" aria-label="ניווט"><a href="/">בית</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><a href="/shalom-bayit/">שער שלום בית</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><span class="cur">%s</span></nav>
@@ -126,7 +141,19 @@ def main():
 %s
   </article>
 
-''' % (html.escape(title), html.escape(title), body(md), pager) + FOOT + TAIL_SCRIPTS + '''<script>
+''' % (html.escape(title), html.escape(title), body(md), pager) + FOOT + rbar + TAIL_SCRIPTS + '''<script>
+// Bottom bar: the menu lists all the articles; נגישות opens the site's accessibility window.
+(function(){
+  document.documentElement.classList.add('has-rbar');
+  var d=document.querySelector('dialog.arts');
+  document.addEventListener('click',function(e){
+    if(e.target.closest('[data-arts]')){d.showModal();return}
+    if(e.target.closest('[data-open-a11y]')){var p=document.querySelector('dialog.prefs');if(p)p.showModal();else{var t=document.getElementById('theme');if(t)t.click()}return}
+    if(e.target===d||e.target.closest('dialog.arts [data-close]'))d.close();
+  });
+})();
+</script>
+<script>
 // The article shows only to a reader with a grant on it (or on all of שער שלום בית), and to the admin.
 (function(){
   var path='shalom-bayit/%s', m=document.querySelector('main');

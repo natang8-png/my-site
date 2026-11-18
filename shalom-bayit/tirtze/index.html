@@ -9,7 +9,7 @@
 .art h2{font-family:var(--display);color:var(--accent);font-weight:700;font-size:1.35rem;margin:28px 0 8px}
 .art p{margin:0 0 12px;line-height:1.75}.art ul,.art ol{margin:0 0 12px;padding-inline-start:1.3em;line-height:1.75}.art li{margin-bottom:4px}
 .art table{border-collapse:collapse;width:100%;margin:8px 0 16px;font-size:.95rem}.art th,.art td{border:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:top}.art th{background:var(--soft)}
-.lead{font-size:1.08rem}.pager{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:28px}.pager a{display:inline-flex;align-items:center;gap:6px;justify-content:center;text-align:center;padding:10px 14px;border:1px solid var(--accent);border-radius:14px;background:var(--soft);color:var(--accent);font-weight:600;text-decoration:none;max-width:100%}.pager a:hover,.pager a:focus-visible{background:var(--accent);color:var(--bg)}</style>
+.lead{font-size:1.08rem}html.has-rbar main > footer{display:none}a.rb-pill,a.rb-lite{text-decoration:none}dialog.arts{border:1px solid var(--line);border-radius:16px;padding:18px 20px;background:var(--bg);color:var(--fg);width:min(26rem,calc(100vw - 32px))}dialog.arts::backdrop{background:rgb(0 0 0/.45)}dialog.arts h2{font-family:var(--display);margin:0 0 10px;font-size:1.3rem}dialog.arts ol{margin:0 0 12px;padding-inline-start:1.4em;line-height:2}dialog.arts a{color:var(--accent)}dialog.arts .cur{font-weight:700}.pager{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:28px}.pager a{display:inline-flex;align-items:center;gap:6px;justify-content:center;text-align:center;padding:10px 14px;border:1px solid var(--accent);border-radius:14px;background:var(--soft);color:var(--accent);font-weight:600;text-decoration:none;max-width:100%}.pager a:hover,.pager a:focus-visible{background:var(--accent);color:var(--bg)}</style>
 </head><body>
 <main dir="rtl" lang="he" class="home gate-wait">
   <header>
@@ -49,10 +49,24 @@
     <button id="theme" type="button">מצב כהה</button>
   </footer>
 </main>
+<nav class="rbar" dir="rtl" aria-label="ניווט בין המאמרים"><div class="rb-row"><a class="rb-pill rb-prev" href="/shalom-bayit/shicha-b/"><svg class="rb-arr" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13 4.5 21 12l-8 7.5V15H4.5a1.5 1.5 0 0 1-1.5-1.5v-3A1.5 1.5 0 0 1 4.5 9H13z"/></svg><span>הקודם</span></a><button type="button" class="rb-lite" data-arts aria-label="רשימת המאמרים"><svg class="rb-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 7h14M5 12h14M5 17h14"/></svg><span class="rb-tx"><b>תפריט</b><span class="rb-count">6/6</span></span></button><button type="button" class="rb-lite" data-open-a11y aria-label="נגישות ועיצוב"><svg class="rb-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="12" cy="6.6" r="1.7" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M7.2 9.6h9.6M12 9.6v4.2M12 13.8l-1.9 4.5M12 13.8l1.9 4.5"/></svg><span class="rb-tx"><b>נגישות</b><b>ועיצוב</b></span></button><a class="rb-pill rb-next" href="/shalom-bayit/"><span>סיום</span><svg class="rb-arr" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11 4.5 3 12l8 7.5V15h8.5a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 19.5 9H11z"/></svg></a></div></nav>
+<dialog class="arts" dir="rtl"><h2>מאמרי שלום בית</h2><ol><li><a href="/shalom-bayit/todah/">תודה, בבקשה, סליחה</a></li><li><a href="/shalom-bayit/hakshava/">הקשבה</a></li><li><a href="/shalom-bayit/sheva-shaot/">שש שעות בשבוע</a></li><li><a href="/shalom-bayit/shicha/">שיחה שמפרקת מטען</a></li><li><a href="/shalom-bayit/shicha-b/">בלב איש - ישיחנה</a></li><li class="cur"><a href="/shalom-bayit/tirtze/">מודל תרצה: איך מדברים על מה שקשה</a></li></ol><button type="button" data-close>סגירה</button></dialog>
 <script src="/site.js"></script>
 <script src="/vendor/supabase.js"></script>
 <script src="/auth.js"></script>
 <script src="/private.js"></script>
+<script>
+// Bottom bar: the menu lists all the articles; נגישות opens the site's accessibility window.
+(function(){
+  document.documentElement.classList.add('has-rbar');
+  var d=document.querySelector('dialog.arts');
+  document.addEventListener('click',function(e){
+    if(e.target.closest('[data-arts]')){d.showModal();return}
+    if(e.target.closest('[data-open-a11y]')){var p=document.querySelector('dialog.prefs');if(p)p.showModal();else{var t=document.getElementById('theme');if(t)t.click()}return}
+    if(e.target===d||e.target.closest('dialog.arts [data-close]'))d.close();
+  });
+})();
+</script>
 <script>
 // The article shows only to a reader with a grant on it (or on all of שער שלום בית), and to the admin.
 (function(){
