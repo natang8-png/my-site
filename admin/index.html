@@ -25,6 +25,8 @@ main{max-width:52rem}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--clay:#c9714a;--clay-soft:#2a1d17;--clay-ink:#f0b598}}
 :root[data-theme="dark"]{--clay:#c9714a;--clay-soft:#2a1d17;--clay-ink:#f0b598}
 .pr.has-tk .pr-v{flex:0 0 auto}
+/* all clay lines start at the same line (Natan, 2026-11-19) */
+@media (min-width:621px){.pr.has-tk .pr-v{flex:0 0 9.5em}}
 .tk{all:unset;box-sizing:border-box;position:relative;flex:1;min-width:250px;height:32px;border:1.5px solid var(--clay);border-radius:999px;overflow:hidden;cursor:pointer;background:var(--clay-soft);color:var(--clay-ink);font-size:.92rem;font-weight:600;font-variant-numeric:tabular-nums}
 .tk:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .tk .bg{position:absolute;top:0;bottom:0;right:0;width:var(--p);background:var(--clay)}
