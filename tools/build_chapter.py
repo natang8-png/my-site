@@ -263,7 +263,7 @@ page = f'''<!doctype html>
 {PRIVATE_HEAD if private else "</head><body>"+chr(10)}<main dir="rtl" lang="he" class="chapter{" checking" if private else ""}" {f'data-track="{slug}"' if private else f'data-chapter="{key}" data-path="{ch["path"]}"'}{f' data-quiz="{ch["quiz"]}"' if ch.get("quiz") else ""}{" data-inline-quiz" if inline else ""}{" data-flow" if ch.get("flow") else ""}{" data-tabs-apart" if ch.get("tabs_apart") else ""}>
   <header>
     <a class="back" href="{ch.get("back", "/halacha/")}">→ חזרה{ch.get("back_label", " ללידה" if ch.get("back") else " להלכה")}</a>
-    <nav class="crumbs" aria-label="ניווט"><a href="/">בית</a><span class="tri" aria-hidden="true">&lt;</span><a href="/halacha/">{html.escape("שער "+ch.get("topic", "הלכה"))}</a><span class="tri" aria-hidden="true">&lt;</span><span class="cur">מדור {html.escape(ch["title"])}</span></nav>
+    <nav class="crumbs" aria-label="ניווט"><a href="/">בית</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><a href="/halacha/">{html.escape("שער "+ch.get("topic", "הלכה"))}</a><span class="tri" dir="ltr" aria-hidden="true">&lt;</span><span class="cur">מדור {html.escape(ch["title"])}</span></nav>
     <h1>{ch["title"]}</h1>
     {f'<p class="lead">{ch["subtitle"]}</p>' if ch.get("subtitle") else ""}
     {'<p class="until" id="until" hidden></p>' if private else ""}
