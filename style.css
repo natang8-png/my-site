@@ -42,7 +42,7 @@ a{color:inherit}
 .back{font-size:.9rem;color:var(--muted);text-decoration:none}
 .back:hover{color:var(--accent)}
 ul.topics{list-style:none;margin:0;padding:0;display:grid;gap:12px}
-.topic{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 16px;padding:18px 20px;border:1px solid var(--line);border-radius:14px;background:var(--soft);text-decoration:none}
+.topic{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 16px;padding:18px 20px;border:1px solid var(--line);border-radius:14px;background:var(--soft);text-decoration:none}
 a.topic:hover{border-color:var(--accent)}
 a.topic:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .topic h3{font-family:var(--display);font-weight:700;font-size:1.35rem;margin:0}
