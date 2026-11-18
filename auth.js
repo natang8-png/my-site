@@ -26,7 +26,8 @@
     {path:'shalom-bayit/hakshava', title:'הקשבה', label:'שלום בית: הקשבה'},
     {path:'shalom-bayit/sheva-shaot', title:'שש שעות בשבוע', label:'שלום בית: שש שעות בשבוע'},
     {path:'shalom-bayit/shicha', title:'שיחה שמפרקת מטען', label:'שלום בית: שיחה שמפרקת מטען'},
-    {path:'shalom-bayit/shicha-b', title:'שיחה שמפרקת מטען: השלבים הבאים', label:'שלום בית: השלבים הבאים בשיחה'}
+    {path:'shalom-bayit/shicha-b', title:'שיחה שמפרקת מטען: השלבים הבאים', label:'שלום בית: השלבים הבאים בשיחה'},
+    {path:'shalom-bayit/tirtze', title:'מודל תרצה', label:'שלום בית: מודל תרצה'}
   ];
 
   // Edit mode (admin only): on for this device until switched off from the warning line at the top.
